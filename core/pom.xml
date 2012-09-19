@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.glue</groupId>
+	<artifactId>glue-parent</artifactId>
+	<packaging>pom</packaging>
+	<version>0.2.0</version>
+	<name>glue-parent</name>
+	<url>org.glue</url>
+
+	<properties>
+		<java.version>1.6</java.version>
+		<junit.version>4.8.1</junit.version>
+		<groovy.version>1.8.0</groovy.version>
+		<gmaven.version>1.7</gmaven.version>
+		<log4j.version>1.2.16</log4j.version>
+		<pig.version>0.8.1</pig.version>
+		<hive.version>0.5.0</hive.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+		    <groupId>org.mbte.groovypp</groupId>
+		    <artifactId>groovypp</artifactId>
+		    <version>0.9.0_1.8.2</version>
+                    <scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.gmaven.runtime</groupId>
+			<artifactId>gmaven-runtime-${gmaven.version}</artifactId>
+			<version>1.3</version>
+			<exclusions>
+                          <exclusion>
+                           <groupId>org.codehaus.groovy</groupId>
+                           <artifactId>groovy-all</artifactId>
+                          </exclusion>
+			  <exclusion>
+                           <groupId>org.slf4j</groupId>
+                           <artifactId>slf4j-api</artifactId>
+                          </exclusion>
+                        </exclusions>
+                   <scope>provided</scope>
+		</dependency>
+<!--
+                <dependency> 
+                 <groupId>org.codehaus.groovy</groupId> 
+                 <artifactId>groovy-all</artifactId> 
+                 <version>1.8.2</version> 
+                </dependency> 
+-->
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>${log4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.inject</groupId>
+			<artifactId>javax.inject</artifactId>
+			<version>1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.coconut.forkjoin</groupId>
+			<artifactId>jsr166y</artifactId>
+			<version>070108</version>
+		</dependency>
+
+
+	</dependencies>
+
+
+	<build>
+		<sourceDirectory>src/main/groovy</sourceDirectory>
+
+		<pluginManagement>
+		</pluginManagement>
+
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.gmaven</groupId>
+				<artifactId>gmaven-plugin</artifactId>
+				<version>1.3</version>
+                                 <dependencies>
+			           <dependency>
+			            <groupId>org.codehaus.gmaven.runtime</groupId>
+            			    <artifactId>gmaven-runtime-${gmaven.version}</artifactId>
+            			    <version>1.3</version>
+				    <exclusions>
+                                     <exclusion>
+                                      <groupId>org.codehaus.groovy</groupId>
+                                      <artifactId>groovy-all</artifactId>
+                                     </exclusion>
+                                    </exclusions>
+			           </dependency>
+<!--
+				   <dependency> 
+                 		     <groupId>org.codehaus.groovy</groupId> 
+                 		     <artifactId>groovy</artifactId> 
+                 		     <version>1.8.2</version> 
+                		   </dependency> 
+-->
+ 				 <dependency>
+                        	    <groupId>junit</groupId>
+                        	    <artifactId>junit</artifactId>
+                                    <version>${junit.version}</version>
+                                 </dependency>
+				<dependency>
+		                    <groupId>org.mbte.groovypp</groupId>
+                		    <artifactId>groovypp</artifactId>
+		                    <version>0.9.0_1.8.2</version>
+                		    <scope>compile</scope>
+		                </dependency>
+
+
+    				 </dependencies>
+				<executions>
+					<execution>
+						<goals>
+							<!-- <goal>generateStubs</goal> -->
+							<goal>compile</goal>
+							<!-- <goal>generateTestStubs</goal> -->
+							<goal>testCompile</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.1</version>
+				<configuration>
+					<meminitial>512m</meminitial>
+					<maxmem>1024m</maxmem>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+				</configuration>
+			</plugin>
+
+		</plugins>
+
+	</build>
+        <pluginRepositories>
+                <pluginRepository>
+                        <id>dtrott</id>
+                        <url>http://maven.davidtrott.com/repository</url>
+                        <snapshots>
+		            <enabled>true</enabled>
+		        </snapshots>
+                </pluginRepository>
+
+		<pluginRepository>
+                        <id>groovypp</id>
+                        <url>http://groovypp.artifactoryonline.com/groovypp/libs-releases-local/</url>
+                </pluginRepository>
+                <pluginRepository>
+		       <id>klej-snapshots</id>
+                       <url>https://klej.googlecode.com/svn/mvnrepo/snapshots</url>
+                       
+                </pluginRepository>
+
+        </pluginRepositories>
+	<repositories>
+
+		 <repository>
+                        <id>streams-releases</id>
+                        <url>https://bigstreams.googlecode.com/svn/mvnrepo/releases</url>
+                </repository>
+
+                <repository>
+                        <id>groovypp</id>
+                        <url>http://groovypp.artifactoryonline.com/groovypp/libs-releases-local/</url>
+                </repository>
+		<repository>
+			<id>java.net</id>
+			<url>http://download.java.net/maven/2/</url>
+		</repository>
+                <repository>
+                        <id>restlet</id>
+                        <url>http://maven.restlet.org</url>
+                </repository>
+		<repository>
+                        <id>klej-releases</id>
+                        <url>https://klej.googlecode.com/svn/mvnrepo/releases</url>
+                </repository>
+                <repository>
+                        <id>klej-snapshots</id>
+                        <url>https://klej.googlecode.com/svn/mvnrepo/snapshots</url>
+                </repository>
+
+	</repositories>
+
+	<modules>
+		<module>glue-unit</module>
+		<module>glue-trigger</module>
+		<module>glue-rest</module>
+		<module>glue-modules</module>
+		<module>glue-modules-hadoop</module>
+		<module>glue-test</module>
+	</modules>
+</project>

@@ -1,0 +1,154 @@
+#!/usr/bin/env bash
+# chkconfig: 2345 20 80
+# description: glue server
+#
+# /etc/rc.d/init.d/gluecron
+#
+# Source function library.
+
+if [ -f /etc/init.d/functions ]; then
+. /etc/init.d/functions
+fi
+
+if [ ! -f /var/lock/subsys ]; then
+  mkdir -p /var/lock/subsys
+fi
+
+
+LOCKFILE="/var/lock/subsys/gluecron"
+PIDFILE="/var/run/gluecron.pid"
+
+#setup glue home variable
+if [ -z "$GLUE_HOME" ]; then
+  export GLUE_HOME="/opt/gluecron"
+fi
+
+LAUNCH_CLASS="org.glue.gluecron.app.Main"
+
+
+startGlueCron(){
+  echo
+
+  LOG="$GLUE_HOME/log/gluecron.log"
+
+  RUN_CMD="$GLUE_HOME/bin/gluecron.sh cron"
+  
+  nohup $RUN_CMD > "$LOG" 2>&1 < /dev/null &
+  RETVAL=$?
+  echo $! > $PIDFILE
+
+  sleep 2; tail "$LOG"
+
+  return $RETVAL
+}
+
+
+stopGlueCron(){
+
+   #stop glue server via the client first
+   
+   
+   while read a ; do kill $a; done < $PIDFILE
+   
+   sleep 5s
+
+   #check if still running after client command was called
+   checkIfRunning
+    ISRUNNING=$?
+
+
+   if [ $ISRUNNING == 0  ]; then
+     echo "gluecron is still running"
+     exit 1
+   fi
+
+
+}
+
+
+exitIfRunning(){
+ # Check to see if the glue server is running
+ # if so this function calls exit 1
+
+ PID=$(pgrep -f $LAUNCH_CLASS)
+
+ if [ ! -z $PID ]; then
+   echo "gluecron is running $PID"
+   exit 1
+ fi
+
+}
+
+checkIfRunning(){
+  #if the glue server is running this script will return 0 else 1
+  RETVAL=0
+  PID=$(pgrep -f $LAUNCH_CLASS)
+
+  if [ -z $PID ]; then
+   RETVAL=1
+  fi
+
+  return $RETVAL
+}
+
+start() {
+
+          #this method will exit if running
+          exitIfRunning
+
+          echo -n "Starting : gluecron"
+
+          startGlueCron
+          RETVAL=$?
+          checkIfRunning
+           ISRUNNING=$?
+
+          if [[ $RETVAL == 0 &&  $ISRUNNING == 0 ]]; then
+           touch $LOCKFILE
+          else
+            echo -n "gluecron could not be started"
+          fi
+
+        echo        
+        return $RETVAL
+}
+
+stop() {
+
+        checkIfRunning
+        ISRUNNING=$?
+        if [ $ISRUNNING == 0 ]; then
+          echo -n "Shutting down : gluecron"
+
+         stopGlueCron
+         rm -f $LOCKFILE
+
+        else
+          echo -n "gluecron is not running"
+        fi
+
+        echo
+        return 0
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+         ;;
+    status)
+        status gluecron
+        ;;
+    restart)
+        stop
+        start
+        ;;
+    *)
+        echo "Usage: gluecron  {start|stop|status|reload|restart[|probe]"
+        exit 1
+        ;;
+esac
+exit $?
+ 

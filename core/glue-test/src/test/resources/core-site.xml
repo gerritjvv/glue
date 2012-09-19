@@ -1,0 +1,13 @@
+<configuration>
+
+	<property>
+		<name>dfs.name.dir</name>
+		<value>target/test/name</value>
+	</property>
+
+	<property>
+		<name>io.compression.codecs</name>
+		<value>org.apache.hadoop.io.compress.BZip2Codec</value>
+	</property>
+
+</configuration>

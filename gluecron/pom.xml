@@ -1,0 +1,158 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.glue</groupId>
+	<artifactId>gluecron</artifactId>
+	<version>0.1.4</version>
+	<packaging>jar</packaging>
+
+	<name>gluecron</name>
+	<url>http://maven.apache.org</url>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.version>1.6</java.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.8.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-core</artifactId>
+			<version>0.20.2</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-configuration</groupId>
+			<artifactId>commons-configuration</artifactId>
+			<version>1.8</version>
+		</dependency>
+		<dependency>
+			<groupId>quartz</groupId>
+			<artifactId>quartz</artifactId>
+			<version>1.5.2</version>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.16</version>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.19</version>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.1</version>
+				<configuration>
+					<meminitial>512m</meminitial>
+					<maxmem>1024m</maxmem>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>rpm-maven-plugin</artifactId>
+				<version>2.0.1</version>
+				<extensions>true</extensions>
+
+
+				<configuration>
+					<copyright>http://www.apache.org/licenses/LICENSE-2.0</copyright>
+					<distribution>Glue Task Manager Trigger and Cron Daemon</distribution>
+					<group>utilties</group>
+					<release>1</release>
+					<packager>http://code.google.com/p/glue/</packager>
+					<provides>
+						<provide>gluecron</provide>
+					</provides>
+					<defineStatements>
+						<defineStatement>_unpackaged_files_terminate_build 0
+						</defineStatement>
+					</defineStatements>
+					<mappings>
+
+						<mapping>
+							<directory>/etc/init.d/</directory>
+							<directoryIncluded>false</directoryIncluded>
+							<filemode>775</filemode>
+							<username>root</username>
+							<groupname>root</groupname>
+							<sources>
+								<source>
+									<location>src/main/resources/etc/init.d/gluecron</location>
+								</source>
+							</sources>
+						</mapping>
+						<!-- <mapping> <directory>/opt/streams-collector/bin</directory> <filemode>775</filemode> 
+							<username>streams</username> <groupname>streams</groupname> <sources> <source> 
+							<location>src/main/resources/bin</location> </source> </sources> </mapping> -->
+						<mapping>
+							<directory>/opt/gluecron/conf</directory>
+							<configuration>true</configuration>
+							<filemode>776</filemode>
+							<username>hadoop</username>
+							<groupname>hadoop</groupname>
+							<sources>
+								<source>
+									<location>src/main/resources/conf</location>
+								</source>
+							</sources>
+						</mapping>
+
+						<mapping>
+							<directory>/opt/gluecron/lib</directory>
+							<filemode>775</filemode>
+							<username>hadoop</username>
+							<groupname>hadoop</groupname>
+							<sources>
+								<source>
+									<location>target/gluecron-${project.version}.jar</location>
+								</source>
+							</sources>
+						</mapping>
+						<mapping>
+							<directory>/opt/gluecron/bin</directory>
+							<filemode>775</filemode>
+							<username>hadoop</username>
+							<groupname>hadoop</groupname>
+							<sources>
+								<source>
+									<location>src/main/resources/bin</location>
+								</source>
+							</sources>
+						</mapping>
+						<mapping>
+							<directory>/opt/gluecron/lib</directory>
+							<filemode>775</filemode>
+							<username>hadoop</username>
+							<groupname>hadoop</groupname>
+							<dependency />
+						</mapping>
+
+						<mapping>
+							<directory>/opt/gluecron/log</directory>
+							<filemode>775</filemode>
+							<username>hadoop</username>
+							<groupname>hadoop</groupname>
+						</mapping>
+					</mappings>
+				</configuration>
+			</plugin>
+
+		</plugins>
+	</build>
+</project>

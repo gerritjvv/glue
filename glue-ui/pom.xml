@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+  <groupId>org.apache.glue</groupId>
+  <artifactId>glue</artifactId>
+  <packaging>war</packaging>
+  <version>0.3.0</version>
+ 
+    <properties>
+        <grails.version>1.3.7</grails.version>
+        <grails-bootstrap.version>${grails.version}</grails-bootstrap.version>
+        <grails-crud.version>${grails.version}</grails-crud.version>
+        <grails-gorm.version>${grails.version}</grails-gorm.version>
+        <grails-test.version>${grails.version}</grails-test.version>
+    
+        <grails-maven-plugin.version>${grails.version}</grails-maven-plugin.version>
+    
+        <jstl.version>1.2</jstl.version>
+        <hibernate-ehcache.version>3.3.1.GA</hibernate-ehcache.version>
+        <javassist.version>3.11.0.GA</javassist.version>
+        <ehcache-core.version>1.7.1</ehcache-core.version>
+        <hsqldb.version>1.8.0.10</hsqldb.version>
+        <slf4j-log4j12.version>1.5.8</slf4j-log4j12.version>
+        <aspectjweaver.version>1.6.8</aspectjweaver.version>
+        <aspectjrt.version>1.6.8</aspectjrt.version>
+    </properties>
+  
+    <dependencies>
+
+        <dependency>
+            <groupId>org.codehaus.groovy.modules.http-builder</groupId>
+            <artifactId>http-builder</artifactId>
+            <version>0.5.1</version>
+            <exclusions>
+                <exclusion>  <!-- declare the exclusion here -->
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
+                <exclusion>  <!-- declare the exclusion here -->
+                    <groupId>apache-xalan</groupId>
+                    <artifactId>xalan</artifactId>
+                </exclusion>
+                <exclusion>  <!-- declare the exclusion here -->
+                    <groupId>org.w3c</groupId>
+                    <artifactId>dom</artifactId>
+                </exclusion>
+                <exclusion>  <!-- declare the exclusion here -->
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy</artifactId>
+
+                </exclusion>
+            </exclusions>
+
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.grails</groupId>
+            <artifactId>grails-bootstrap</artifactId>
+            <version>${grails-bootstrap.version}</version>
+        </dependency>
+    
+        <dependency>
+            <groupId>org.grails</groupId>
+            <artifactId>grails-crud</artifactId>
+            <version>${grails-crud.version}</version>
+        </dependency>
+    
+        <dependency>
+            <groupId>org.grails</groupId>
+            <artifactId>grails-gorm</artifactId>
+            <version>${grails-gorm.version}</version>
+        </dependency>
+    
+        <dependency>
+            <groupId>org.grails</groupId>
+            <artifactId>grails-test</artifactId>
+            <version>${grails-test.version}</version>
+            <scope>test</scope>
+        </dependency>
+    
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>jstl</artifactId>
+            <version>${jstl.version}</version>
+        </dependency>
+    
+    <!-- Grails defaults to Ehache for the second-level Hibernate cache. -->
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-ehcache</artifactId>
+            <version>${hibernate-ehcache.version}</version>
+            <exclusions>
+          <!-- See http://www.slf4j.org/faq.html#IllegalAccessError -->
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+          
+          <!-- We are pulling in ehcache-core below -->
+                <exclusion>
+                    <groupId>net.sf.ehcache</groupId>
+                    <artifactId>ehcache</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    
+    <!-- Use javassist as the bytecode manipulation provider for Hibernate -->
+        <dependency>
+            <groupId>javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>${javassist.version}</version>
+        </dependency>
+    
+        <dependency>
+            <groupId>net.sf.ehcache</groupId>
+            <artifactId>ehcache-core</artifactId>
+            <version>${ehcache-core.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jms</artifactId>
+                </exclusion>
+        
+                <exclusion>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
+        
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+        
+        <!-- We have JCL-over-SLF4J instead. -->
+                <exclusion>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    
+    <!-- For ease of development and testing, we include the HSQLDB database. -->
+        <dependency>
+            <groupId>hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>${hsqldb.version}</version>
+        </dependency>
+    
+    <!-- Use Log4J for logging. This artifact also pulls in the Log4J JAR. -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j-log4j12.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+    
+    <!-- Needed in the case of AOP usage -->
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>${aspectjweaver.version}</version>
+        </dependency>
+    
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <version>${aspectjrt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.grails.plugins</groupId>
+            <artifactId>test-plugin</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <type>zip</type>
+        </dependency>
+
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.5</version>
+        </dependency>
+
+     
+    </dependencies>
+  
+    <repositories>
+    <!-- Required to get hold of JTA -->
+        <repository>
+            <id>jboss.org</id>
+            <name>jboss.org</name>
+            <url>http://repository.jboss.com/maven2/</url>
+        </repository>
+    
+        <repository>
+            <id>maven2-repository.dev.java.net</id>
+            <name>Java.net Repository for Maven</name>
+            <url>http://download.java.net/maven/2/</url>
+            <layout>default</layout>
+        </repository>
+    
+        <repository>
+            <id>Codehaus Snapshots</id>
+            <url>http://snapshots.repository.codehaus.org</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+    </repositories>
+  
+    <pluginRepositories>
+        <pluginRepository>
+            <id>Codehaus Snapshots</id>
+            <url>http://snapshots.repository.codehaus.org</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
+  
+    <build>
+        <pluginManagement />
+    
+        <plugins>
+            <plugin>
+                <groupId>org.grails</groupId>
+                <artifactId>grails-maven-plugin</artifactId>
+                <version>${grails-maven-plugin.version}</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>init</goal>
+                            <goal>maven-clean</goal>
+                            <goal>validate</goal>
+                            <goal>config-directories</goal>
+                            <goal>maven-compile</goal>
+                            <goal>maven-test</goal>
+                            <goal>maven-war</goal>
+                            <goal>maven-functional-test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+      
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+  
+    <profiles>
+        <profile>
+            <id>tools</id>
+            <activation>
+                <property>
+                    <name>java.vendor</name>
+                    <value>Sun Microsystems Inc.</value>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.sun</groupId>
+                    <artifactId>tools</artifactId>
+                    <version>${java.version}</version>
+                    <scope>system</scope>
+                    <systemPath>${java.home}/../lib/tools.jar</systemPath>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+</project>

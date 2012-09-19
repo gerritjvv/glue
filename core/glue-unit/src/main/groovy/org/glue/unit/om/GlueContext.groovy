@@ -1,0 +1,48 @@
+package org.glue.unit.om;
+
+import java.io.IOException
+import java.io.Writer
+
+import org.glue.unit.log.GlueExecLogger
+import org.glue.unit.status.GlueUnitStatusManager
+
+/**
+ * 
+ * Each GlueUnit has a context during its execution.
+ *
+ */
+public interface GlueContext {
+
+	String getUnitId()
+	void setUnitId(String unitId)
+
+	GlueUnit getUnit()
+	void setUnit(GlueUnit unit)
+	
+	Map<String, String> getArgs()
+	void setArgs(Map<String, String> args)
+	
+	Object getProperty(String name);
+	void setProperty(String name, Object value);
+
+	void write(Writer writer) throws IOException;
+
+	GlueModuleFactory getModuleFactory()
+	
+	GlueUnitStatusManager getStatusManager()
+	void setStatusManager(GlueUnitStatusManager statusManager)
+
+	GlueExecLogger getLogger()
+	void setLogger(GlueExecLogger logger)
+
+	def eval(className, method, values)
+	def eval(className, method)
+	
+	def newInstance(className, arg)
+	def newInstance(className)
+	
+	/**
+	 * Called to allow the context to remove and resources
+	 */
+	void destroy()
+}
