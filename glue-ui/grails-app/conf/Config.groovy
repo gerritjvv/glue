@@ -1,7 +1,13 @@
+import grails.util.Environment
+
 // locations to search for config files that get merged into the main config
 // config files can either be Java properties files or ConfigSlurper scripts
 
-if ( grailsEnv == "production"){
+
+switch( Environment.current ){
+  case Environment.PRODUCTION:
+    grails.config.locations = []
+    
 	[System.getenv("GLUE_UI_CONFIG"), System.getProperty("GLUE_UI_CONFIG") ].each { prop ->
 	    
 		if(prop) {
@@ -10,16 +16,21 @@ if ( grailsEnv == "production"){
 			if(! (f.exists() && f.canRead() && f.isFile()) )
 			    print "$prop does not exist, is not a file or is not readable, please check" 
 			else
-				grails.config.locations << "file:" + prop 
-		} else {
+				 grails.config.locations << "file:" + prop 
+		} else if(!grails.config.location){
 			println "No external configuration file defined. For production define the GLUE_UI_CONFIG env or -D java variable"
 		}
-	}
-	
-}else{
-	println "Running in non production mode (${grailsEnv}), with src/groovy/main.groovy as configuration file"
-	grails.config.locations = [ "file:src/groovy/main.groovy" ]
+       }
+	   break
+   
+   default:	
+	 println "Running in non production mode (${Environment.current}), with src/groovy/main.groovy as configuration file"
+	 grails.config.locations = [ "file:src/groovy/main.groovy" ]
+	 
 }
+
+
+println "Using configuration files: ${grails.config.locations }"
 
 // grails.config.locations = [ "classpath:${appName}-config.properties",
 //                             "classpath:${appName}-config.groovy",
