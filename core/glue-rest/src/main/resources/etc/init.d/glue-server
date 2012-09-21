@@ -37,7 +37,7 @@ fi
 LAUNCH_CLASS="org.glue.rest.Launcher"
 CLIENT_CLASS="org.glue.rest.Client"
 
-if [ -n $JAVA_HOME ]; then
+if [ -z "$JAVA_HOME" ]; then
 
  echo "No JAVA_HOME defined setting to /usr/java/latest"
  export JAVA_HOME="/usr/java/latest"
