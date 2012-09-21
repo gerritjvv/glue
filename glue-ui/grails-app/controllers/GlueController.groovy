@@ -10,15 +10,27 @@ class GlueController {
 	
 	
     def index = { 
-        ['url':glueService.getHost(), 'modules':glueService.getModules()]
+        def map = ['url':glueService.getHost(), 'modules':glueService.getModules()]
+        return map
     }
 	
     def list ={
-        Map l=glueService.getList();
+    	Map l=glueService.getList();
         ['list':l, 'firstDay':l.keySet().max()];
     }
 
     def jobInfo={
+    
+        //here we test on each refresh if the graphviz exists, it helps us not having to restart the application
+        try{
+     		"dot -V".execute()
+     		grailsApplication.config.graphViz="yes"
+     		
+     	}catch(Throwable t){
+     		grailsApplication.config.graphViz=null
+     	    println "No graphviz library is available please install graphviz via yum or apt-get"
+     	}
+    
         ['info':glueService.getJobInfo(params.uid)];
     }
 
@@ -38,6 +50,7 @@ class GlueController {
     }
 
     def taskInfo={
+    	println "TaskInfo: "
         ['info':glueService.getJobInfo(params.uid),'task':glueService.getTaskInfo(params.uid,params.jobId)];
 
     }

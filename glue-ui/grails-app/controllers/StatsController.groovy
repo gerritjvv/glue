@@ -1,14 +1,18 @@
-import java.text.DateFormat
+
+import grails.converters.*
 import java.text.SimpleDateFormat
+import java.text.DateFormat
+import java.util.Date
+
 class StatsController {
-  def statsService;
-  def logger;
+	
+	def statsService;
+	
+	def index = {
+	}
 
-    def index = {
-    //System.out.println("session is"+session["dataSourceName"]);
-    }
 
-  def statsByName = {
+def statsByName = {
     def days = params.days ?:3;
     def statsData=statsService.getStatsByUnit(days)
     def triggerData=statsService.getTriggerStatsByUnit(days)
@@ -214,4 +218,6 @@ class StatsController {
    statsService.setTriggerFileStatusToUnprocessed(params.triggerFileIds)
    render(template:"triggerFileList", model:['data': statsService.getTriggerFileList(params.name, params.day,params.hour)])   
   }
-}
+}	
+
+

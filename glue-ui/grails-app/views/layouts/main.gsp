@@ -5,7 +5,7 @@
     </script>
     <link rel="stylesheet" href="${resource(dir:'css',file:'main.css')}" />
     <link rel="stylesheet" href="${resource(dir:'css',file:'thickbox.css')}" />
-    <g:javascript library="jquery"/>
+    <g:javascript library="jquery" plugin="jquery"/>
     <script type="text/javascript" src="${resource(dir:'js',file:'thickbox-compressed.js')}"></script>
     <script type="text/javascript" src="${resource(dir:'js',file:'jquery.periodicalupdater.js')}"></script>
 

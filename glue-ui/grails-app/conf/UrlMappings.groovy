@@ -8,10 +8,15 @@ class UrlMappings {
       "/glue/$uid/?"( controller:"glue", action: "jobInfo")
       "/glue/$uid/$jobId?"( controller:"glue", action: "taskInfo")
       "/graph/$uid/?"( controller:"glue", action: "graph")
-      /*
-      "/stats/?"(controller: "stats", action: "index") 
+      
+      "/dsSelector/$action/?"( controller:"dsSelector")
+      "/stats/$action/?"( controller:"stats")
+      
+      
+      /* 
       "/stats/$action/?"(controller: "stats" )
-      "/dsSelector/$action/?"(controller: "dsSelector")
+      
+      
        "500"(view:'/error')
        
       "/$controller/$action?/$id?"{

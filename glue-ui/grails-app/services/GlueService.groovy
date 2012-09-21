@@ -16,15 +16,16 @@ class GlueService {
     }
     boolean transactional = false
     def config
-    String currentConfigName; //test1 or test2
+    String currentConfigName //test1 or test2
     def c
-    def dataSource;
-    def logger;
+    def dataSource
+    def logger
 
-    def http;
-    def dsSelectorService;
+    def http
+    def dsSelectorService
 
-  
+  	def grailsApplication
+  	
     public String getHost(){
 		def config = dsSelectorService.getCurrentConfig()
 		
@@ -180,8 +181,13 @@ class GlueService {
 
         return out
     }
-    public String getGraph(String jobId)
-    {
+    public String getGraph(String jobId){
+    	
+    	//Please see Bootstrap where this varaible must be set
+    	//if the graphviz application is not available we return this message
+    	if(!grailsApplication.config.graphViz)
+    		return "No graphviz library is available please install graphviz via yum or apt-get"
+    	
         def url=getHost()+"/status/"+jobId;
         def pList=[:];
         //println url;
@@ -198,8 +204,7 @@ class GlueService {
                 pList=ou.processes  ;
             }
         }
-
-
+		
         def p = "dot -Tsvg".execute(); //
         //def out=[];
         def finalKeys=new HashSet();
@@ -242,6 +247,7 @@ class GlueService {
         }
         p.waitFor();
         return p.getText();
+        
         //return out.join('\n');
 
 

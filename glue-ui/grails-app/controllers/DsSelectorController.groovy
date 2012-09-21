@@ -5,6 +5,11 @@ class DsSelectorController {
 
     def dsSelectorService
 
+    def index = {
+       println "HI"
+       render "HI"
+    }
+    
     def setDataSourceNameToSession={
 
         session["dataSourceName"] = params.dataSourceName

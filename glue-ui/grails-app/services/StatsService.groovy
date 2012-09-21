@@ -1,14 +1,14 @@
 import groovy.sql.Sql;
 
 class StatsService {
-
+  
     StatsService() {
     }
 
     static transactional = false
 
     def  dsSelectorService;
-    def logger;
+    
 
     def getSql()  {
         return dsSelectorService.getSqlInstance();

@@ -105,7 +105,11 @@ $(document).ready(function(){
       </tbody>
            </table>
 
+    <% if( grailsApplication.config.graphViz ) { %>
     <embed src="../../graph/${info.unitId}" type="image/svg+xml" name="graph" class="graph"/>
-    
+    <% } else { %>
+     <p/>
+     <b>"No graphviz library is available please install graphviz via yum or apt-get"</b>
+    <% } %>
     </body>
 </html>
