@@ -5,42 +5,47 @@ permalink: documentation.html
 category: tutorial
 ---
 
-*Getting started
-*Overview
-	*Install and Run
-	*Logs
-	*Temporary Files
-	*Workflow DSL
-	*Triggers
-		*HDFS Data Driven 
-		*Cron
-	*Processes
-	*Glue Context
-	*Dependencies
-*Configuration
-	*Repository
-		*Directory Repository
-		*Module Configuration
-			*Pig Configuration
-			*MySQL SQL Configuration    
-			*Netezza Configuration
-			*HDFS Configuration
-*Library Setup
-*Example 
-	*Hello world
-*SQL
-	*API
-	*Select Example
-	*Update Example
-	*Insert Example
-*Hadoop
-	*API
-	*List Files
-	*Put File
-	*Download File
-	*Each Line
-*Pig
-	*API
-	*Run Script
-*Bash/Python CMDs
+Glue Documentation Index
+=========================
+
+
+
+* Getting started
+    * [Overview](overview.html)
+	* [Install and Run](installAndRun.html)
+	* [Logs](logs.html)
+	* [Temporary Files](tempfiles.html)
+	* [Workflow DSL](workflowdsl.html)
+	* [Triggers](triggers.html)
+		* [HDFS Data Driven](triggers.html) 
+		* [Cron](triggers.html)
+	* [Processes](glueprocesses.html)
+	* [Glue Context](gluecontext.html)
+	* [Dependencies](processdependencies.html)
+* [Configuration](configuration.html)
+	* Repository
+		* [Directory Repository](directoryrepository.html)
+		* [Module Configuration](moduleconfiguration.html)
+			* [Pig Configuration](pigconfiguration.html)
+			* [MySQL SQL Configuration](mysqlconfiguration.html)    
+			* [Netezza Configuration](netezzaconfiguration.html)
+			* [HDFS Configuration](hdfsconfiguration.html)
+* [Library Setup](librarysetup.html)
+* Example 
+	* [Hello world](helloworld.html)
+* SQL
+	* [API](sqlApi.html)
+	* [Select Example](sqlSelectExample.html)
+	* [Update Example](sqlUpdateExample.html)
+	* [Insert Example](sqlInsertExample.html)
+* Hadoop
+	* [API](hadoopApi.html)
+	* [List Files](hadoopListFilesExample.html)
+	* [Put File](hadoopPutFileExample.html)
+	* [Download File](hadoopDownloadFileExample.html)
+	* [Each Line](hadoopEachLineExample.html)
+* Pig
+	* [API](pigApi.html)
+	* [Run Script](pigRunScriptExample.html)
+* [Bash/Python CMDs](bashPythonScripts.html)
    
