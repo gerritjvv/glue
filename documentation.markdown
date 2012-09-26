@@ -22,6 +22,8 @@ Glue Documentation Index
 	* [Processes](glueprocesses.html)
 	* [Glue Context](gluecontext.html)
 	* [Dependencies](processdependencies.html)
+* Example 
+	* [Hello world](helloworld.html)
 * [Configuration](configuration.html)
 	* Repository
 		* [Directory Repository](directoryrepository.html)
@@ -31,8 +33,6 @@ Glue Documentation Index
 			* [Netezza Configuration](netezzaconfiguration.html)
 			* [HDFS Configuration](hdfsconfiguration.html)
 * [Library Setup](librarysetup.html)
-* Example 
-	* [Hello world](helloworld.html)
 * SQL
 	* [API](sqlApi.html)
 	* [Select Example](sqlSelectExample.html)
