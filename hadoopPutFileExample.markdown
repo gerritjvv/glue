@@ -7,3 +7,8 @@ category: tutorial
 
 
 {% include nav.markdown %}
+
+
+	ctx.hdfs.put 'localfile.txt', 'hdfsdir/'
+	
+	

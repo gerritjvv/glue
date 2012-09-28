@@ -7,3 +7,8 @@ category: tutorial
 
 
 {% include nav.markdown %}
+
+
+	ctx.hdfs.get 'remotefile.txt', 'localfile.txt'
+	
+	

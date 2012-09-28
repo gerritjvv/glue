@@ -7,3 +7,10 @@ category: tutorial
 
 
 {% include nav.markdown %}
+
+
+
+	ctx.sql.updateSql('mydb', "UPDATE tbl set name='ABC', age='123' where age < 0")
+
+
+
