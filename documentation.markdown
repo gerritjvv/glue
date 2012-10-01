@@ -22,8 +22,11 @@ Glue Documentation Index
 	* [Processes](glueprocesses.html)
 	* [Glue Context](gluecontext.html)
 	* [Dependencies](processdependencies.html)
-* Example 
+* Examples 
 	* [Hello world](helloworld.html)
+	* [Pig Query](pigquery.html)
+* [Troubleshooting](troubleshooting.html)
+* [Want To Giveup](wanttogiveup.html)
 * [Configuration](configuration.html)
 	* Repository
 		* [Directory Repository](directoryrepository.html)
@@ -38,6 +41,7 @@ Glue Documentation Index
 	* [Select Example](sqlSelectExample.html)
 	* [Update Example](sqlUpdateExample.html)
 	* [Insert Example](sqlInsertExample.html)
+* [Hive](hive.html)
 * Hadoop
 	* [API](hadoopApi.html)
 	* [List Files](hadoopListFilesExample.html)
