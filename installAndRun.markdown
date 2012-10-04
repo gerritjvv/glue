@@ -115,6 +115,38 @@ At a minimum or for quick testing do:
     
     FLUSH privileges;
 
+### Create Tables
+
+Run either:
+    /opt/gluecron/bin/dbsetup.sh
+     
+    or create the tables:
+
+	CREATE TABLE `unittriggers` (
+	  `id` int(11) NOT NULL AUTO_INCREMENT,
+	  `unit` varchar(100) DEFAULT NULL,
+	  `type` varchar(10) DEFAULT NULL,
+	  `data` varchar(100) DEFAULT NULL,
+	  `lastrun` date DEFAULT NULL,
+	  PRIMARY KEY (`id`)
+	) ENGINE=MyISAM AUTO_INCREMENT=11 DEFAULT CHARSET=latin1;
+	
+	CREATE TABLE `unitfiles` (
+	  `unitid` int(11) DEFAULT NULL,
+	  `fileid` int(11) DEFAULT NULL,
+	  `status` varchar(10) DEFAULT NULL,
+	  UNIQUE KEY `a` (`unitid`,`fileid`)
+	) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+	
+	CREATE TABLE `hdfsfiles` (
+	  `id` int(11) NOT NULL AUTO_INCREMENT,
+	  `path` varchar(1000) NOT NULL,
+	  `seen` tinyint(4) DEFAULT '0',
+	  PRIMARY KEY (`id`),
+	  UNIQUE KEY `path` (`path`),
+	  KEY `seen1` (`seen`)
+	) ENGINE=MyISAM AUTO_INCREMENT=1032955 DEFAULT CHARSET=latin1;
+
 
 ### Start Glue Cron
 

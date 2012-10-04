@@ -25,7 +25,9 @@ add to the processClassPath the Hive lib directory e.g.
 
 Remember to restart the Glue Server after this step.
 
-# Configuration a database in the /opt/glue/conf/workflow_modules.groovy for the SQL Module section
+# Configuration Hive JDBC
+
+All module configurations are made in /opt/glue/conf/workflow_modules.groovy
 
 Change the host and port where required
 
@@ -39,14 +41,8 @@ Change the host and port where required
         	 db{
 
 
-            	glue{
-                	host="jdbc:mysql://localhost:3306/glue"
-                	user="glue"
-                	pass="glue"
-                	driver="com.mysql.jdbc.Driver"
-             	}
-
-            	glue{
+            	
+            	hive{
                 	host="jdbc:hive://localhost:10000/default"
                 	user=""
                 	pass=""

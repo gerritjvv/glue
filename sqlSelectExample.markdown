@@ -31,4 +31,3 @@ The SQL Result Objects returned are from the class (GroovyRowResult)[http://groo
 	
 
 	
-	

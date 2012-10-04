@@ -32,8 +32,9 @@ Glue Documentation Index
 		* [Directory Repository](directoryrepository.html)
 		* [Module Configuration](moduleconfiguration.html)
 			* [Pig Configuration](pigconfiguration.html)
-			* [MySQL SQL Configuration](mysqlconfiguration.html)    
+			* [SQL Configuration](mysqlconfiguration.html)    
 			* [Netezza Configuration](netezzaconfiguration.html)
+			* [Hive Configuration](hive.html)
 			* [HDFS Configuration](hdfsconfiguration.html)
 * [Library Setup](librarysetup.html)
 * SQL
