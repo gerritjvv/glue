@@ -17,7 +17,8 @@ Class: [HDFSModuleImpl](https://github.com/gerritjvv/glue/blob/master/core/glue-
 | Method | Description | Example |
 | ------ | ----------- | ------- |
 |cat(clusterName:String = null, path:String):String | Returns the text to a path | println ctx.hdfs.cat('myfile.txt') 
-|eachLine(clusterName:String = null, path:String) | Recursively searches for non hidden files in a directory and return each line, if the file is compressed it will be decompressed first, each line is sent to the closure | ctx.hfds.eachLine 'myfile.txt', { line -> println line } 
+|eachLine(clusterName:String = null, path:String) | Recursively searches for non hidden files in a directory and return each line, if the file is compressed it will be decompressed first, each line is sent to the closure | ctx.hfds.eachLine 'myfile.txt', { line -> println line }
+|withDecompressedInputStream(clusterName:String = null, file:String) | Reads the file and if compressed, use the Hadoop configured Codec to decompress, if the file is compressed a CompressionInputStream is passed to the Closure| ctx.hdfs.withDecompressInputStream "myfile.gz", { input ->  /* do stuff */ } 
 |list(cluserName:String = null, path:String ) | Recursively lists all non hidden files | ctx.hdfs.list 'mydir', { file -> println file }
 |put(clusterName:String = null, src:String, dest:String) | Loads a local file to HDFS | ctx.hdfs.put('myfile.txt', '/hdfsdir/') 
 |get(clusterName:String = null, hdfsSrc:String, localDest:String) | Download a file from HDFS to local | ctx.hdfs.get('/hdfsdir/myfile.txt', 'localfile.txt') 
