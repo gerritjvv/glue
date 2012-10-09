@@ -139,67 +139,67 @@ Properties are:
 	
 ## Get Updated Hive Style Date Partitions
 
-tasks{
-
-
-  prepareFiles{
-
-    tasks = { ctx ->
-
-      //regex to extract values out of the partition path 
-      def DATE = /hr=(\d\d\d\d\d\d\d)/
-
-      def dateSet as HashSet
-
-      def fileIds = []
-      //here we iterate over all of the files that's been seen newly for this workflow
-      //in the directories its subsribed to in the glue unittriggers table
-      ctx.triggerStore2.listReadyFiles { int fileId, String path ->
-        fileIds << fileId
-
-        //extract year, month, day
-        def m = path =~ DATE
-        if(m.size() < 1 || m[0].size() < 2) return //skip if none found
-
-        dateSet << m[0][1] //now we should have something like yyyyMMdd
-
-      }
-
-
-     ctx.fileIds = fileIds
-     ctx.dateSet = dateSet
-
-    }
-
-  }
-
-  exec{
-    dependencies = "prepareFiles"
-
-    tasks = { ctx ->
-
-       //here we have a list of dates that have been updated
-       def dateSet = ctx.dateSet
-
-
-    }
-
-  }
-  cleanup{
-    dependencies = "exec"
-
-    tasks = { ctx ->
-
-      //only a workflow's logic can know when its completed processing a file
-      //this method marks the file as processed, this file will not appear again
-      //in the listReadyFiles method
-      if(ctx.fileIds) ctx.triggerStore2.markFilesAsProcessed fileIds
-
-    }
-
-  }
-
-}
+	tasks{
+	
+	
+	  prepareFiles{
+	
+	    tasks = { ctx ->
+	
+	      //regex to extract values out of the partition path 
+	      def DATE = /hr=(\d\d\d\d\d\d\d)/
+	
+	      def dateSet as HashSet
+	
+	      def fileIds = []
+	      //here we iterate over all of the files that's been seen newly for this workflow
+	      //in the directories its subsribed to in the glue unittriggers table
+	      ctx.triggerStore2.listReadyFiles { int fileId, String path ->
+	        fileIds << fileId
+	
+	        //extract year, month, day
+	        def m = path =~ DATE
+	        if(m.size() < 1 || m[0].size() < 2) return //skip if none found
+	
+	        dateSet << m[0][1] //now we should have something like yyyyMMdd
+	
+	      }
+	
+	
+	     ctx.fileIds = fileIds
+	     ctx.dateSet = dateSet
+	
+	    }
+	
+	  }
+	
+	  exec{
+	    dependencies = "prepareFiles"
+	
+	    tasks = { ctx ->
+	
+	       //here we have a list of dates that have been updated
+	       def dateSet = ctx.dateSet
+	
+	
+	    }
+	
+	  }
+	  cleanup{
+	    dependencies = "exec"
+	
+	    tasks = { ctx ->
+	
+	      //only a workflow's logic can know when its completed processing a file
+	      //this method marks the file as processed, this file will not appear again
+	      //in the listReadyFiles method
+	      if(ctx.fileIds) ctx.triggerStore2.markFilesAsProcessed fileIds
+	
+	    }
+	
+	  }
+	
+	}
 
 
 
