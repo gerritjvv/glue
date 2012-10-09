@@ -44,10 +44,10 @@ hdfs{
 	   clusters{
 		   type1hadoopcluster{
 			   isDefault=true
-			   pigProperties="/opt/glue/conf/type1.properties"
+			   hdfsProperties="/opt/glue/conf/type1.properties"
 		   }
 		   type2hadoopcluster{
-			   pigProperties="/opt/glue/conf/type2.properties"
+			   hdfsProperties="/opt/glue/conf/type2.properties"
 		   }
 	   }
    }
@@ -69,6 +69,7 @@ pig{
    isSingleton=false
    config{
        jars = []
+       //classpath = ['/usr/lib/pig', '/usr/lib/pig/lib', '/opt/glue/lib/', '/opt/glue/conf', '/usr/lib/hadoop', '/usr/lib/hadoop/lib']
        
 	   clusters{
 		   type1hadoopcluster{

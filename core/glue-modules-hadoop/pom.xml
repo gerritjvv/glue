@@ -10,9 +10,13 @@
 	</parent>
 	<groupId>org.glue</groupId>
 	<artifactId>glue-modules-hadoop</artifactId>
-	<version>0.2.0</version>
+	<version>0.2.1</version>
 	<name>glue-modules-hadoop</name>
 	<url>http://maven.apache.org</url>
+	<properties>
+		<dep.version>0.2.0</dep.version>
+                <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -27,12 +31,12 @@
 		<dependency>
 			<groupId>org.glue</groupId>
 			<artifactId>glue-unit</artifactId>
-			<version>${project.version}</version>
+			<version>${dep.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glue</groupId>
 			<artifactId>glue-modules</artifactId>
-			<version>${project.version}</version>
+			<version>${dep.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.pig</groupId>
@@ -64,7 +68,4 @@
 			<version>5.1.14</version>
 		</dependency>
 	</dependencies>
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
 </project>

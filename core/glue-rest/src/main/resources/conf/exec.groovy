@@ -8,6 +8,11 @@ processLogDir='/opt/glue/logs'
 executorMaxProcesses=5
 processModuleConfig="/opt/glue/conf/workflow_modules.groovy"
 
+
+//processClassPath = ['/usr/lib/hadoop/lib/', '/usr/lib/hadoop']
+//processJavaOpts = ['-Djava.library.path=/opt/hadoop/lib/native/Linux-amd64-64']
+
+
 unitStatusManager{
 	className='org.glue.unit.status.impl.db.DbUnitStatusManager'
 	

@@ -358,6 +358,39 @@ public class HDFSModuleImpl implements HDFSModule {
 		}
 	}
 
+	void withDecompressedInputStream(String file, Closure closure) throws IOException{
+		withDecompressedInputStream(file, closure)
+	}
+
+	void withDecompressedInputStream(String clusterName, String file, Closure closure) throws IOException{
+	
+			def key = new DecompressorKey(clusterName:clusterName, file:file)
+			DecompressorValue decVal = decompressorPool.borrowObject(key)
+
+			if(decVal == null){
+				FSDataInputStream input = open(clusterName, file)
+				try{
+					closure(input)
+				}finally{
+					input.close()
+				}
+			}else{
+				try{
+					
+					CompressionInputStream input = decVal.createInputStream(open(clusterName, file))
+					try{
+						closure(input)	
+					}finally{
+						input.close()
+					}
+				}finally{
+					decompressorPool.returnObject(key, decVal)
+				}
+			}
+	
+	}
+	
+
 	FSDataInputStream open(String file) throws IOException{
 		open(null, file)
 	}
