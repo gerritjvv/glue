@@ -359,7 +359,7 @@ public class HDFSModuleImpl implements HDFSModule {
 	}
 
 	void withDecompressedInputStream(String file, Closure closure) throws IOException{
-		withDecompressedInputStream(file, closure)
+		withDecompressedInputStream(null, file, closure)
 	}
 
 	void withDecompressedInputStream(String clusterName, String file, Closure closure) throws IOException{
