@@ -1,4 +1,4 @@
-package org.glue.modules.hadoop.pigutil;
+package org.glue.modules.hadoop.pigutil
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,7 +33,7 @@ public class PigServerUtil {
 	        properties.setProperty("stop.on.failure", ""+true);
 
 	        // set up client side system properties in UDF context
-	        UDFContext.getUDFContext().setClientSystemProps();
+//	        org.apache.pig.impl.util.UDFContext.getUDFContext().setClientSystemProps();
 	        
 	        if (properties.get("udf.import.list")!=null)
 	            PigContext.initializeImportList((String)properties.get("udf.import.list"));

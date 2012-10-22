@@ -15,7 +15,7 @@
 	<url>http://maven.apache.org</url>
 	<properties>
 		<dep.version>0.2.0</dep.version>
-                <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -44,7 +44,17 @@
 			<version>${pig.version}</version>
 			<!-- <scope>provided</scope> -->
 		</dependency>
-                <dependency>
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-mapper-asl</artifactId>
+			<version>1.7.3</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>13.0</version>
+		</dependency>
+		<dependency>
 			<groupId>jline</groupId>
 			<artifactId>jline</artifactId>
 			<version>0.9.94</version>
