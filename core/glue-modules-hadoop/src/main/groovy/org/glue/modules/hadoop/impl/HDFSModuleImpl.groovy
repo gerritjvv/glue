@@ -1,6 +1,7 @@
 package org.glue.modules.hadoop.impl;
 
 import static groovyx.gpars.actor.Actors.*
+import groovy.time.TimeCategory
 import groovyx.gpars.actor.Actor
 import groovyx.gpars.dataflow.DataFlow
 
@@ -100,6 +101,57 @@ public class HDFSModuleImpl implements HDFSModule {
 		return f.getAbsolutePath();
 	}
 
+	boolean timeSeries(String n, String tableHDFSDir, Date nowdate, String modifyTime, Closure<String> partitionFormatter, Closure<Date> dateIncrement, Closure collector = null){
+		timeSeries(null, n, tableHDFSDir, nowdate, modifyTime, partitionFormatter, dateIncrement, collector)	
+	}
+	
+	/**
+	 * 
+	 * @param clusterName
+	 * @param n String Amount of hours, days, weeks or months to look back at expression must be 1.days, 2.hours etc
+	 * @param tableHDFSDir The table's or data's root dir just before the partitions start
+	 * @param nowdate the date to start counting backwards i.e. nowdate - n
+	 * @param modifyTime any valid TimeCategory expression as "20.minutes" "2.hours" etc. Files in hdfs will be checked and if they have not been modified since this time unit they are ok'ed.
+	 * @param partitionFormatter Receives the date value and should return the partition path
+	 * @param dateIncrement Receives the date value and should return the incremented date e.g. date + 1.hours
+	 * @param collector for every file that meet the condition the closure is called with date, file
+	 */
+	boolean timeSeries(String clusterName, String n, String tableHDFSDir, Date nowdate, String modifyTime, Closure<String> partitionFormatter, Closure<Date> dateIncrement, Closure collector = null){
+		
+		final String[] modTimeParsed = modifyTime.toLowerCase().split('\\.')
+		final String[] nParsed = n.toLowerCase().split('\\.')
+		
+		use(TimeCategory){
+			final long lastUpdateTime = (nowdate - (modTimeParsed[0] as int)."${modTimeParsed[1]}" ).getTime()
+			Date prevdate = (nowdate - (nParsed[0] as int)."${nParsed[1]}")
+			try{
+				while(prevdate <  nowdate){
+					
+					final String partitionPath = "$tableHDFSDir/${partitionFormatter(prevdate)}"
+					int countA = 0, countB = 0
+					list(clusterName, partitionPath, { file ->
+						countA++ 
+						if(getFileStatus(clusterName,file)?.modificationTime < lastUpdateTime){
+							countB++
+							if(collector) collector(prevdate, file)
+						}
+					})
+					
+					if (countA < 1 || countA != countB )
+						throw new ClosureStopException("Empty partition or the partition is still edited $prevDate")
+					
+					//the closure must return a Date object
+					prevdate = dateIncrement(prevdate)
+						
+				}//eof while
+			}catch(ClosureStopException exc){
+				println exc
+				return false
+			}
+		}//eof use
+		
+		return true
+	}
 
 	void put(String localSource, String hdfsDest) throws IOException{
 		put(null, localSource, hdfsDest)
