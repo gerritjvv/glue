@@ -49,6 +49,7 @@ Glue Documentation Index
 	* [Put File](hadoopPutFileExample.html)
 	* [Download File](hadoopDownloadFileExample.html)
 	* [Each Line](hadoopEachLineExample.html)
+	* [Time Series Data](hadoopTimeSeriesExample.html)
 * Pig
 	* [API](pigApi.html)
 	* [Run Script](pigRunScriptExample.html)

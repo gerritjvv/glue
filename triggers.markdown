@@ -160,8 +160,9 @@ Properties are:
 	        //extract year, month, day
 	        def m = path =~ DATE
 	        if(m.size() < 1 || m[0].size() < 2) return //skip if none found
-	
-	        dateSet << m[0][1] //now we should have something like yyyyMMdd
+		
+			if(m[0][1])
+	           dateSet << m[0][1] //now we should have something like yyyyMMdd
 	
 	      }
 	
@@ -193,7 +194,7 @@ Properties are:
 	      //only a workflow's logic can know when its completed processing a file
 	      //this method marks the file as processed, this file will not appear again
 	      //in the listReadyFiles method
-	      if(ctx.fileIds) ctx.triggerStore2.markFilesAsProcessed fileIds
+	      if(ctx.fileIds) ctx.triggerStore2.markFilesAsProcessed ctx.fileIds
 	
 	    }
 	
