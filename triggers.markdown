@@ -127,7 +127,7 @@ Properties are:
 
 	def fileIds = []
 
-	context.triggerStore2.markFilesAsProcessed fileIds
+	context.triggerStore2.markFilesAsProcessed( fileIds )
 
 ##List ready files
 
@@ -194,7 +194,7 @@ Properties are:
 	      //only a workflow's logic can know when its completed processing a file
 	      //this method marks the file as processed, this file will not appear again
 	      //in the listReadyFiles method
-	      if(ctx.fileIds) ctx.triggerStore2.markFilesAsProcessed ctx.fileIds
+	      if(ctx.fileIds) ctx.triggerStore2.markFilesAsProcessed( ctx.fileIds )
 	
 	    }
 	
