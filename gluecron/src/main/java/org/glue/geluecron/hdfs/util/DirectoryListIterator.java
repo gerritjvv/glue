@@ -43,6 +43,11 @@ public class DirectoryListIterator implements Iterator<Path> {
 			while (pathCache.size() < 1 && pathStack.size() > 0) {
 				try {
 					final Path path = pathStack.pop();
+					if(path == null){
+						LOG.warn("Path not expected to be null here");
+						continue;
+					}
+					
 					final FileStatus[] statusArr = fs.listStatus(path);
 					
 					if(statusArr == null){
