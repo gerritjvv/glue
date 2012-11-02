@@ -53,6 +53,56 @@ class DbUnitStatusManagerTest {
 	}
 	
 	@Test
+	public void testSetGetUnitStatusByNameAndDateRange(){
+		
+		Set<UnitStatus> statusList = []
+		
+		Date endDate = new Date()
+		Date startDate = endDate - 2
+		String name = "testSetGetUnitStatusByNameAndDateRange"
+		
+		//add 5 status instances for today - 2DaysAgo
+		(1..5).each {
+			String unitId = java.util.UUID.randomUUID()
+			UnitStatus status = new UnitStatus(
+			unitId:unitId,
+			name:name,
+			startDate:startDate,
+			endDate:endDate,
+			status:GlueState.RUNNING
+			)
+			
+			manager.setUnitStatus status
+			statusList << status
+		}
+		
+		//add another 5 starting 3 days ago
+		(1..5).each {
+			String unitId = java.util.UUID.randomUUID()
+			UnitStatus status = new UnitStatus(
+			unitId:unitId,
+			name:name,
+			startDate:startDate-3,
+			endDate:endDate,
+			status:GlueState.RUNNING
+			)
+			
+			manager.setUnitStatus status
+		}
+		
+		//test that we can see the 5 jobs from 2 days ago
+		
+		Collection<UnitStatus> foundStatusList = manager.findUnitStatus(name, startDate, endDate)
+		assertEquals(statusList.size(), foundStatusList.size())
+		
+		foundStatusList.each { UnitStatus foundStatus ->
+			 assertTrue(statusList.contains(foundStatus))
+		}
+		
+	
+	}
+	
+	@Test
 	public void testSetGetUnitStatusByDateRange(){
 		
 		

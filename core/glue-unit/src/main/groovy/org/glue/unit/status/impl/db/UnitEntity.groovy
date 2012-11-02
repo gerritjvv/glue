@@ -26,7 +26,11 @@ import org.glue.unit.status.UnitStatus
 @Table(name = "units")
 @NamedQueries(value=[
 	@NamedQuery(name='UnitEntity.byDateRange',
-	query='from UnitEntity e where  e.startDate>= :startDate AND e.endDate <= :endDate ORDER BY e.startDate')
+	query='from UnitEntity e where  e.startDate>= :startDate AND e.endDate <= :endDate ORDER BY e.startDate'),
+    @NamedQuery(name='UnitEntity.byNameAndDateRange',
+	query='from UnitEntity e where  name = :name AND e.startDate>= :startDate AND e.endDate <= :endDate ORDER BY e.startDate'),
+    @NamedQuery(name='UnitEntity.byLatestName',
+	query='from UnitEntity e where  name = :name ORDER BY e.startDate DESC limit 1')
 ])
 public class UnitEntity {
 	

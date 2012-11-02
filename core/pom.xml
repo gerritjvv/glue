@@ -157,7 +157,7 @@
 
 		<pluginRepository>
                         <id>groovypp</id>
-                        <url>http://groovypp.artifactoryonline.com/groovypp/libs-releases-local/</url>
+                        <url>http://www.gridgainsystems.com/maven2</url>
                 </pluginRepository>
                 <pluginRepository>
 		       <id>klej-snapshots</id>
@@ -175,7 +175,7 @@
 
                 <repository>
                         <id>groovypp</id>
-                        <url>http://groovypp.artifactoryonline.com/groovypp/libs-releases-local/</url>
+                        <url>http://www.gridgainsystems.com/maven2/</url>
                 </repository>
 		<repository>
 			<id>java.net</id>

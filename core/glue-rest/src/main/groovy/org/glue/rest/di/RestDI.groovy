@@ -5,11 +5,14 @@ import org.glue.rest.config.LauncherConfig
 import org.glue.rest.resources.ModulesResource
 import org.glue.rest.resources.ProcessStatusResource
 import org.glue.rest.resources.ShutdownResource
-import org.glue.rest.resources.TerminateResource
 import org.glue.rest.resources.StatusResource
 import org.glue.rest.resources.SubmitUnitResource
+import org.glue.rest.resources.TerminateResource
 import org.glue.rest.resources.UnitStatusResource
+import org.glue.rest.resources.WorkflowCheckResource
+import org.glue.rest.resources.WorkflowHistoryResource
 import org.glue.unit.exec.GlueExecutor
+import org.glue.unit.log.GlueExecLoggerProvider
 import org.glue.unit.repo.GlueUnitRepository
 import org.glue.unit.status.GlueUnitStatusManager
 import org.restlet.Component
@@ -19,7 +22,6 @@ import org.springframework.beans.factory.BeanFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Scope
-import org.glue.unit.log.GlueExecLoggerProvider;
 
 /**
  *
@@ -68,6 +70,10 @@ class RestDI {
 		router.attachResource("/status/{unitId}", 'unitStatusResource', beanFactory);
 		router.attachResource("/kill/{unitId}", 'terminateResource', beanFactory);
 		router.attachResource("/status/{unitId}/{processName}", 'processStatusResource', beanFactory);
+//		WorkflowHistoryResource
+		
+		router.attachResource("/history/{workflowName}", 'workflowHistoryResource', beanFactory);
+		router.attachResource("/check/{workflowName}", 'workflowCheckResource', beanFactory);
 		
 		router.attachResource("/modules", 'modulesResource', beanFactory);
 		
@@ -107,6 +113,24 @@ class RestDI {
 	TerminateResource terminateResource(){
 		new TerminateResource(beanFactory.getBean(GlueExecutor.class))
 	}
+	//WorkflowCheckResource
+	@Bean
+	@Scope('prototype')
+	WorkflowHistoryResource workflowHistoryResource(){
+		new WorkflowHistoryResource(
+		beanFactory.getBean(GlueUnitStatusManager.class),
+		)
+	}
+	
+	@Bean
+	@Scope('prototype')
+	WorkflowCheckResource workflowCheckResource(){
+		new WorkflowCheckResource(
+		beanFactory.getBean(GlueUnitStatusManager.class),
+		beanFactory.getBean(GlueUnitRepository.class)
+		)
+	}
+	
 	@Bean
 	@Scope('prototype')
 	UnitStatusResource unitStatusResource(){

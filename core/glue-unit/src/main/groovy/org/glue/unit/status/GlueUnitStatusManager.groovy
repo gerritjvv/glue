@@ -1,5 +1,8 @@
 package org.glue.unit.status
 
+import java.util.Collection;
+import java.util.Date;
+
 import org.glue.unit.om.GlueUnit
 
 /**
@@ -12,6 +15,15 @@ import org.glue.unit.om.GlueUnit
 @Typed
 interface GlueUnitStatusManager {
 
+	
+	/**
+	 * 
+	 * @param workflowName
+	 * @param rangeStart
+	 * @param rangeEnd
+	 * @return
+	 */
+	Collection<UnitStatus> findUnitStatus(String workflowName, Date rangeStart, Date rangeEnd)
 	
 	/**
 	 * 
@@ -39,7 +51,11 @@ interface GlueUnitStatusManager {
 	 */
 	UnitStatus getUnitStatus(String unitId)
 	
-	
+	/**
+	 * @param workflowName
+	 * @return UnitStatus or null if the unit was not found
+	 */
+	UnitStatus getLatestUnitStatus(String workflowName)
 	
 	/**
 	 * Gets a collection of unit ProcessStatus instances ofr the unitId

@@ -1,5 +1,7 @@
 package org.glue.unit.status.impl
 
+import java.util.Collection;
+import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
@@ -29,6 +31,18 @@ class MapUnitStatusManager implements GlueUnitStatusManager{
 	Map<String, Map<String,ProcessStatus>> processStatusMap = new ConcurrentHashMap<String, UnitStatus>()
 
 
+	Collection<UnitStatus> findUnitStatus(String workflowName, Date rangeStart, Date rangeEnd){
+		findUnitStatus(rangeStart, rangeEnd).findAll { stat -> stat.name == workflowName }
+	}
+	
+	/**
+	 * @param workflowName
+	 * @return UnitStatus or null if the unit was not found
+	 */
+	UnitStatus getLatestUnitStatus(String workflowName){
+		findUnitStatus(new Date()-1, new Date()).findAll ({ stat -> stat.name == workflowName }) ?.sort({x,y -> y.startDate <=> x.startDate})  ?.getAt(0)
+	}
+	
 	/**
 	 * 
 	 * @param rangeStart
@@ -139,6 +153,7 @@ class MapUnitStatusManager implements GlueUnitStatusManager{
 
 	void init(ConfigObject config){
 	}
+	
 
 	void destroy(){
 		unitStatusMap.clear()

@@ -3,6 +3,7 @@ package org.glue.unit.status.impl.db
 
 import javax.persistence.EntityManager
 import javax.persistence.EntityManagerFactory
+import javax.persistence.NoResultException
 import javax.persistence.Query
 
 import org.glue.unit.status.GlueUnitStatusManager
@@ -88,6 +89,77 @@ class DbUnitStatusManager implements GlueUnitStatusManager{
 	}
 
 
+	/**
+	 * Finds UnitStatus instances by date range inclusively
+	 * @param workflowName
+	 * @param rangeStart
+	 * @param rangeEnd
+	 * @return Collection of UnitStatus
+	 */
+	Collection<UnitStatus> findUnitStatus(String workflowName, Date rangeStart, Date rangeEnd){
+
+		Collection<UnitStatus> list = []
+
+		//choose dates so that startDate < endDate
+		Date startDate, endDate
+
+		if(rangeStart.time > rangeEnd.time){
+			startDate = rangeEnd
+			endDate = rangeStart
+		}else{
+			startDate = rangeStart
+			endDate = rangeEnd
+		}
+
+		EntityManager em = entityManagerFactory.createEntityManager()
+		em.getTransaction().begin()
+		try{
+
+			Query q = em.createNamedQuery('UnitEntity.byNameAndDateRange')
+			q.setParameter 'startDate', startDate
+			q.setParameter 'endDate', endDate
+			q.setParameter 'name', workflowName
+
+			Collection<UnitEntity> results = q.getResultList()
+
+			//convert each unit entity to a UnitStatus instance
+			results?.each{ UnitEntity entity ->
+				list << entity.toUnitStatus()
+			}
+
+			em.getTransaction().commit()
+		}finally{
+			em.close()
+		}
+
+		return list
+	}
+	
+	UnitStatus getLatestUnitStatus(String workflowName){
+		
+		UnitStatus stat = null
+
+		
+
+		EntityManager em = entityManagerFactory.createEntityManager()
+		em.getTransaction().begin()
+		try{
+
+			Query q = em.createNamedQuery('UnitEntity.byLatestName')
+			q.setParameter 'name', workflowName
+
+			Collection<UnitEntity> list = q.getResultList()
+			if(list.size() > 0)
+				stat = ((UnitEntity)list[0]).toUnitStatus()
+			
+			em.getTransaction().commit()
+		}finally{
+			em.close()
+		}
+
+		return stat
+	}
+	
 	/**
 	 * Finds UnitStatus instances by date range inclusively
 	 * @param rangeStart
