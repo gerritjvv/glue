@@ -54,4 +54,5 @@ Glue Documentation Index
 	* [API](pigApi.html)
 	* [Run Script](pigRunScriptExample.html)
 * [Bash/Python CMDs](bashPythonScripts.html)
-   
+* [Monitoring and Nagios](nagios.html)
+
