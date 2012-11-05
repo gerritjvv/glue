@@ -147,10 +147,12 @@ class DbUnitStatusManager implements GlueUnitStatusManager{
 
 			Query q = em.createNamedQuery('UnitEntity.byLatestName')
 			q.setParameter 'name', workflowName
-
-			Collection<UnitEntity> list = q.getResultList()
+			q.setMaxResults(1)
+			
+			def list = q.getResultList()
+			 
 			if(list.size() > 0)
-				stat = ((UnitEntity)list[0]).toUnitStatus()
+				stat = ((UnitEntity)(list.getAt(0)))?.toUnitStatus()
 			
 			em.getTransaction().commit()
 		}finally{
