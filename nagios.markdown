@@ -25,7 +25,7 @@ This means that nagios can be used easily to monitor and notify when workflows h
   
  Nagios can either check for single workflows i.e.
  
-	http://<gluesever>:<port>/check/<workflowName>?expectedRun=30&limit=1
+	http://<gluesever>:<port>/check/<workflowName>?expectedRun=30
   
 	This will check the status of the last run for the workflow specified and return:
   
