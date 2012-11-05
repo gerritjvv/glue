@@ -36,6 +36,7 @@ Glue Documentation Index
 			* [Netezza Configuration](netezzaconfiguration.html)
 			* [Hive Configuration](hive.html)
 			* [HDFS Configuration](hdfsconfiguration.html)
+			* [FTP Configuration](ftpconfiguration.html)
 * [Library Setup](librarysetup.html)
 * SQL
 	* [API](sqlApi.html)
@@ -53,6 +54,8 @@ Glue Documentation Index
 * Pig
 	* [API](pigApi.html)
 	* [Run Script](pigRunScriptExample.html)
+* FTP
+	* [API](ftpApi.html)
 * [Bash/Python CMDs](bashPythonScripts.html)
 * [Monitoring and Nagios](nagios.html)
 
