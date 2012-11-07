@@ -58,4 +58,4 @@ Glue Documentation Index
 	* [API](ftpApi.html)
 * [Bash/Python CMDs](bashPythonScripts.html)
 * [Monitoring and Nagios](nagios.html)
-
+* [Notify with Emails ](mailnotifications.html)
