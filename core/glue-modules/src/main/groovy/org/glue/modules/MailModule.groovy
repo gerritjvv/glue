@@ -81,40 +81,24 @@ class MailModule implements GlueModule {
 		if(config.getUnitUrl) this.getUnitUrl=config.getUnitUrl;
 		println "Recipients: ${this.recipientList.size()}"
 		this.recipientList.each { println it}
+		
 	}
 
 	@Override
 	public void onUnitFail(GlueUnit unit, GlueContext context) {
-		//this.mail( recipientList,
-		//		"${unit.getName()} (${context.unitId}) failed",
-		//		"${unit.getName()} (${context.unitId}) failed\n$unitFailMessage\n${this.getUnitUrl(uiUrl,context.unitId)}");
-
 	}
 
 	@Typed(TypePolicy.DYNAMIC)
 	@Override
 	public void onUnitFinish(GlueUnit unit, GlueContext context) {
-
-		if(!context.unitId){
-			throw new RuntimeException("The GlueContext must have a unitId associated")
-		}
-
-		this.mail( recipientList,
-				"[glue] ${unit.getName()} (${context.getUnitId()}) finished",
-				"${unit.getName()} (${context.unitId}) finished\n$unitFinishMessage\n${this.getUnitUrl(uiUrl,context.unitId)}");
 	}
 
 	@Typed(TypePolicy.DYNAMIC)
 	@Override
 	public void onUnitStart(GlueUnit unit, GlueContext context) {
-		if(!context.unitId){
-			throw new RuntimeException("The GlueContext must have a unitId associated")
-		}
-
-		this.mail( recipientList,
-				"[glue] ${unit.getName()} (${context.unitId}) started",
-				"${unit.getName()} (${context.unitId}) started\n$unitStartMessage\n${this.getUnitUrl(uiUrl,context.unitId)}");
+		
 	}
+	
 	@Override
 	public void configure(String unitId, ConfigObject config) {
 	}
@@ -126,9 +110,12 @@ class MailModule implements GlueModule {
 		}
 
 		GlueUnit unit=context.unit;
-		this.mail( recipientList,
-				"[glue] Process ${process.getName()} of ${unit.getName()} (${context.unitId}) failed: reason: ${t.getMessage()}",
-				"Process ${process.getName()} of ${unit.getName()} (${context.unitId}) failed: \nreason: \n${t.getMessage()}\n$processFailMessage\n${this.getProcessUrl(uiUrl,context.unitId,process.getName())}\n${this.getStackTrace(t)}");
+		//only notify if the notifyOnFail boolean is set to true
+		if(unit.notifyOnFail){
+			this.mail( recipientList,
+					"[glue] Process ${process.getName()} of ${unit.getName()} (${context.unitId}) failed: reason: ${t.getMessage()}",
+					"Process ${process.getName()} of ${unit.getName()} (${context.unitId}) failed: \nreason: \n${t.getMessage()}\n$processFailMessage\n${this.getProcessUrl(uiUrl,context.unitId,process.getName())}\n${this.getStackTrace(t)}");
+		}
 	}
 	@Override
 	public void onProcessFinish(GlueProcess process, GlueContext context) {

@@ -15,6 +15,16 @@ import java.util.Set;
 @Typed
 public interface GlueUnit {
 
+	/**
+	 * If true indicates to any modules e.g. email module to notify if the workflow failed
+	 * @return
+	 */
+	boolean isNotifyOnFail()
+	/**
+	 * If true indicates to any modules e.g. email module to notify if the workflow failed
+	 * @param notifyOnFail
+	 */
+	void setNotifyOnFail(boolean notifyOnFail)
 	
 	String getName();
 	void setName(String name);

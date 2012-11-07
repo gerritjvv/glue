@@ -32,6 +32,7 @@ class GlueUnitImpl implements GlueUnit {
 	
 	TriggerDef[] triggers
 	
+	boolean notifyOnFail = false
 	
 	/**
 	 * Builds a Glue object from the ConfigObject (this is the glue unit file)
@@ -84,24 +85,14 @@ class GlueUnitImpl implements GlueUnit {
 			}
 		}
 		
-		//parse the required modules and run configure on all modules
-//		def modules=moduleFactory.getAvailableModules();
-//		if(requiredModules != null && !this.modules.keySet().containsAll(requiredModules))
-//		{
-//			throw new UnitParsingException("One or more required modules [${requiredModules}] is not available as a module [${modules}]")
-//		}
-//		if(config.modules){
-//			config.modules.each { name, moduleConf ->
-//				if(this.modules.containsKey(name)){
-//					this.modules.get(name).configure(this.unitId,moduleConf)
-//				}
-//				}
-//		}
-//		
-		//now create the context
-//		this.context.moduleFactory=moduleFactory
-//		this.context.unitId=this.unitId;
-//		this.context.unit = this; 
+		if(config?.notifyOnFail){
+			try{
+				this.notifyOnFail = Boolean.valueOf(config.notifyOnFail)
+			}catch(Exception exc){
+			  this.notifyOnFail = true
+			}
+		}
+		
 	}
 	
 	public List<TriggerDef> getTriggers(){
