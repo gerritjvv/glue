@@ -17,7 +17,7 @@
 		<restlet.version>2.1-M4</restlet.version>
 		<spring.version>3.0.5.RELEASE</spring.version>
 		<commons-cli.version>1.2</commons-cli.version>
-                <jackson-asl.version>1.9.1</jackson-asl.version>
+		<jackson-asl.version>1.9.1</jackson-asl.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<build>
@@ -34,17 +34,29 @@
 						<copyright>http://www.apache.org/licenses/LICENSE-2.0</copyright>
 						<distribution>Glue task manager</distribution>
 						<group>utilties</group>
-                                                <release>9</release>
+						<release>11</release>
 						<packager>http://code.google.com/p/glue/</packager>
 						<provides>
 							<provide>glue-server</provide>
 						</provides>
 						<defineStatements>
 							<defineStatement>_unpackaged_files_terminate_build 0
-                            </defineStatement>
+							</defineStatement>
 						</defineStatements>
 						<mappings>
-
+							<mapping>
+								<directory>/usr/bin</directory>
+								<directoryIncluded>false</directoryIncluded>
+								<filemode>775</filemode>
+								<username>root</username>
+								<groupname>root</groupname>
+								<sources>
+									<softlinkSource>
+										<location>/opt/glue/bin/glue-client.sh</location>
+										<destination>glue</destination>
+									</softlinkSource>
+								</sources>
+							</mapping>
 							<mapping>
 								<directory>/etc/init.d/</directory>
 								<directoryIncluded>false</directoryIncluded>
@@ -57,14 +69,11 @@
 									</source>
 								</sources>
 							</mapping>
-							<!-- <mapping> <directory>/opt/streams-collector/bin</directory> <filemode>775</filemode> 
-								<username>streams</username> <groupname>streams</groupname> <sources> <source> 
-								<location>src/main/resources/bin</location> </source> </sources> </mapping> -->
 							<mapping>
 								<directory>/opt/glue/conf</directory>
 								<configuration>true</configuration>
 								<filemode>776</filemode>
-								<username>hadoop</username>
+								<username>glue</username>
 								<groupname>hadoop</groupname>
 								<sources>
 									<source>
@@ -79,7 +88,7 @@
 							<mapping>
 								<directory>/opt/glue/lib</directory>
 								<filemode>775</filemode>
-								<username>hadoop</username>
+								<username>glue</username>
 								<groupname>hadoop</groupname>
 								<sources>
 									<source>
@@ -90,7 +99,7 @@
 							<mapping>
 								<directory>/opt/glue/bin</directory>
 								<filemode>775</filemode>
-								<username>hadoop</username>
+								<username>glue</username>
 								<groupname>hadoop</groupname>
 								<sources>
 									<source>
@@ -98,34 +107,82 @@
 									</source>
 								</sources>
 							</mapping>
+
 							<mapping>
 								<directory>/opt/glue/lib</directory>
 								<filemode>775</filemode>
-								<username>hadoop</username>
+								<username>glue</username>
 								<groupname>hadoop</groupname>
-								<dependency/>
+								<dependency>
+									<excludes>
+										<exclude>org.apache.hadoop:hadoop-core:0.20.2</exclude>
+										<exclude>org.apache.pig:pig:0.10.0</exclude>
+									</excludes>
+								</dependency>
 							</mapping>
 
 							<mapping>
+								<directory>/opt/glue/lib-hadoop</directory>
+								<filemode>775</filemode>
+								<username>glue</username>
+								<groupname>hadoop</groupname>
+								<dependency>
+									<includes>
+										<include>org.apache.hadoop:hadoop-core:0.20.2</include>
+									</includes>
+								</dependency>
+							</mapping>
+							<mapping>
+								<directory>/opt/glue/lib-pig</directory>
+								<filemode>775</filemode>
+								<username>glue</username>
+								<groupname>hadoop</groupname>
+								<dependency>
+									<includes>
+										<include>org.apache.pig:pig:0.10.0</include>
+									</includes>
+								</dependency>
+							</mapping>
+							<mapping>
 								<directory>/opt/glue/logs</directory>
 								<filemode>775</filemode>
-								<username>hadoop</username>
+								<username>glue</username>
 								<groupname>hadoop</groupname>
 							</mapping>
 							<mapping>
 								<directory>/opt/glue/workflows</directory>
 								<filemode>775</filemode>
-								<username>hadoop</username>
+								<username>glue</username>
 								<groupname>hadoop</groupname>
 							</mapping>
 							<mapping>
 								<directory>/opt/glue/log</directory>
 								<filemode>775</filemode>
-								<username>hadoop</username>
+								<username>glue</username>
 								<groupname>hadoop</groupname>
 							</mapping>
 
 						</mappings>
+						  <preinstallScriptlet>
+                        	<script>
+                        	    echo "Checking users"
+                        	    #create hadoop group if not exist
+                        	    GROUP="hadoop"
+                        	    if [ $(cat /etc/group | grep $GROUP | sed -e 's/:.*//g' ) ] ; then 
+                        	    	groupadd $GROUP 
+                        	    	echo "Created $GROUP"
+                        	    fi
+                        	    
+                        		#create glue user if not exist                        		
+                        		USER="glue"
+								if [ $(cat /etc/passwd | grep $USER | sed -e 's/:.*//g' ) ] ; then 
+                        	        useradd -g $GROUP $USER
+                        	        echo "Created $USER"
+                        	    fi
+                        	    
+								
+							</script>
+                    	</preinstallScriptlet>
 					</configuration>
 				</plugin>
 			</plugins>
@@ -158,21 +215,27 @@
 			<groupId>org.restlet.jse</groupId>
 			<artifactId>org.restlet.ext.jackson</artifactId>
 			<version>${restlet.version}</version>
-                        <exclusions>
-                           <exclusion><groupId>org.codehaus.jackson</groupId><artifactId>jackson-core-asl</artifactId></exclusion>
-                           <exclusion><groupId>org.codehaus.jackson</groupId><artifactId>jackson-mapper-asl</artifactId></exclusion>
-                        </exclusions>
+			<exclusions>
+				<exclusion>
+					<groupId>org.codehaus.jackson</groupId>
+					<artifactId>jackson-core-asl</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.codehaus.jackson</groupId>
+					<artifactId>jackson-mapper-asl</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
-                <dependency>
+		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-mapper-asl</artifactId>
 			<version>${jackson-asl.version}</version>
-		</dependency> 
-                <dependency>
-                        <groupId>org.codehaus.jackson</groupId>
-                        <artifactId>jackson-core-asl</artifactId>
-                        <version>${jackson-asl.version}</version>
-                </dependency>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-core-asl</artifactId>
+			<version>${jackson-asl.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.restlet.jse</groupId>
 			<artifactId>org.restlet.ext.httpclient</artifactId>

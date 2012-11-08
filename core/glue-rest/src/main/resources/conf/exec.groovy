@@ -3,13 +3,17 @@
 lookupPath="/opt/glue/workflows"
 serverPort=8025
 
-processLogDir='/opt/glue/logs'
+processLogDir='/opt/glue/log'
 
 executorMaxProcesses=5
 processModuleConfig="/opt/glue/conf/workflow_modules.groovy"
 
+//hadoop 0.20.2 pig 10
+processClassPath = ['/opt/glue/lib-pig', '/opt/glue/lib-hadoop', '/opt/glue/lib']
 
-//processClassPath = ['/usr/lib/hadoop/lib/', '/usr/lib/hadoop']
+//cloudera hadoop, pig, hive
+//processClassPath = ['/opt/glue/lib/', '/usr/lib/pig', '/usr/lib/pig/lib', '/usr/lib/hadoop/lib/', '/usr/lib/hadoop', '/opt/glue/conf', '/usr/lib/hive', '/usr/lib/hive/lib']
+
 //processJavaOpts = ['-Djava.library.path=/opt/hadoop/lib/native/Linux-amd64-64']
 
 
