@@ -30,6 +30,7 @@ Glue Documentation Index
 * [Configuration](configuration.html)
 	* Repository
 		* [Directory Repository](directoryrepository.html)
+		* [Classpath Configuration](configurationclasspaths.html)
 		* [Module Configuration](moduleconfiguration.html)
 			* [Pig Configuration](pigconfiguration.html)
 			* [SQL Configuration](mysqlconfiguration.html)    

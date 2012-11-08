@@ -29,3 +29,6 @@ Ensure the Glue Rest Server is running.
 Type in:
 
 	/opt/glue/bin/glue-client.sh -submit helloworld
+	or 
+	glue -submit helloworld
+	
