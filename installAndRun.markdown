@@ -147,6 +147,17 @@ Run either:
 	  KEY `seen1` (`seen`)
 	) ENGINE=MyISAM AUTO_INCREMENT=1032955 DEFAULT CHARSET=latin1;
 
+### Configuration Parameters
+
+|Property | Description | Default
+|---------|-------------|---------
+refresh.freq | frequency at which checks are performed in minutes | 5
+hdfsfiles.table | database table for hdfs files | hdfsfiles
+hdfsfiles-history.table | database table for hdfs files for triggers of type hdfs-history | hdfsfiles
+unittriggers.table | database table from which the triggers are read | unittriggers
+unitfiles.table | table in which the status of each unit's execution against the hdfs files is stored | unitfiles
+unitfiles-history.table | table in which the status of each unit's execution against the hdfs history files is stored | unitfiles
+
 
 ### Start Glue Cron
 
