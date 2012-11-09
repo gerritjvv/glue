@@ -10,8 +10,8 @@ import org.apache.hadoop.fs.Path;
  * 
  *
  */
-public interface FilesToSql {
+public interface FilesToSql<T> {
 
-	void loadFiles(Iterator<Path> it);
+	void loadFiles(Iterator<T> it);
 	
 }

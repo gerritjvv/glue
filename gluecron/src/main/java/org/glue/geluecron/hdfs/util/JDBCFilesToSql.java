@@ -13,7 +13,7 @@ import org.glue.geluecron.db.DBManager;
  * Fast implementation for load the hdfs files to a sql table Any table is
  * excepted as long as it has a column called 'path'
  */
-public final class JDBCFilesToSql implements FilesToSql {
+public final class JDBCFilesToSql implements FilesToSql<Path> {
 
 	private static final Logger LOG = Logger.getLogger(JDBCFilesToSql.class);
 
@@ -53,7 +53,7 @@ public final class JDBCFilesToSql implements FilesToSql {
 			// final java.sql.PreparedStatement st = conn
 			// .prepareStatement("INSERT INTO " + tbl + "(path) VALUES(?)");
 			final Statement st = dbManager.createStatement(conn);
-			
+
 			try {
 				// for each file and directory entry add to the insert
 				while (it.hasNext()) {
@@ -77,9 +77,9 @@ public final class JDBCFilesToSql implements FilesToSql {
 						LOG.info("Row Count: " + rows);
 					}
 				}
-				
-				//add remaining:
-				if(buff.length() > 0){
+
+				// add remaining:
+				if (buff.length() > 0) {
 					st.execute(buff.toString());
 					buff.delete(0, buff.length());
 				}
@@ -92,7 +92,7 @@ public final class JDBCFilesToSql implements FilesToSql {
 				st.close();
 			}
 			LOG.info("Total rows: " + rows);
-			
+
 		} catch (Throwable t) {
 			RuntimeException rte = new RuntimeException(t.toString(), t);
 			rte.setStackTrace(t.getStackTrace());

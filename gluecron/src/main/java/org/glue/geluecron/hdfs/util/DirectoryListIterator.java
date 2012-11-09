@@ -10,17 +10,16 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
-import org.mortbay.log.Log;
 
 /**
  * 
- * Iterates through a directory path going into child paths
- * Benchmarks suggest that the api can list roughly 500K files in +- 25 seconds.
+ * Iterates through a directory path going into child paths Benchmarks suggest
+ * that the api can list roughly 500K files in +- 25 seconds.
  */
-public class DirectoryListIterator implements Iterator<Path> {
+public final class DirectoryListIterator implements Iterator<Path> {
 
 	static final Logger LOG = Logger.getLogger(DirectoryListIterator.class);
-	
+
 	final List<Path> pathCache = new ArrayList<Path>(100);
 
 	final Path baseDir;
@@ -28,6 +27,12 @@ public class DirectoryListIterator implements Iterator<Path> {
 
 	final LinkedList<Path> pathStack = new LinkedList<Path>();
 
+	/**
+	 * 
+	 * @param fs
+	 * @param baseDir
+	 * 
+	 */
 	public DirectoryListIterator(FileSystem fs, Path baseDir) {
 		super();
 		this.fs = fs;
@@ -43,19 +48,23 @@ public class DirectoryListIterator implements Iterator<Path> {
 			while (pathCache.size() < 1 && pathStack.size() > 0) {
 				try {
 					final Path path = pathStack.pop();
-					if(path == null){
+
+					if (path == null) {
 						LOG.warn("Path not expected to be null here");
 						continue;
 					}
-					
+
 					final FileStatus[] statusArr = fs.listStatus(path);
-					
-					if(statusArr == null){
+
+					if (statusArr == null) {
 						LOG.warn(path + " listStatus: Null");
 						continue;
 					}
-					
-					for (FileStatus status : statusArr) {
+
+					final int len = statusArr.length;
+					FileStatus status;
+					for (int i = 0; i < len; i++) {
+						status = statusArr[i];
 						pathCache.add(status.getPath());
 						if (status.isDir())
 							pathStack.push(status.getPath());
@@ -70,8 +79,7 @@ public class DirectoryListIterator implements Iterator<Path> {
 			}
 
 		}
-		
-		
+
 		return pathCache.size() > 0;
 	}
 

@@ -10,6 +10,7 @@ import org.glue.geluecron.db.DBManager;
 import org.glue.geluecron.db.DBManagerImpl;
 import org.glue.gluecron.trigger.TriggersManager;
 import org.glue.gluecron.trigger.impl.CronTriggersManager;
+import org.glue.gluecron.trigger.impl.HdfsHistoryTriggersManager;
 import org.glue.gluecron.trigger.impl.HdfsTriggersManager;
 
 import com.mysql.jdbc.Driver;
@@ -30,13 +31,18 @@ public class CronApp {
 		final TriggersManager cronTriggersManager = getCronTriggerManager(
 				dbManager, conf);
 
+		final TriggersManager hdfsHistoryTriggersManager = getHdfsHistoryTriggerManager(
+				dbManager, conf);
+
 		GlueTriggerWatch watch = new GlueTriggerWatch(conf, hfdsTriggerManager);
 		GlueTriggerWatch watch2 = new GlueTriggerWatch(conf,
 				cronTriggersManager);
+		GlueTriggerWatch watch3 = new GlueTriggerWatch(conf,
+				hdfsHistoryTriggersManager);
 
 		System.out.println("Started");
 
-		// wait untill the current thread has bee interrupted.
+		// wait until the current thread has bee interrupted.
 		while (!Thread.interrupted()) {
 			Thread.sleep(Long.MAX_VALUE);
 		}
@@ -55,6 +61,11 @@ public class CronApp {
 	private static TriggersManager getHdfsTriggerManager(DBManager dbManager,
 			Configuration conf) {
 		return new HdfsTriggersManager(dbManager, conf);
+	}
+
+	private static TriggersManager getHdfsHistoryTriggerManager(
+			DBManager dbManager, Configuration conf) {
+		return new HdfsHistoryTriggersManager(dbManager, conf);
 	}
 
 	private static DBManager getDBManager(Configuration conf)
