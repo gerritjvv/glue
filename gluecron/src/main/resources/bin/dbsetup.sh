@@ -52,4 +52,6 @@ mysql -h$url -u$uid$pwd $db -e 'create table IF NOT EXISTS unittriggers ( id int
 
 mysql -h$url -u$uid$pwd $db -e 'create table IF NOT EXISTS unitfiles (unitid int(11), fileid int(11), status varchar(10), UNIQUE KEY a (unitid,  fileid))'
 
-mysql -h$url -u$uid$pwd $db -e 'use glue; describe hdfsfiles; describe unittriggers; describe unitfiles;'
+mysql -h$url -u$uid$pwd $db -e 'create table IF NOT EXISTS unitfiles_history (unitid int(11), fileid int(11), datetime DATETIME, status varchar(10), UNIQUE KEY a (unitid,  fileid))'
+
+mysql -h$url -u$uid$pwd $db -e 'use glue; describe hdfsfiles; describe unittriggers; describe unitfiles; describe unitfiles_history;'
