@@ -4,7 +4,7 @@
 
 	<groupId>org.glue</groupId>
 	<artifactId>gluecron</artifactId>
-	<version>0.1.4</version>
+	<version>0.2.0</version>
 	<packaging>jar</packaging>
 
 	<name>gluecron</name>
@@ -47,6 +47,7 @@
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.19</version>
 		</dependency>
+
 
 	</dependencies>
 
@@ -155,4 +156,12 @@
 
 		</plugins>
 	</build>
+
+	<repositories>
+		<repository>
+			<id>typesafe</id>
+			<name>Typesafe Repository</name>
+			<url>http://repo.typesafe.com/typesafe/releases/</url>
+		</repository>
+	</repositories>
 </project>

@@ -1,13 +1,7 @@
 package org.glue.gluecron.trigger.impl;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -15,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.Logger;
 import org.glue.geluecron.db.DBManager;
+import org.glue.geluecron.db.DBManager.DBQueryMapClosure;
 import org.glue.gluecron.trigger.TriggerListener;
 import org.glue.gluecron.trigger.TriggersManager;
 import org.quartz.CronExpression;
@@ -44,7 +39,7 @@ public class CronTriggersManager implements TriggersManager, Runnable {
 	private final String unitTriggersTbl;
 
 	TriggerListener listener;
-	
+
 	private Date lastCheckTime;
 
 	public CronTriggersManager(DBManager dbManager, Configuration conf) {
@@ -52,7 +47,7 @@ public class CronTriggersManager implements TriggersManager, Runnable {
 
 		final int minutes = conf.getInt("refresh.freq", 5);
 		unitTriggersTbl = conf.getString("unittriggers.table", "unittriggers");
-		
+
 		lastCheckTime = new Date();
 
 		schedule = Executors.newScheduledThreadPool(1);
@@ -67,7 +62,8 @@ public class CronTriggersManager implements TriggersManager, Runnable {
 			// get paths
 			if (listener != null) {
 				String[] names = getToRunUnitNames();
-				listener.launch(names);
+				if (names != null && names.length > 0)
+					listener.launch(names);
 			}
 			LOG.info("End " + (System.currentTimeMillis() - start) + "ms");
 		} catch (Throwable t) {
@@ -81,67 +77,53 @@ public class CronTriggersManager implements TriggersManager, Runnable {
 	 * @return
 	 */
 	private final String[] getToRunUnitNames() {
-		final List<String> names = new ArrayList<String>(10);
-
-		Connection conn = null;
-		Statement st = null;
-		ResultSet rs = null;
 
 		LOG.info("Checking crons");
 		final long start = System.currentTimeMillis();
-		
+
 		final Date thisCheckTime = new Date();
 		try {
-			conn = dbManager.getConnection();
-			st = dbManager.createStatement(conn);
+			return dbManager.map(
+					"SELECT unit, data FROM " + unitTriggersTbl
+							+ " WHERE type = \"cron\" ",
+					new DBQueryMapClosure<String>() {
 
-			rs = dbManager.query(st, "SELECT unit, data FROM " + unitTriggersTbl
-					+ " WHERE type = \"cron\" ");
-
-			if (rs.first()) {
-				do {
-					try {
-						final String name = rs.getString(1);
-						final String data = rs.getString(2);
-	
-						if (data.trim().length() > 0
-								&& CronExpression.isValidExpression(data)) {
-							// evaluate the cron
+						@Override
+						public String call(ResultSet rs) throws Exception {
 							try {
-								CronExpression ce = new CronExpression(data);
-								Date nextSatisfied = ce.getNextValidTimeAfter(lastCheckTime);
-								if (nextSatisfied.compareTo(thisCheckTime) <= 0) {
-									names.add(name);
-								}
-							} catch (ParseException e) {
-								LOG.error(e.toString(), e);
-							}
-	
-						} else {
-							LOG.warn("No valid cron expression " + data + " for "
-									+ name);
-						}
-					} catch (Exception e) {
-						// Don't allow one cron's error to stop the rest, such as UnsupportedOperationException.
-						LOG.warn(e.toString());
-					}
-				} while (rs.next());
-			}
+								final String name = rs.getString(1);
+								final String data = rs.getString(2);
 
-		} catch (SQLException e) {
-			RuntimeException rte = new RuntimeException(e.toString(), e);
-			rte.setStackTrace(e.getStackTrace());
-			throw rte;
+								if (data.trim().length() > 0
+										&& CronExpression
+												.isValidExpression(data)) {
+									// evaluate the cron
+									final CronExpression ce = new CronExpression(
+											data);
+									final Date nextSatisfied = ce
+											.getNextValidTimeAfter(lastCheckTime);
+									if (nextSatisfied.compareTo(thisCheckTime) <= 0)
+										return name;
+
+								} else {
+									LOG.warn("No valid cron expression " + data
+											+ " for " + name);
+								}
+							} catch (Exception e) {
+								// Don't allow one cron's error to stop the
+								// rest, such as UnsupportedOperationException.
+								LOG.warn(e.toString());
+							}
+							return null;
+						}
+
+					}).toArray(new String[0]);
+
 		} finally {
 			lastCheckTime = thisCheckTime;
-			dbManager.close(rs);
-			dbManager.close(st);
-			dbManager.release(conn);
+			LOG.info("Took " + (System.currentTimeMillis() - start) + "ms");
 		}
-		
-		LOG.info("Took " + (System.currentTimeMillis() - start) + "ms");
-		
-		return names.toArray(new String[0]);
+
 	}
 
 	public String[] getUnitNames() {

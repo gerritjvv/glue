@@ -47,7 +47,13 @@ public final class JDBCFilesToSql2 implements FilesToSql<FileStatus> {
 
 		Connection conn = null;
 		StringBuilder buff = new StringBuilder(1000);
-		String header = "INSERT IGNORE INTO " + tbl + "(path) ";
+		String header = "INSERT IGNORE INTO " + tbl;
+		
+		if(useDate)
+			header += "(path, datetime) ";
+		else
+			header += "(path)";
+		
 		try {
 			conn = dbManager.getConnection();
 			// write the file content to a local file

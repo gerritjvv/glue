@@ -5,6 +5,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DBManagerImpl implements DBManager {
 
@@ -31,6 +33,88 @@ public class DBManagerImpl implements DBManager {
 	}
 
 	public void destroy() {
+
+	}
+
+	public <T> List<T> map(String query, final DBQueryMapClosure<T> closure) {
+		final List<T> list = new ArrayList<T>(10);
+		query(query, new DBQueryClosure() {
+
+			@Override
+			public void call(ResultSet rs) throws Exception {
+				while (rs.next()) {
+					final T obj = closure.call(rs);
+					if (obj != null)
+						list.add(obj);
+				}
+			}
+		});
+
+		return list;
+	}
+
+	public void each(String query, final DBQueryEachClosure closure) {
+		query(query, new DBQueryClosure() {
+
+			@Override
+			public void call(ResultSet rs) throws Exception {
+				while (rs.next())
+					closure.call(rs);
+			}
+		});
+	}
+
+	public void query(String query, DBQueryClosure closure) {
+		Connection conn = null;
+		Statement st = null;
+		ResultSet rs = null;
+
+		try {
+			conn = getConnection();
+			st = createStatement(conn);
+
+			rs = query(st, query);
+			try {
+				closure.call(rs);
+			} catch (Exception excp) {
+				RuntimeException rte = new RuntimeException(excp.toString(),
+						excp);
+				rte.setStackTrace(excp.getStackTrace());
+				throw rte;
+			}
+
+		} finally {
+			close(rs);
+			close(st);
+			release(conn);
+		}
+
+	}
+
+	public void exec(String... exec) {
+		Connection conn = null;
+		Statement st = null;
+		ResultSet rs = null;
+
+		try {
+			conn = getConnection();
+			st = createStatement(conn);
+
+			try {
+				for (String sql : exec)
+					st.execute(sql);
+			} catch (SQLException excp) {
+				RuntimeException rte = new RuntimeException(excp.toString(),
+						excp);
+				rte.setStackTrace(excp.getStackTrace());
+				throw rte;
+			}
+
+		} finally {
+			close(rs);
+			close(st);
+			release(conn);
+		}
 
 	}
 

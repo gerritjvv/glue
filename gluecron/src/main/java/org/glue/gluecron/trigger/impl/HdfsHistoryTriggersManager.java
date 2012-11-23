@@ -2,13 +2,8 @@ package org.glue.gluecron.trigger.impl;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -18,8 +13,10 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 import org.glue.geluecron.db.DBManager;
+import org.glue.geluecron.db.DBManager.DBQueryMapClosure;
 import org.glue.geluecron.hdfs.util.DirectoryListIterator2;
 import org.glue.geluecron.hdfs.util.JDBCFilesToSql2;
+import org.glue.gluecron.trigger.HDFSHistoryDataAttribute;
 import org.glue.gluecron.trigger.TriggerListener;
 import org.glue.gluecron.trigger.TriggersManager;
 
@@ -92,6 +89,7 @@ public class HdfsHistoryTriggersManager implements TriggersManager, Runnable {
 			if (paths.length > 0) {
 				pollHdfs(paths);
 				fillUnitFiles();
+				checkFiles();
 			}
 
 			LOG.info("End " + (System.currentTimeMillis() - start) + "ms");
@@ -101,41 +99,63 @@ public class HdfsHistoryTriggersManager implements TriggersManager, Runnable {
 	}
 
 	/**
+	 * Check files against their data logic and mark status as "process" when
+	 * the logic returns true
+	 */
+	private void checkFiles() {
+
+		// first collect the data fields for each unit with type = hdfs-history
+		HDFSHistoryDataAttribute[] attributes = getDataAttributes();
+
+		for (HDFSHistoryDataAttribute attr : attributes) {
+			try {
+				dbManager.exec("UPDATE " + unitfilesTbl
+						+ " set status='process' where unitid="
+						+ attr.getUnitId() + " and "
+						+ attr.getDateChooseScript());
+			} catch (Throwable t) {
+				LOG.error(t.toString(), t);
+			}
+		}
+
+	}
+
+	/**
+	 * 
+	 * 
+	 * @return
+	 */
+	private final HDFSHistoryDataAttribute[] getDataAttributes() {
+		return dbManager.map(
+				"SELECT DISTINCT id, unit, data FROM " + unitTriggersTbl
+						+ " WHERE type='hdfs-history'",
+				new DBQueryMapClosure<HDFSHistoryDataAttribute>() {
+
+					public HDFSHistoryDataAttribute call(ResultSet rs)
+							throws Exception {
+						return new HDFSHistoryDataAttribute(rs.getLong(1), rs
+								.getString(2), rs.getString(3));
+					}
+				}).toArray(new HDFSHistoryDataAttribute[0]);
+
+	}
+
+	/**
 	 * Query the unitTriggersTbl to retrieve a list of paths for hdfs
 	 * 
 	 * @return
 	 */
 	private final String[] getPaths() {
-		List<String> paths = new ArrayList<String>(10);
+		return dbManager.map(
+				"SELECT DISTINCT data FROM " + unitTriggersTbl
+						+ " WHERE type='hdfs-history'",
+				new DBQueryMapClosure<String>() {
+					@Override
+					public String call(ResultSet rs) throws Exception {
+						return rs.getString(1);
+					}
+				}).toArray(new String[0]);
 
-		Connection conn = null;
-		Statement st = null;
-		ResultSet rs = null;
-
-		try {
-			conn = dbManager.getConnection();
-			st = dbManager.createStatement(conn);
-
-			rs = dbManager.query(st, "SELECT DISTINCT data FROM "
-					+ unitTriggersTbl + " WHERE type='hdfs-history'");
-
-			if (rs.first()) {
-				do {
-					paths.add(rs.getString(1));
-				} while (rs.next());
-			}
-
-		} catch (SQLException e) {
-			RuntimeException rte = new RuntimeException(e.toString(), e);
-			rte.setStackTrace(e.getStackTrace());
-			throw rte;
-		} finally {
-			dbManager.close(rs);
-			dbManager.close(st);
-			dbManager.release(conn);
-		}
-
-		return paths.toArray(new String[0]);
 	}
 
 	private final void pollHdfs(String[] paths) {
@@ -157,7 +177,7 @@ public class HdfsHistoryTriggersManager implements TriggersManager, Runnable {
 			} catch (Exception e) {
 				// Don't allow one trigger's error to stop the rest, such as
 				// IllegalArgumentException.
-				LOG.warn(e.toString());
+				LOG.error(e.toString(), e);
 			}
 		}
 		LOG.info("\tpollHdfs : " + (System.currentTimeMillis() - start) + "ms");
@@ -170,92 +190,51 @@ public class HdfsHistoryTriggersManager implements TriggersManager, Runnable {
 
 		long start = System.currentTimeMillis();
 
-		Connection conn = null;
-		Statement st = null;
-		try {
-			conn = dbManager.getConnection();
-			st = dbManager.createStatement(conn);
+		// insert entries into unitfiles
+		dbManager
+				.exec("insert ignore into "
+						+ unitfilesTbl
+						+ " (unitid, fileid, status) select ut.id, hf.id, 'ready' from "
+						+ hdfsfilesTbl
+						+ " hf, "
+						+ unitTriggersTbl
+						+ " ut where ut.type = 'hdfs-history' AND hf.seen=0 AND SUBSTRING(hf.path, 1, LENGTH(ut.data)) = ut.data AND LENGTH(hf.path) >= LENGTH(ut.data)",
 
-			// insert entries into unitfiles
-			st.execute("insert ignore into "
-					+ unitfilesTbl
-					+ " (unitid, fileid, status) select ut.id, hf.id, 'ready' from "
-					+ hdfsfilesTbl
-					+ " hf, "
-					+ unitTriggersTbl
-					+ " ut where ut.type = 'hdfs-history' AND hf.seen=0 AND SUBSTRING(hf.path, 1, LENGTH(ut.data)) = ut.data AND LENGTH(hf.path) >= LENGTH(ut.data)");
+						"UPDATE "
+								+ hdfsfilesTbl
+								+ " hf,"
+								+ unitfilesTbl
+								+ " uf SET hf.seen = 1 WHERE uf.fileid = hf.id AND uf.status='ready'");
 
-			// ads the seen flag that marks the file as having been processed
-			// this does cause any new trigger not be notified of already seen
-			// files
-			// but ads so much performance to the above query that its worth the
-			// effort.
-			st.execute("UPDATE "
-					+ hdfsfilesTbl
-					+ " hf,"
-					+ unitfilesTbl
-					+ " uf SET hf.seen = 1 WHERE uf.fileid = hf.id AND uf.status='ready'");
-
-			// if a listener is registered
-			// and there are ready files for units,
-			// call launch on listener.
-			if (listener != null) {
-				String[] unitNames = getUnitNames();
-				if (unitNames.length > 0)
-					listener.launch(unitNames);
-			}
-
-		} catch (SQLException e) {
-			RuntimeException rte = new RuntimeException(e.toString(), e);
-			rte.setStackTrace(e.getStackTrace());
-			throw rte;
-		} finally {
-			dbManager.close(st);
-			dbManager.release(conn);
+		// if a listener is registered
+		// and there are ready files for units,
+		// call launch on listener.
+		if (listener != null) {
+			String[] unitNames = getUnitNames();
+			if (unitNames.length > 0)
+				listener.launch(unitNames);
 		}
+
 		LOG.info("\tfillUnitFiles : " + (System.currentTimeMillis() - start)
 				+ "ms");
 	}
 
 	public String[] getUnitNames() {
-		Connection conn = null;
-		try {
-			conn = dbManager.getConnection();
-			return getUnitNames(conn);
-		} finally {
-			dbManager.release(conn);
-		}
-	}
 
-	private final String[] getUnitNames(Connection conn) {
-		// query the database for a list of unit names to submit
-		List<String> names = new ArrayList<String>(10);
+		//
+		// select unit name, datetime and the path itself.
+		//
+		return dbManager.map(
+				"select distinct unit from " + unitTriggersTbl + " ut, "
+						+ unitfilesTbl
+						+ " uf WHERE ut.id=uf.unitid and uf.status='process'",
+				new DBQueryMapClosure<String>() {
+					@Override
+					public String call(ResultSet rs) throws Exception {
+						return rs.getString(1);
+					}
+				}).toArray(new String[0]);
 
-		Statement st = null;
-		ResultSet rs = null;
-		try {
-			st = dbManager.createStatement(conn);
-
-			rs = dbManager.query(st, "select distinct unit from "
-					+ unitTriggersTbl + " ut, " + unitfilesTbl
-					+ " uf WHERE ut.id=uf.unitid and uf.status='ready'");
-
-			if (rs.first()) {
-				do {
-					names.add(rs.getString(1));
-				} while (rs.next());
-			}
-
-		} catch (SQLException e) {
-			RuntimeException rte = new RuntimeException(e.toString(), e);
-			rte.setStackTrace(e.getStackTrace());
-			throw rte;
-		} finally {
-			dbManager.close(rs);
-			dbManager.close(st);
-		}
-
-		return names.toArray(new String[0]);
 	}
 
 	@Override
