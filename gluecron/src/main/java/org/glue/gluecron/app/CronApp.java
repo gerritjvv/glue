@@ -49,6 +49,8 @@ public class CronApp {
 
 		hfdsTriggerManager.close();
 		cronTriggersManager.close();
+		hdfsHistoryTriggersManager.close();
+		
 		dbManager.destroy();
 
 	}

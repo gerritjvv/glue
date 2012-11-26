@@ -33,7 +33,9 @@ startGlueCron(){
 
   RUN_CMD="$GLUE_HOME/bin/gluecron.sh cron"
   
-  nohup $RUN_CMD > "$LOG" 2>&1 < /dev/null &
+  
+  su - hadoop -l -m -c "nohup $RUN_CMD > "$LOG" 2>&1 >> /dev/null&"
+  
   RETVAL=$?
   echo $! > $PIDFILE
 

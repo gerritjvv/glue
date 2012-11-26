@@ -3,6 +3,7 @@ package org.glue.gluecron.trigger.impl;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.ResultSet;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -49,7 +50,7 @@ public class HdfsHistoryTriggersManager implements TriggersManager, Runnable {
 	public HdfsHistoryTriggersManager(DBManager dbManager, Configuration conf) {
 		this.dbManager = dbManager;
 
-		final int minutes = conf.getInt("refresh.freq", 5);
+		final int minutes = conf.getInt("history.refresh.freq", 60 * 24);
 		hdfsfilesTbl = conf.getString("hdfsfiles-history.table",
 				"hdfsfiles_history");
 		unitTriggersTbl = conf.getString("unittriggers.table", "unittriggers");
@@ -85,9 +86,10 @@ public class HdfsHistoryTriggersManager implements TriggersManager, Runnable {
 			LOG.info("Start polling");
 			final long start = System.currentTimeMillis();
 			// get paths
-			String[] paths = getPaths();
-			if (paths.length > 0) {
-				pollHdfs(paths);
+			HDFSHistoryDataAttribute[] attributes = getDataAttributes();
+
+			if (attributes.length > 0) {
+				pollHdfs(attributes);
 				fillUnitFiles();
 				checkFiles();
 			}
@@ -103,6 +105,7 @@ public class HdfsHistoryTriggersManager implements TriggersManager, Runnable {
 	 * the logic returns true
 	 */
 	private void checkFiles() {
+		long start = System.currentTimeMillis();
 
 		// first collect the data fields for each unit with type = hdfs-history
 		HDFSHistoryDataAttribute[] attributes = getDataAttributes();
@@ -117,7 +120,7 @@ public class HdfsHistoryTriggersManager implements TriggersManager, Runnable {
 				LOG.error(t.toString(), t);
 			}
 		}
-
+		LOG.info("Checkfiles: " + (System.currentTimeMillis() - start) + "ms");
 	}
 
 	/**
@@ -140,35 +143,18 @@ public class HdfsHistoryTriggersManager implements TriggersManager, Runnable {
 
 	}
 
-	/**
-	 * Query the unitTriggersTbl to retrieve a list of paths for hdfs
-	 * 
-	 * @return
-	 */
-	private final String[] getPaths() {
-		return dbManager.map(
-				"SELECT DISTINCT data FROM " + unitTriggersTbl
-						+ " WHERE type='hdfs-history'",
-				new DBQueryMapClosure<String>() {
-					@Override
-					public String call(ResultSet rs) throws Exception {
-						return rs.getString(1);
-					}
-				}).toArray(new String[0]);
-
-	}
-
-	private final void pollHdfs(String[] paths) {
+	private final void pollHdfs(HDFSHistoryDataAttribute[] attributes) {
 		// get all of the paths to poll.
 
 		final long start = System.currentTimeMillis();
 
-		for (int i = 0; i < paths.length; i++) {
+		for (int i = 0; i < attributes.length; i++) {
 			try {
-				LOG.info("Polling for Path " + paths[i]);
-				Path dirpath = new Path(paths[i]);
+				final String path = attributes[i].getPath();
+				LOG.info("Polling for Path " + path);
+				Path dirpath = new Path(path);
 				if (!fs.exists(dirpath)) {
-					throw new FileNotFoundException("Not found: " + paths[i]);
+					throw new FileNotFoundException("Not found: " + path);
 				}
 
 				jdbcFilesToSQL.loadFiles(new DirectoryListIterator2(fs, fs
@@ -194,11 +180,11 @@ public class HdfsHistoryTriggersManager implements TriggersManager, Runnable {
 		dbManager
 				.exec("insert ignore into "
 						+ unitfilesTbl
-						+ " (unitid, fileid, status) select ut.id, hf.id, 'ready' from "
+						+ " (unitid, fileid, datetime, status) select ut.id, hf.id, hf.datetime, 'ready' from "
 						+ hdfsfilesTbl
 						+ " hf, "
 						+ unitTriggersTbl
-						+ " ut where ut.type = 'hdfs-history' AND hf.seen=0 AND SUBSTRING(hf.path, 1, LENGTH(ut.data)) = ut.data AND LENGTH(hf.path) >= LENGTH(ut.data)",
+						+ " ut where ut.type = 'hdfs-history' AND hf.seen=0 AND SUBSTRING(hf.path, 1, LENGTH(substring_index(ut.data, ',', 1))) = substring_index(ut.data, ',', 1) AND LENGTH(hf.path) >= LENGTH(ut.data)",
 
 						"UPDATE "
 								+ hdfsfilesTbl
@@ -224,7 +210,8 @@ public class HdfsHistoryTriggersManager implements TriggersManager, Runnable {
 		//
 		// select unit name, datetime and the path itself.
 		//
-		return dbManager.map(
+		
+		String[] names = dbManager.map(
 				"select distinct unit from " + unitTriggersTbl + " ut, "
 						+ unitfilesTbl
 						+ " uf WHERE ut.id=uf.unitid and uf.status='process'",
@@ -235,6 +222,8 @@ public class HdfsHistoryTriggersManager implements TriggersManager, Runnable {
 					}
 				}).toArray(new String[0]);
 
+		LOG.info("GetUnitNames: " + Arrays.toString(names));
+		return names;
 	}
 
 	@Override
