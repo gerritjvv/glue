@@ -42,7 +42,8 @@ class HistoryDBTriggerStore extends DBTriggerStore2{
 		Connection conn = DriverManager.getConnection(url, uid, pwd);
 		Statement st = conn.createStatement();
 		try{
-			ResultSet rs = st.executeQuery(" select datetime, fileid, path from unitfiles uf, hdfsfiles_history hf, unittriggers ut WHERE uf.status = 'process' AND uf.fileid = hf.id AND ut.id = uf.unitid AND ut.unit = '${unitName}'");
+			//println(" select datetime, fileid, path from unitfiles uf, hdfsfiles_history hf, unittriggers ut WHERE uf.status = 'process' AND uf.fileid = hf.id AND ut.id = uf.unitid AND (ut.unit = '${unitName}' or ut.unit = '${unitName}.groovy')")
+			ResultSet rs = st.executeQuery(" select uf.datetime, fileid, path from unitfiles_history uf, hdfsfiles_history hf, unittriggers ut WHERE uf.status = 'process' AND uf.fileid = hf.id AND ut.id = uf.unitid AND (ut.unit = '${unitName}' or ut.unit = '${unitName}.groovy')");
 
 			if(rs.first()){
 				while(true){
@@ -71,7 +72,7 @@ class HistoryDBTriggerStore extends DBTriggerStore2{
 
 		Connection conn = DriverManager.getConnection(url, uid, pwd);
 		conn.setAutoCommit(false);
-		Statement st = conn.prepareStatement("INSERT INTO unitfiles_history (unitid, fileid, status) SELECT id, ?, 'processed' from unittriggers where unit = '${unitName}' ON DUPLICATE KEY UPDATE status='processed'");
+		Statement st = conn.prepareStatement("INSERT INTO unitfiles_history (unitid, fileid, status) SELECT id, ?, 'processed' from unittriggers where unit = '${unitName}' or unit = '${unitName}.groovy' ON DUPLICATE KEY UPDATE status='processed'");
 		try{
 
 			for(fileId in fileIds){
