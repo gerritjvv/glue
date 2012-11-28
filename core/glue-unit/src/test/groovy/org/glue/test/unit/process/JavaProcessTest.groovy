@@ -17,7 +17,7 @@ class JavaProcessTest {
 	/**
 	 * Runs and then kills a program that will never end
 	 */
-	@Test(timeout=10000L)
+	@Test(timeout=25000L)
 	public void runKillProgram(){
 
 		String classpath = System.getProperty("java.class.path")
@@ -37,12 +37,17 @@ class JavaProcessTest {
 		}
 
 		Thread.sleep(1000L)
-		assertTrue(process.isRunning())
+		assertTrue("Program should be running", process.isRunning())
 
 		process.kill()
 
-		Thread.sleep(2000L)
-		assertFalse(process.isRunning())
+		for(int n = 0; n < 20; n++) {
+			Thread.sleep(1000L)
+			if(!process.isRunning()) {
+				break;
+			}
+		}
+		assertFalse("Program should be killed", process.isRunning())
 	}
 
 

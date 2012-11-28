@@ -292,6 +292,12 @@ class QueuedExecServiceImpl implements GlueExecutor{
 			unitId=java.util.UUID.randomUUID().toString();
 		}
 		
+		def qw = new QueuedWorkflow(unit.name, unitId, params, unit.priority);
+		if(!execActor.canAdd(qw)) {
+			println "Workflow ${unit.name} already in queue to run"
+			return "0";
+		}
+		
 		def context = contextBuilder.build(unitId, unit, params)
 		//set an initial status
 		UnitStatus unitStatus = new UnitStatus(status:GlueState.WAITING)
@@ -306,7 +312,15 @@ class QueuedExecServiceImpl implements GlueExecutor{
 
 			//if the workflow is a trigger workflow any files needs to be set here.
 			executingUnits[unitId] = context
-			execActor << new QueuedWorkflow(unit.name, unitId, params, unit.priority)
+			execActor << qw
+			
+			/*
+			if("0".equals(qw.uuid)) {
+				unitStatus.status = GlueState.KILLED
+				context.statusManager?.setUnitStatus(unitStatus)
+				return "0";
+			}
+			*/
 
 			return unitId;
 		}
