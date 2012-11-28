@@ -198,10 +198,10 @@
 
 	<modules>
 		<module>glue-unit</module>
-		<module>glue-trigger</module>
+		<!-- deprecated: <module>glue-trigger</module> -->
 		<module>glue-rest</module>
 		<module>glue-modules</module>
 		<module>glue-modules-hadoop</module>
-		<module>glue-test</module>
+		<!-- <module>glue-test</module> -->
 	</modules>
 </project>

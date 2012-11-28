@@ -132,4 +132,40 @@ class WorkflowExecActor extends ThreadedActor<QueuedWorkflow>{
 		}
 		return
 	}
+	
+	/**
+	* Returns false if the specified workflow is already in the queue.
+	* This prevents the same one from being queued dozens of times if other workflows are taking a long time.
+	* Limiting a workflow to 1 in the queue still ensures it will run after it needs to.
+	* Note: the uuid is not touched.
+	*/
+	boolean canAdd(QueuedWorkflow qwf) {
+		final int max = 1;
+		int count = 0;
+		for(QueuedWorkflow x : this.queue) {
+			if(x.name.equals(qwf.name)) {
+				if(++count >= max) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	/**
+	* Adds a QueuedWorkflow to the end of the queue.
+	* If canAdd returns false, it is not actually queued again and the uuid is set to "0".
+	* @param qwf
+	*/
+	@Override
+	void add(QueuedWorkflow qwf){
+		if(!canAdd(qwf)) {
+			qwf.uuid = "0";
+		}
+		else {
+			this.queue.put(qwf)
+		}
+	}
+	
+	
 }
