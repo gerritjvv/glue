@@ -96,4 +96,56 @@ class WorkflowExecActorTest {
 		assertTrue(hasError.get())
 		assertFalse(completed)
 	}
+	
+	
+	/**
+	 * Submit a workflow via the WorkflowExecActor
+	 */
+	@Test
+	public void testSubmitProcessQueueLimit(){
+
+		def execConf = new File('src/test/resources/module_conf/exec_conf.groovy').absolutePath
+		def modulesConf = new File('src/test/resources/module_conf/empty_conf.groovy').absolutePath
+
+		WorkflowRunner.testMode = false
+
+		def provider = new DefaultJavaProcessProvider()
+		provider.javaOpts = ['-Xmx64m']
+		provider.addCurrentClassPath()
+
+		provider.mainClass = WorkflowRunner.class.name
+
+		def actor = new WorkflowExecActor(1, provider, execConf, modulesConf)
+		
+		int numRun = 0;
+		actor.onErrorListener = { numRun++; }
+		actor.onExecCompletedListener = { numRun++; }
+
+		actor.start()
+
+		int numExpectRun = 2;
+		def add = { QueuedWorkflow qwf ->
+			actor << qwf;
+			println("add: workflow='${qwf.name}' uuid='${qwf.uuid}'")
+		}
+		//send several workflows for execution
+		add(new QueuedWorkflow('testflow', '123', [:]))
+		add(new QueuedWorkflow('testflowException', '123', [:]))
+		add(new QueuedWorkflow('testflow', '123', [:]))
+		add(new QueuedWorkflow('testflowException', '123', [:]))
+		add(new QueuedWorkflow('testflow', '123', [:]))
+		add(new QueuedWorkflow('testflowException', '123', [:]))
+		add(new QueuedWorkflow('testflow', '123', [:]))
+		add(new QueuedWorkflow('testflowException', '123', [:]))
+
+		while(numRun < numExpectRun){
+			Thread.sleep(2000L)
+		}
+		Thread.sleep(2000L)
+
+		actor.stop()
+
+		assertTrue(numRun == numExpectRun)
+	}
+	
 }
