@@ -22,7 +22,7 @@ Glue is split into three installs:
 
 ### RPM install
 
-1. Download the latest rpm from https://github.com/gerritjvv/glue/downloads
+1. Download the latest rpm from http://code.google.com/p/klej/downloads
 2. Run rpm -i <glue rest rpm>
 3. Glue installs to /opt/glue
 

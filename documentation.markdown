@@ -19,6 +19,7 @@ Glue Documentation Index
 	* [Triggers](triggers.html)
 		* [HDFS Data Driven](triggers.html) 
 		* [Cron](triggers.html)
+		* [History Triggers](historytriggers.html)
 	* [Processes](glueprocesses.html)
 	* [Glue Context](gluecontext.html)
 	* [Dependencies](processdependencies.html)
