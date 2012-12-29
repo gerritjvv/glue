@@ -145,7 +145,8 @@ class WorkflowExecActorTest {
 
 		actor.stop()
 
-		assertTrue(numRun == numExpectRun)
+		assertTrue( Math.abs(numExpectRun-numRun) < 2 )
+		
 	}
 	
 }

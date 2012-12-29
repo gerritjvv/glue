@@ -1,17 +1,11 @@
 package org.glue.unit.om.impl
 
 
-import org.glue.unit.om.GlueContext
-import java.util.concurrent.ConcurrentHashMap
-
-import org.glue.unit.om.GlueContext
-import org.glue.unit.om.GlueModuleFactory
-
 import java.util.concurrent.ConcurrentHashMap
 
 import org.glue.unit.exceptions.ProcessStopException
 import org.glue.unit.log.GlueExecLogger
-import org.glue.unit.om.GlueContext
+import org.glue.unit.om.DefaultGlueContext
 import org.glue.unit.om.GlueModuleFactory
 import org.glue.unit.om.GlueUnit
 import org.glue.unit.status.GlueUnitStatusManager
@@ -31,8 +25,8 @@ import org.json.JSONWriter
  * 
  *
  */
-@Typed(TypePolicy.DYNAMIC)
-class GlueContextImpl implements GlueContext{
+
+class GlueContextImpl extends DefaultGlueContext{
 
 
 	Map<String, Class> classCache = new ConcurrentHashMap<String, Class>();

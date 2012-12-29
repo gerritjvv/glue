@@ -1,7 +1,7 @@
 package org.glue.unit.om.impl
 
-import groovy.util.ConfigObject
-
+import org.apache.commons.io.FilenameUtils
+import org.apache.log4j.Logger
 import org.glue.unit.exceptions.UnitParsingException
 import org.glue.unit.om.GlueUnit
 import org.glue.unit.om.GlueUnitBuilder
@@ -18,11 +18,38 @@ import org.glue.unit.script.ScriptClassCache
 @Typed
 class DefaultGlueUnitBuilder implements GlueUnitBuilder{
 
+	static final Logger log = Logger.getLogger(DefaultGlueUnitBuilder.class)
+	
 	/**
 	 * Reads the URL source and builds a GlueUnit instance
 	 */
 	GlueUnit build(URL url) throws UnitParsingException{
-		build(ScriptClassCache.getDefaultInstance().parse(new File(url.toURI())))
+		
+		final File file = new File(url.getFile())
+		final String fileName = file.name
+		if(!fileName.endsWith("groovy")){
+			
+			final String lang = FilenameUtils.getExtension(fileName)
+			
+			log.info("Creating DSL for script $file lang:$lang")
+			/**
+			 * Normal script file, i.e. not a DSL.s
+			 */
+			build(ScriptClassCache.getDefaultInstance().parse("""
+
+				tasks{
+                    ${FilenameUtils.removeExtension(fileName)}{
+					  script_${lang}=\"\"\"
+                      ${file.text}
+                      \"\"\"
+                    }
+                }
+
+			"""		
+				))
+		}else{
+			build(ScriptClassCache.getDefaultInstance().parse(file))
+		}
 	}
 
 	/**
@@ -38,7 +65,14 @@ class DefaultGlueUnitBuilder implements GlueUnitBuilder{
 		}catch(Exception t){
 			throw new UnitParsingException(t)
 		}
-		
+
+	}
+
+	/**
+	 * Returns the string represenation of this GlueUnit that can be used via a GlueUnitBuilder to parse the a GlueUnit.
+	 */
+	String mkString(GlueUnit unit){
+		unit.mkString()
 	}
 
 	/**

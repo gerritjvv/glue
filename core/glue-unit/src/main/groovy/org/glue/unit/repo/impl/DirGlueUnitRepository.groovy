@@ -6,6 +6,7 @@ import java.io.File
 import java.util.List
 import java.util.concurrent.atomic.AtomicInteger
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger
 import org.glue.unit.om.GlueUnit
 import org.glue.unit.om.GlueUnitBuilder
@@ -123,15 +124,33 @@ class DirGlueUnitRepository implements GlueUnitRepository{
     */
    private File findFile(String fileName){
 	   
-	   String unitFileName = new File(fileName).name;
+	   String unitFileName = FilenameUtils.removeExtension(new File(fileName).name);
 	   
-	   String name = (unitFileName.endsWith(".groovy")) ? unitFileName : "${unitFileName}.groovy"
+	   //String name = (unitFileName.endsWith(".groovy")) ? unitFileName : "${unitFileName}.groovy"
 	   
 	   File[] retFile = new File[1];
 	   
 	   fileDirectories.each { File dir ->
 		   dir.eachFileRecurse { File file ->
-			   if(file.name.endsWith(".groovy") && file.name == name){
+			   final String currFileName = FilenameUtils.removeExtension(file.name)
+			   
+			   if((file.name.endsWith(".groovy")
+				   || 
+				   file.name.endsWith(".jython")
+				   ||
+				   file.name.endsWith(".scala")
+				   ||
+				   file.name.endsWith(".js")
+				   ||
+				   file.name.endsWith(".jrb")
+				   ||
+				   file.name.endsWith(".jruby")
+				   ||
+				   file.name.endsWith(".jgo")
+				   || file.name.endsWith(".jtcl")
+				   )
+			   	   && currFileName == unitFileName
+			   ){
 				   retFile[0] = file
 			   }
 		   }

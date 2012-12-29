@@ -1,10 +1,15 @@
 package org.glue.unit.om.impl
 
-class MyClass{
-		public static boolean isSet = false;
-		
-		public static setValue(boolean v){
-			isSet = v;
-		}
-		
+class MyClass {
+
+	static boolean v;
+	
+	def static setValue(boolean v){
+		this.v = v
 	}
+	
+	def static isSet(){
+		v
+	}
+	
+}

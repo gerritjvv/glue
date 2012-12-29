@@ -12,5 +12,6 @@ interface GlueUnitBuilder {
 	GlueUnit build(URL url) throws UnitParsingException;
 	GlueUnit build(String config) throws UnitParsingException;
 	GlueUnit build(ConfigObject config) throws UnitParsingException;
+	String mkString(GlueUnit unit);
 	
-}
+ }

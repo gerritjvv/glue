@@ -34,6 +34,8 @@ class GlueUnitImpl implements GlueUnit {
 	
 	boolean notifyOnFail = false
 	
+	ConfigObject config;
+	
 	/**
 	 * Builds a Glue object from the ConfigObject (this is the glue unit file)
 	 * @param config
@@ -43,7 +45,7 @@ class GlueUnitImpl implements GlueUnit {
 	public GlueUnitImpl(ConfigObject config){
 		log.debug "Received $config as config object"
 		this.name=config.name;
-		
+		this.config = config;
 		
 		if(config?.priority){
 			try{
@@ -80,7 +82,10 @@ class GlueUnitImpl implements GlueUnit {
 		if(config.tasks)
 		{
 			config.tasks.each { name, proc ->
-				GlueProcess p = new GlueProcessImpl(name,proc);
+				
+				GlueProcess p = (proc?.tasks) ? new GlueProcessImpl(name,proc) : 
+					new ScriptedGlueProcessImpl(name, proc);
+					
 				this.processes.put name, p
 			}
 		}
@@ -97,6 +102,10 @@ class GlueUnitImpl implements GlueUnit {
 	
 	public List<TriggerDef> getTriggers(){
 		return triggers
+	}
+	
+	public String mkString(){
+		config.writeTo(new StringWriter()).toString()
 	}
 	
 }

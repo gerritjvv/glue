@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
  */
 @Typed
 class GlueProcessImpl implements GlueProcess{
-	static final Logger log = Logger.getLogger(GlueProcessImpl.class)
+	private static final Logger log = Logger.getLogger(GlueProcessImpl.class)
 	
 	String description;
 	String name;

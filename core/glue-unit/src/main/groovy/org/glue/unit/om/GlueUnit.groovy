@@ -25,24 +25,30 @@ public interface GlueUnit {
 	 * @param notifyOnFail
 	 */
 	void setNotifyOnFail(boolean notifyOnFail)
-	
+
 	String getName();
 	void setName(String name);
-	
+
 	boolean isSerial();
 	void setSerial(boolean serial);
-	
+
 	int getPriority();
 	void setPriority(int priority);
-	
+
 	List<TriggerDef> getTriggers();
-	
+
 	Map<String,GlueProcess> getProcesses();
-		
+
 	/**
 	 * Just a list of plugins that Unit requires for execution. Those plugins will be loaded into the UnitContext as properties.
 	 * @return
 	 */
 	Set<String> getRequiredModules();
-			
+
+	/**
+	 * Returns the String representation of the unit that can be parsed back using the GlueUnitBuilder
+	 * @return
+	 */
+	String mkString();
+	
 }

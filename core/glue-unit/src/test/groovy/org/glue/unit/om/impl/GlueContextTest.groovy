@@ -17,7 +17,7 @@ class GlueContextTest {
 		GlueContextImpl ctx = new GlueContextImpl()
 		ctx.eval('org.glue.unit.om.impl.MyClass','setValue', true)
 		
-		assertTrue(MyClass.isSet)	
+		assertTrue(MyClass.isSet())	
 	}
 
 	/**

@@ -1,8 +1,5 @@
 package org.glue.unit.om;
 
-import java.io.IOException
-import java.io.Writer
-
 import org.glue.unit.log.GlueExecLogger
 import org.glue.unit.status.GlueUnitStatusManager
 
@@ -11,6 +8,7 @@ import org.glue.unit.status.GlueUnitStatusManager
  * Each GlueUnit has a context during its execution.
  *
  */
+@Typed
 public interface GlueContext {
 
 	String getUnitId()

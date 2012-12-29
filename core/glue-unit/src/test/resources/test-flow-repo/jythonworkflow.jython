@@ -1,0 +1,8 @@
+
+def f():
+  print "Hi"
+  
+  
+f()
+
+print("Context: " + str(context) + " CTX: " + str(ctx))
