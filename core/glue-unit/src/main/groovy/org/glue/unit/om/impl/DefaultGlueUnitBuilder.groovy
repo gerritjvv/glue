@@ -39,9 +39,9 @@ class DefaultGlueUnitBuilder implements GlueUnitBuilder{
 
 				tasks{
                     ${FilenameUtils.removeExtension(fileName)}{
-					  script_${lang}=\"\"\"
+					  script_${lang}=\'\'\'
                       ${file.text}
-                      \"\"\"
+                      \'\'\'
                     }
                 }
 

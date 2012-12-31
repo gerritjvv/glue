@@ -53,6 +53,8 @@ class ScriptedGlueProcessImpl extends GlueProcessImpl{
 			//The PythonContextAdaptor use a work-around
 			PySystemState.initialize(null, null, [""], null, 
 				new PythonContextAdaptor())
+		}else if(lang == "jruby"){
+			lang = "ruby"
 		}
 
 		ScriptEngine engine = factory.getEngineByName(lang);

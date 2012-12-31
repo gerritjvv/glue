@@ -1,0 +1,4 @@
+
+
+
+puts "CTX #{$ctx} and context is #{$context}"
