@@ -1,8 +1,11 @@
 package org.glue.unit.om.impl
 
+import java.util.Map.Entry
+
 import org.glue.unit.log.GlueExecLoggerProvider
 import org.glue.unit.om.GlueContext
 import org.glue.unit.om.GlueContextBuilder
+import org.glue.unit.om.GlueModule
 import org.glue.unit.om.GlueModuleFactoryProvider
 import org.glue.unit.om.GlueUnit
 import org.glue.unit.status.GlueUnitStatusManager
@@ -39,6 +42,58 @@ class DefaultGlueContextBuilder implements GlueContextBuilder{
 		this.loggerProvider = loggerProvider
 	}
 	
+	/**
+	* Normally the GlueContext modules are dynamically searched during call time.<br/>
+	* This method creates a String template class with all the defined modules identified and their module names added as methods to the glue
+    */
+	@Typed(TypePolicy.MIXED)
+	static GlueContext buildStaticGlueContext(GlueContext ctx){
+		
+		 String s = """
+		   package org.glue.unit.om.impl;
+
+		   class GlueContextStatic extends org.glue.unit.om.impl.GlueContextWrapper{
+            
+		 	GlueContextStatic(org.glue.unit.om.GlueContext parent){super(parent); this.parent = parent}
+		 	
+         """
+		 
+		 
+		 for(Entry<String, GlueModule> entry in ctx.getModuleFactory().getAvailableModules().entrySet()){
+		 	String name = entry.key
+			GlueModule module = entry.value
+			String clsName
+			if(module.getClass().name.endsWith("GlueModuleProxy_delegateProxy"))
+				clsName = module.module.getClass().name	
+			else
+			    clsName = module.getClass().name
+				
+			s += """
+
+				
+				def $clsName ${name}(){
+                  	def module = parent.getModuleFactory().getModule(\'${name}\')
+
+					if(module?.getClass()?.name?.endsWith("GlueModuleProxy_delegateProxy"))
+						return module?.module
+					else
+                        return module
+
+                } 
+
+			"""
+		 } 
+		    
+		 s += """
+               
+           }
+
+		 """
+		 println(s)
+		 new GroovyClassLoader(ctx.getClass().getClassLoader()).parseClass(s).newInstance(ctx)
+		 
+	}
+		
 	GlueContext build(String unitId, GlueUnit unit, Map<String,String> params){
 		
 		//with each GlueContext we create a unique instance of the moduleFactory

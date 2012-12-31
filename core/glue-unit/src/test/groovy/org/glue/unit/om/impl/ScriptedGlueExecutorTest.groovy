@@ -10,15 +10,12 @@ import org.glue.unit.exec.UnitExecutor
 import org.glue.unit.exec.impl.GlueExecutorImpl
 import org.glue.unit.exec.impl.MockProcessExecutorProvider
 import org.glue.unit.exec.impl.ProcessExecutorImpl
+import org.glue.unit.om.GlueContext
 import org.glue.unit.om.GlueModuleFactory
 import org.glue.unit.om.Provider
 import org.glue.unit.repo.GlueUnitRepository
 import org.glue.unit.repo.impl.DirGlueUnitRepository
 import org.junit.Test
-import org.python.core.Py
-import org.python.core.PyObject
-import org.python.core.PyObjectDerived
-import org.python.core.PyType
 
 class ScriptedGlueExecutorTest {
 	static final Logger log = Logger.getLogger(ScriptedGlueExecutorTest.class)
@@ -27,6 +24,7 @@ class ScriptedGlueExecutorTest {
 	@Test
 	public void testUnitExecutorUsingRepository() {
 
+		
 		GlueModuleFactory moduleFactory = new GlueModuleFactoryImpl();
 
 		ConfigObject execConfig = new ConfigObject();
@@ -52,8 +50,12 @@ class ScriptedGlueExecutorTest {
 
 		assertEquals(GlueState.FINISHED, exec.getStatus(uid))
 			
-//		GlueContextImpl ctx = new GlueContextImpl()
+		moduleFactory.addModule("sql", new MockGlueModule())
+		GlueContextImpl ctx = new GlueContextImpl()
+		ctx.moduleFactory = moduleFactory
 		
+		GlueContext ctx1 = DefaultGlueContextBuilder.buildStaticGlueContext(ctx)
+		println("Generator context: ctx1:" + ctx1)
 //		PyObject obj = new PyObjectDerived(PyType.fromClassSkippingInners(ctx.getClass(), new HashSet()))
 //		obj.javaProxy = ctx;
 //

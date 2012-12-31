@@ -70,13 +70,13 @@ class ScriptedGlueProcessImpl extends GlueProcessImpl{
 
 		config.tasks = { GlueContext ctx ->
 			
+			GlueContext ctx1 = DefaultGlueContextBuilder.buildStaticGlueContext(ctx)
 			log.info("setting memory to: context|ctx => GlueContext : ")
 			def bindings = engine.createBindings()
-			bindings.put("context", ctx)
-			bindings.put("ctx", ctx)
+			bindings.put("context", ctx1)
+			bindings.put("ctx", ctx1)
 			
-			
-			log.info("binding.context: " + ctx + " class: " + ctx.getClass())
+			log.info("binding.context: " + ctx + " class: " + ctx1.getClass())
 			engine.eval(
 				script.value
 				, bindings)
