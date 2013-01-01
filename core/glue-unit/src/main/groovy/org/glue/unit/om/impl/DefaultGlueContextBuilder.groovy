@@ -89,7 +89,6 @@ class DefaultGlueContextBuilder implements GlueContextBuilder{
            }
 
 		 """
-		 println(s)
 		 new GroovyClassLoader(ctx.getClass().getClassLoader()).parseClass(s).newInstance(ctx)
 		 
 	}

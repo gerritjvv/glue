@@ -26,7 +26,6 @@ class GlueProcessImpl implements GlueProcess{
 	
 	public GlueProcessImpl(String name, ConfigObject config)
 	{
-		log.debug "received $config as process configuration"
 		this.name = name;
 		this.description = name
 		this.dependencies=new HashSet<String>();

@@ -55,7 +55,8 @@ class DBTriggerStore2 extends TriggerStore2{
 		Connection conn = DriverManager.getConnection(url, uid, pwd);
 		Statement st = conn.createStatement();
 		try{
-			ResultSet rs = st.executeQuery(" select fileid, path from unitfiles uf, hdfsfiles hf, unittriggers ut WHERE uf.status = 'ready' AND uf.fileid = hf.id AND ut.id = uf.unitid AND ut.unit = '${unitName}'");
+			String sql = " select fileid, path from unitfiles uf, hdfsfiles hf, unittriggers ut WHERE uf.status = 'ready' AND uf.fileid = hf.id AND ut.id = uf.unitid AND ut.unit = '${unitName}'"
+			ResultSet rs = st.executeQuery(sql);
 
 			if(rs.first()){
 				while(true){

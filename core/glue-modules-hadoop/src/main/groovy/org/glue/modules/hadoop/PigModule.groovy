@@ -25,6 +25,8 @@ public class PigModule implements GlueModule {
 	
 	private static final Logger LOG = Logger.getLogger(PigModule)
 	
+	GlueContext ctx
+	
 	Map<String, ConfigObject> pigConfigurations=[:];
 	String defaultConfiguration = null;
 	Boolean isRunning=false;
@@ -196,22 +198,23 @@ public class PigModule implements GlueModule {
 
 	@Override
 	public void onUnitStart(GlueUnit unit, GlueContext context) {
+		ctx = context
 	}
 
-	public boolean run(GlueContext context, String pigFileOrScript, boolean localMode = false){
+	public boolean run(GlueContext context = null, String pigFileOrScript, boolean localMode = false){
 		run(context, null, pigFileOrScript, [:], localMode)
 	}
 
 	
-	public boolean run(GlueContext context, String pigFileOrScript, Map<String, String> params, boolean localMode = false){
+	public boolean run(GlueContext context = null, String pigFileOrScript, Map<String, String> params, boolean localMode = false){
 		run(context, null, pigFileOrScript, params, localMode)
 	}
 
-	public boolean run(GlueContext context, String jobName , String pigFileOrScript,boolean localMode = false){
+	public boolean run(GlueContext context = null, String jobName , String pigFileOrScript,boolean localMode = false){
 		run(context, null, jobName, pigFileOrScript, [:], localMode)
 	}
 	
-	public boolean run(GlueContext context, String jobName , String pigFileOrScript, Map<String, String> params, boolean localMode = false){
+	public boolean run(GlueContext context = null, String jobName , String pigFileOrScript, Map<String, String> params, boolean localMode = false){
 		run(context, null, jobName, pigFileOrScript, params, localMode)
 	}
 
@@ -226,9 +229,13 @@ public class PigModule implements GlueModule {
 	 * @param params
 	 * @return boolean true if success
 	 */
-	public boolean run(GlueContext context, String clusterName, String jobName , String pigFileOrScript, Map<String, String> params, boolean localMode = false){
+	public boolean run(GlueContext _context = null, String clusterName, String jobName , String pigFileOrScript, Map<String, String> params, boolean localMode = false){
 		
-		
+		GlueContext context
+		if(_context == null)
+		  context = ctx
+		else
+		  context = _context
 		
 		File file=null;
 		boolean isTempFile = false

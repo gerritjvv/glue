@@ -1,12 +1,8 @@
 package org.glue.unit.repo.impl
 
-import groovy.util.ConfigSlurper
-
-import java.io.File
-import java.util.List
 import java.util.concurrent.atomic.AtomicInteger
 
-import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.FilenameUtils
 import org.apache.log4j.Logger
 import org.glue.unit.om.GlueUnit
 import org.glue.unit.om.GlueUnitBuilder
@@ -109,11 +105,11 @@ class DirGlueUnitRepository implements GlueUnitRepository{
 	   //usetoURI.toURL for avoid permgen memory error with groovy and config slurper
 	   GlueUnit unit = glueUnitBuilder.build(file.toURI().toURL())  
 	   
-	   String fileName = file.name
-	   if( fileName.endsWith(".groovy")){
-		   int index = fileName.indexOf(".groovy")-1
-		   fileName = fileName[0..index]
-	   }
+	   String fileName = FilenameUtils.removeExtension( file.name )
+//	   if( fileName.endsWith(".groovy")){
+//		   int index = fileName.indexOf(".groovy")-1
+//		   fileName = fileName[0..index]
+//	   }
 	   
 	   unit.name = fileName
 	   return unit
