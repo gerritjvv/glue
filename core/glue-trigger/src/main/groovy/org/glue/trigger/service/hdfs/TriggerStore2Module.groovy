@@ -36,7 +36,7 @@ class TriggerStore2Module implements GlueModule{
 	private static final Logger LOG = Logger.getLogger(TriggerStore2Module)
 
 	TriggerStore2 triggerStore
-
+	GlueContext context
 
 	void init(ConfigObject config){
 
@@ -89,6 +89,7 @@ class TriggerStore2Module implements GlueModule{
 	}
 
 	void onUnitStart(GlueUnit unit, GlueContext context){
+		this.context = context
 	}
 
 	void onUnitFinish(GlueUnit unit, GlueContext context){
@@ -114,6 +115,10 @@ class TriggerStore2Module implements GlueModule{
 		"triggerStore"
 	}
 	
+	void listReadyFiles(Closure closure, boolean lock=true){
+		listReadyFiles(context, closure, lock)
+	}
+	
 	/**
 	* List all files that where updated as READY by the trigger<br/>
 	* The closure is called with (fileid:int, filePath:String)<br/>
@@ -133,5 +138,8 @@ class TriggerStore2Module implements GlueModule{
 		triggerStore.markFilesAsProcessed context.unit.name, ids;
 	}
 
+	void markFilesAsProcessed(java.util.Collection ids){
+		markFilesAsProcessed(context, ids)
+	}
    	
 }
