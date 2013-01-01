@@ -10,7 +10,7 @@ category: tutorial
 
 
 Glue is a job execution engine, written in Java and Groovy.
-workflows are written in Groovy DSL (simple statements) and use
+workflows are written in Groovy DSL (simple statements), Jython or JRuby and use
 pre-developed modules to interact with external resources e.g. DBs,
 Hadoop, Netezza, FTP etc.
 
@@ -33,7 +33,7 @@ when data arrives we want our workflow(s) to start.
 Glue via GlueCron gives the ability to register one or more workflows to one or more HDFS directories.
 
 
-##Why Groovy
+##Groovy
 
 The wofklow logic language is groovy and supports the whole groovy syntax.
 
@@ -47,6 +47,31 @@ Reasons for choosing groovy are:
 * Groovy naturally supports scripting
 
 For more on Groovy please see: http://groovy.codehaus.org/
+
+##Jython
+
+Jython scripts can be written using the Groovy and Java libraries provided by Glue.
+
+e.g.
+    def f2(res):
+       print(str(res))
+    
+    ctx.sql().eachSqlResult('glue', 'select unit_id from units', Closure(f2))
+    
+##JRuby
+
+JRuby scripts can be written using the Groovy and Java libraries provided by Glue.
+
+e.g.
+
+    $ctx.sql().eachSqlResult('glue', 'select unit_id from units', Closure.new(
+
+     lambda{ | res |
+        puts "Hi #{res}"
+     }
+
+    ))
+
 
 ## No XML Workflows
 

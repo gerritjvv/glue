@@ -28,6 +28,15 @@ properties file, i.e. you can run pig on two different clusters if you wanted to
 
 All modules are configured in the /opt/glue/conf/workflow_modules.groovy file
 
+# Note for CHD4 Users
+
+  Use the below classpath in your pig module configuration
+
+    classpath = ['/usr/lib/hadoop/client-0.20/hadoop-core-2.0.0-mr1-cdh4.1.0.jar',
+                    '/usr/lib/pig', '/usr/lib/pig/lib', '/opt/glue/lib/', '/usr/lib/hadoop', '/usr/lib/hadoop/lib', '/opt/glue/conf']
+
+  Its important to have the mr1 jar first in the classpath
+
 # Configuration Example
 
 	pig{
