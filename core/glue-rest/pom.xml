@@ -34,7 +34,7 @@
 						<copyright>http://www.apache.org/licenses/LICENSE-2.0</copyright>
 						<distribution>Glue task manager</distribution>
 						<group>utilties</group>
-						<release>11</release>
+						<release>13</release>
 						<packager>http://code.google.com/p/glue/</packager>
 						<provides>
 							<provide>glue-server</provide>

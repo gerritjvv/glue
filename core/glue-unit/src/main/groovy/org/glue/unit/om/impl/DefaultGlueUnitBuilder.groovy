@@ -36,11 +36,11 @@ class DefaultGlueUnitBuilder implements GlueUnitBuilder{
 			 * Normal script file, i.e. not a DSL.s
 			 */
 			build(ScriptClassCache.getDefaultInstance().parse("""
-
+				
 				tasks{
                     ${FilenameUtils.removeExtension(fileName)}{
 					  script_${lang}=\'\'\'
-                      ${file.text}
+                      ${file.text.bytes.encodeBase64().toString()}
                       \'\'\'
                     }
                 }

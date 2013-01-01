@@ -80,7 +80,7 @@ class ScriptedGlueProcessImpl extends GlueProcessImpl{
 			
 			log.info("binding.context: " + ctx + " class: " + ctx1.getClass())
 			engine.eval(
-				script.value
+				new String(script.value.decodeBase64())
 				, bindings)
 		}
 
