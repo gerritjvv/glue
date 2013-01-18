@@ -80,6 +80,11 @@ public class PigModule implements GlueModule {
 				defaultConfiguration=key;
 			}
 
+			//set the default configuration to the first key if not set
+			//if c.isDefault is specified this will be overwritten above
+			if(!defaultConfiguration)
+				defaultConfiguration = key;
+				
 			if(!new File(c.pigProperties.toString()).exists()){
 				throw new ModuleConfigurationException("The file ${c?.pigProperties} was not found")
 			}
@@ -88,7 +93,7 @@ public class PigModule implements GlueModule {
 			println "Loaded $key as ${c.pigProperties}"
 		}
 
-		
+		   
 		config?.constants.each { const_name, const_val ->
 				this.constants.put(const_name.toString(), const_val?.toString());
 		}

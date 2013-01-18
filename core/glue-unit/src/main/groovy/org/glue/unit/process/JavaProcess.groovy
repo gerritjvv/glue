@@ -106,9 +106,14 @@ class JavaProcess {
 			processCmd << clsPathStr
 		}
 		
-		processCmd << mainClass
+		println "processCmd: " + processCmd + " mainClass: " + mainClass + " args: " + args
 		
-		args?.each { processCmd << it.toString() }
+		processCmd << mainClass
+		try{
+			args?.each {  processCmd <<  it.toString() }
+		}catch(Throwable t){
+		  println " Error: " + t
+		}
 		
 		println processCmd
 		def pb = new ProcessBuilder(processCmd)
