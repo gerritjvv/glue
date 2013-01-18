@@ -71,7 +71,7 @@ Running pig
 	        a = LOAD '$files' using PigStorage('\u0001') as (name, geo);
 
 	        g = group a by geo;
-	        r = foreach g generate FLATTEN(group), COUNT($1);
+	        r = foreach g generate FLATTEN(group), COUNT($$1);
 	        store r into '/tmp/myfiles/$date'
 	""")
 
