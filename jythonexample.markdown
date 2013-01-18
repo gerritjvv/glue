@@ -55,7 +55,7 @@ Running pig
 
 	    key = str(date["year"] + date["month"] + date["day"])
 	    if key not in fileMap:
-       	fileMap[key] = ([], [])
+       	       fileMap[key] = ([], [])
 	
 	    (fileIds, paths) = fileMap[key]
 
