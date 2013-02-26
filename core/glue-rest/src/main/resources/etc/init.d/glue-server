@@ -58,7 +58,7 @@ CLASSPATH=${CLASSPATH}:$JAVA_HOME/lib/tools.jar
 CLASSPATH=${CLASSPATH}:$GLUE_HOME/lib/*;
 CLASSPATH=$GLUE_CONF_DIR:$GLUE_CONF_DIR/META-INF:$CLASSPATH
 
-JAVA_OPTS="-Xss128k -XX:+CMSClassUnloadingEnabled -XX:MaxDirectMemorySize=1024M -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:SurvivorRatio=6 -XX:NewRatio=3 -XX:+DisableExplicitGC $JAVA_OPTS"
+JAVA_OPTS="-XX:+CMSClassUnloadingEnabled -XX:MaxDirectMemorySize=1024M -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:SurvivorRatio=6 -XX:NewRatio=3 -XX:+DisableExplicitGC $JAVA_OPTS"
 
 
 

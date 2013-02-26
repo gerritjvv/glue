@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.Iterator;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -16,6 +17,7 @@ import org.apache.log4j.Logger;
 import org.glue.geluecron.db.DBManager;
 import org.glue.geluecron.db.DBManager.DBQueryMapClosure;
 import org.glue.geluecron.hdfs.util.DirectoryListIterator;
+import org.glue.geluecron.hdfs.util.DirectoryListIterator.Filter;
 import org.glue.geluecron.hdfs.util.JDBCFilesToSql;
 import org.glue.gluecron.trigger.TriggerListener;
 import org.glue.gluecron.trigger.TriggersManager;
@@ -76,6 +78,7 @@ public class HdfsTriggersManager implements TriggersManager, Runnable {
 	private final FileSystem fs;
 
 	TriggerListener listener;
+	
 
 	@SuppressWarnings("rawtypes")
 	public HdfsTriggersManager(DBManager dbManager, Configuration conf) {
@@ -114,12 +117,21 @@ public class HdfsTriggersManager implements TriggersManager, Runnable {
 		try {
 			LOG.info("Start polling");
 			final long start = System.currentTimeMillis();
+			
+			
+				final String[] dirPaths = getPaths("hdfs-dir");
+				final String[] paths = getPaths("hdfs");
+				
+				if(dirPaths.length > 0){
+						pollHdfs(dirPaths, new DirectoryListIterator.DirectoryOnlyFilter());
+						fillUnitFiles();
+				}
 			// get paths
-			String[] paths = getPaths();
-			if (paths.length > 0) {
-				pollHdfs(paths);
-				fillUnitFiles();
-			}
+			
+				if (paths.length > 0) {
+					pollHdfs(paths, null);
+					fillUnitFiles();
+				}
 
 			LOG.info("End " + (System.currentTimeMillis() - start) + "ms");
 		} catch (Throwable t) {
@@ -132,10 +144,10 @@ public class HdfsTriggersManager implements TriggersManager, Runnable {
 	 * 
 	 * @return
 	 */
-	private final String[] getPaths() {
+	private final String[] getPaths(String type) {
 		return dbManager.map(
 				"SELECT DISTINCT data FROM " + unitTriggersTbl
-						+ " WHERE type='hdfs'",
+						+ " WHERE type='" + type + "'",
 				new DBQueryMapClosure<String>() {
 					@Override
 					public String call(ResultSet rs) throws Exception {
@@ -145,20 +157,22 @@ public class HdfsTriggersManager implements TriggersManager, Runnable {
 
 	}
 
-	private final void pollHdfs(String[] paths) {
+	private final void pollHdfs(final String[] paths, final Filter filter) {
 		// get all of the paths to poll.
 
 		final long start = System.currentTimeMillis();
 
 		for (int i = 0; i < paths.length; i++) {
+			
 			try {
+				
 				LOG.info("Polling for Path " + paths[i]);
 				Path dirpath = new Path(paths[i]);
 				if (!fs.exists(dirpath)) {
 					throw new FileNotFoundException("Not found: " + paths[i]);
 				}
 				jdbcFilesToSQL
-						.loadFiles(new DirectoryListIterator(fs, dirpath));
+						.loadFiles(new DirectoryListIterator(fs, dirpath, filter));
 			} catch (Exception e) {
 				// Don't allow one trigger's error to stop the rest, such as
 				// IllegalArgumentException.

@@ -26,6 +26,15 @@ public final class DirectoryListIterator implements Iterator<Path> {
 	final FileSystem fs;
 
 	final LinkedList<Path> pathStack = new LinkedList<Path>();
+	final Filter filter;
+
+	/**
+	 * @param fs
+	 * @param baseDir
+	 */
+	public DirectoryListIterator(FileSystem fs, Path baseDir) {
+		this(fs, baseDir, null);
+	}
 
 	/**
 	 * 
@@ -33,11 +42,12 @@ public final class DirectoryListIterator implements Iterator<Path> {
 	 * @param baseDir
 	 * 
 	 */
-	public DirectoryListIterator(FileSystem fs, Path baseDir) {
+	public DirectoryListIterator(FileSystem fs, Path baseDir, Filter filter) {
 		super();
 		this.fs = fs;
 		this.baseDir = baseDir;
 		pathStack.push(baseDir);
+		this.filter = filter;
 	}
 
 	@Override
@@ -65,6 +75,12 @@ public final class DirectoryListIterator implements Iterator<Path> {
 					FileStatus status;
 					for (int i = 0; i < len; i++) {
 						status = statusArr[i];
+
+						if (filter != null)
+							if (!filter.accept(status))
+								continue; // we skip this file/dir if the filter
+											// does not accept it
+
 						pathCache.add(status.getPath());
 						if (status.isDir())
 							pathStack.push(status.getPath());
@@ -91,6 +107,19 @@ public final class DirectoryListIterator implements Iterator<Path> {
 	@Override
 	public void remove() {
 
+	}
+
+	public static interface Filter {
+		boolean accept(FileStatus status);
+	}
+
+	/**
+	 * Only returns true if the Path is a Directory
+	 */
+	public final static class DirectoryOnlyFilter implements Filter {
+		public boolean accept(FileStatus status) {
+			return status.isDir();
+		}
 	}
 
 }
