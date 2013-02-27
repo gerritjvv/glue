@@ -16,16 +16,16 @@ import org.apache.log4j.Logger;
  * Iterates through a directory path going into child paths Benchmarks suggest
  * that the api can list roughly 500K files in +- 25 seconds.
  */
-public final class DirectoryListIterator implements Iterator<Path> {
+public final class DirectoryListIterator implements Iterator<FileStatus> {
 
 	static final Logger LOG = Logger.getLogger(DirectoryListIterator.class);
 
-	final List<Path> pathCache = new ArrayList<Path>(100);
+	final List<FileStatus> pathCache = new ArrayList<FileStatus>(1000);
 
 	final Path baseDir;
 	final FileSystem fs;
 
-	final LinkedList<Path> pathStack = new LinkedList<Path>();
+	final LinkedList<FileStatus> pathStack = new LinkedList<FileStatus>();
 	final Filter filter;
 
 	/**
@@ -46,7 +46,14 @@ public final class DirectoryListIterator implements Iterator<Path> {
 		super();
 		this.fs = fs;
 		this.baseDir = baseDir;
-		pathStack.push(baseDir);
+		try {
+			pathStack.push(fs.getFileStatus(baseDir));
+		} catch (IOException e) {
+			RuntimeException rte = new RuntimeException(e.toString(), e);
+			rte.setStackTrace(e.getStackTrace());
+			throw rte;
+		}
+		
 		this.filter = filter;
 	}
 
@@ -57,14 +64,14 @@ public final class DirectoryListIterator implements Iterator<Path> {
 			// load next files into cache
 			while (pathCache.size() < 1 && pathStack.size() > 0) {
 				try {
-					final Path path = pathStack.pop();
+					final FileStatus path = pathStack.pop();
 
 					if (path == null) {
 						LOG.warn("Path not expected to be null here");
 						continue;
 					}
 
-					final FileStatus[] statusArr = fs.listStatus(path);
+					final FileStatus[] statusArr = fs.listStatus(path.getPath());
 
 					if (statusArr == null) {
 						LOG.warn(path + " listStatus: Null");
@@ -72,18 +79,17 @@ public final class DirectoryListIterator implements Iterator<Path> {
 					}
 
 					final int len = statusArr.length;
-					FileStatus status;
 					for (int i = 0; i < len; i++) {
-						status = statusArr[i];
+						final FileStatus status = statusArr[i];
 
 						if (filter != null)
 							if (!filter.accept(status))
 								continue; // we skip this file/dir if the filter
 											// does not accept it
 
-						pathCache.add(status.getPath());
+						pathCache.add(status);
 						if (status.isDir())
-							pathStack.push(status.getPath());
+							pathStack.push(status);
 					}
 
 				} catch (IOException e) {
@@ -100,7 +106,7 @@ public final class DirectoryListIterator implements Iterator<Path> {
 	}
 
 	@Override
-	public final Path next() {
+	public final FileStatus next() {
 		return (pathCache.size() > 0) ? pathCache.remove(0) : null;
 	}
 

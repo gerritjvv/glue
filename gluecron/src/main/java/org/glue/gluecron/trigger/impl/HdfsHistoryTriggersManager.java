@@ -157,8 +157,9 @@ public class HdfsHistoryTriggersManager implements TriggersManager, Runnable {
 					throw new FileNotFoundException("Not found: " + path);
 				}
 
-				jdbcFilesToSQL.loadFiles(new DirectoryListIterator2(fs, fs
-						.getFileStatus(dirpath)));
+				jdbcFilesToSQL.loadFiles(
+						new DirectoryListIterator2(fs, fs
+								.getFileStatus(dirpath)), false);
 
 			} catch (Exception e) {
 				// Don't allow one trigger's error to stop the rest, such as
@@ -210,7 +211,7 @@ public class HdfsHistoryTriggersManager implements TriggersManager, Runnable {
 		//
 		// select unit name, datetime and the path itself.
 		//
-		
+
 		String[] names = dbManager.map(
 				"select distinct unit from " + unitTriggersTbl + " ut, "
 						+ unitfilesTbl

@@ -23,7 +23,7 @@ public class ListFiles {
 		DirectoryListIterator it = new DirectoryListIterator(fs, new Path(args[2]));
 		
 		while(it.hasNext()){
-			System.out.println(it.next().toUri().getPath());
+			System.out.println(it.next().getPath().toUri().getPath());
 		}
 		
 	}

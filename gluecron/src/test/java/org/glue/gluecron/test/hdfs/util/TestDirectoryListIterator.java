@@ -8,6 +8,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.glue.geluecron.hdfs.util.DirectoryListIterator;
+import org.glue.geluecron.hdfs.util.DirectoryListIterator.DirectoryOnlyFilter;
 import org.junit.Test;
 
 public class TestDirectoryListIterator {
@@ -38,6 +39,35 @@ public class TestDirectoryListIterator {
 		}
 
 		assertEquals(4, count);
+		
+	}
+	
+	@Test
+	public void testListDirsOnly() throws Throwable {
+
+		File baseDir = new File("target/testDirectoryListIterator");
+		baseDir.mkdirs();
+		File dir1 = new File(baseDir, "dir1");
+		dir1.mkdirs();
+		File dir2 = new File(baseDir, "dir2");
+		dir2.mkdirs();
+		File dira = new File(dir1, "dira");
+		dira.createNewFile();
+		File dirb = new File(dir2, "dirb");
+		dirb.createNewFile();
+
+		FileSystem fs = FileSystem.getLocal(new Configuration());
+
+		DirectoryListIterator it = new DirectoryListIterator(fs, new Path(
+				baseDir.getAbsolutePath()), new DirectoryOnlyFilter());
+
+		int count = 0;
+		while (it.hasNext()) {
+			System.out.println(it.next());
+			count++;
+		}
+
+		assertEquals(2, count);
 		
 	}
 

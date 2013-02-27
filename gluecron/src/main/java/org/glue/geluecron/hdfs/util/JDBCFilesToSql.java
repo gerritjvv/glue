@@ -4,16 +4,16 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.util.Iterator;
 
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.log4j.Logger;
 import org.glue.geluecron.db.DBManager;
 
 /**
  * 
  * Fast implementation for load the hdfs files to a sql table Any table is
- * excepted as long as it has a column called 'path'
+ * excepted as long as it has a columns called 'path, ts, seen'
  */
-public final class JDBCFilesToSql implements FilesToSql<Path> {
+public final class JDBCFilesToSql implements FilesToSql<FileStatus> {
 
 	private static final Logger LOG = Logger.getLogger(JDBCFilesToSql.class);
 
@@ -37,11 +37,11 @@ public final class JDBCFilesToSql implements FilesToSql<Path> {
 	}
 
 	@Override
-	public final void loadFiles(Iterator<Path> it) {
+	public final void loadFiles(Iterator<FileStatus> it, boolean resetTS) {
 
 		Connection conn = null;
 		StringBuilder buff = new StringBuilder(1000);
-		String header = "INSERT IGNORE INTO " + tbl + "(path) ";
+		String header = "INSERT INTO " + tbl + "(path, ts) ";
 		try {
 			conn = dbManager.getConnection();
 			// write the file content to a local file
@@ -59,18 +59,33 @@ public final class JDBCFilesToSql implements FilesToSql<Path> {
 				while (it.hasNext()) {
 					// st.setString(1, it.next().toUri().getPath());
 					// st.addBatch();
+					final FileStatus fileStatus = it.next();
+					final String path = fileStatus.getPath().toUri().getPath();
+					final long modTS = fileStatus.getModificationTime();
 
-					final String path = it.next().toUri().getPath();
 					if (i == 0) {
 						i = 1;
 						buff.append(header).append("VALUES");
-						buff.append("('").append(path).append("')");
+						buff.append("('").append(path)
+								.append("'," + modTS + ")");
 					} else {
-						buff.append(",('").append(path).append("')");
+						buff.append(",('").append(path)
+								.append("'," + modTS + ")");
 					}
 
 					if (++rows % batchSize == 0) {
 						// for each batchSize rows execute
+
+						// on duplicate key check the modification time stamp,
+						// if the new timestamp is higher set the seen flag to 0
+						// meaning that this modified version has not been seen
+						// before
+						if(resetTS)
+							buff.append(" on duplicate key update seen=if(ts < values(ts), 0, 1), ts=values(ts)");
+						else 
+							buff.append(" on duplicate key update ts=values(ts)");
+						
+						
 						st.execute(buff.toString());
 						buff.delete(0, buff.length());
 						i = 0;

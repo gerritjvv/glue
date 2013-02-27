@@ -43,7 +43,7 @@ public final class JDBCFilesToSql2 implements FilesToSql<FileStatus> {
 	}
 
 	@Override
-	public final void loadFiles(Iterator<FileStatus> it) {
+	public final void loadFiles(Iterator<FileStatus> it, boolean resetTS) {
 
 		Connection conn = null;
 		StringBuilder buff = new StringBuilder(1000);
