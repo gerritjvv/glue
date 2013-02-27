@@ -36,7 +36,8 @@ Triggers require three tables in mysql to exist:
 	| Field | Type          | Null | Key | Default | Extra          |
 	+-------+---------------+------+-----+---------+----------------+
 	| id    | int(11)       | NO   | PRI | NULL    | auto_increment | 
-	| path  | varchar(1000) | NO   | UNI | NULL    |                | 
+	| path  | varchar(1000) | NO   | UNI | NULL    |                |
+	| ts    | bitint(20)    | NO   | MUL | 0       | 
 	| seen  | tinyint(4)    | YES  | MUL | 0       |                | 
 	+-------+---------------+------+-----+---------+----------------+
  
@@ -51,7 +52,7 @@ Triggers require three tables in mysql to exist:
 
 The tables unitfiles and hdfsfiles maintain the hdfs polling state, and the unittriggers table contain the different triggers for each workflow.
 
-E.g. blow is an example of some entries:
+E.g. below is an example of some entries:
 
 	+----+---------+------+---------------+---------+
 	| id | unit    | type | data          | lastrun |
@@ -62,7 +63,11 @@ E.g. blow is an example of some entries:
 	|  4 | test1   | hdfs | /logs/c       | NULL    | 
 	|  5 | mytest2 | cron | 0 0/5 * * * ? | NULL    | 
 	+----+---------+------+---------------+---------+
-	
+
+Note: Using hdfs-dir instead of hdfs will only check directories for modification.
+
+I.e. if you only need to see when directory partitions have changed rather than individual files use the type 'hdfs-dir'
+
 ## Different Paths Same Workflow
 Different hdfs paths can be defined for the same workflow. A unique id is assigned for each unit_name, data combination, and its this id that is used in the unitfiles table that matches a file path fileid in hdfsfiles to a units execution.
 
