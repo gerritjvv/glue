@@ -117,7 +117,7 @@ class JavaProcess {
 		
 		println processCmd
 		def pb = new ProcessBuilder(processCmd)
-
+		
 		pb.redirectErrorStream(true)
 
 		if(workingDirectory)
@@ -128,15 +128,20 @@ class JavaProcess {
 
 		//start process and wait until exit
 		process = pb.start()
-		process.waitForProcessOutput(appendable as OutputStream, appendable as OutputStream)
-		
-		//only process if not killed
-		if(!isKilled.get()){
-			exitValue = process.exitValue()
-			//any value lower than 0 is considered an error
-			if(exitValue != 0){
-				throw new RuntimeException("Error ($exitValue) in command: ${mainClass}")
+		try{
+			process.waitForProcessOutput(appendable as OutputStream, appendable as OutputStream)
+			
+			//only process if not killed
+			if(!isKilled.get()){
+				exitValue = process.exitValue()
+				//any value lower than 0 is considered an error
+				if(exitValue != 0){
+					throw new RuntimeException("Error ($exitValue) in command: ${mainClass}")
+				}
 			}
+		}finally{
+			//if we do not kill the process in some cases it might hang
+			process?.destroy()
 		}
 	}
 
