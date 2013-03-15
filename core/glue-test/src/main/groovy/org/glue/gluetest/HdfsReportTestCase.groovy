@@ -10,7 +10,6 @@ import org.glue.gluetest.util.GlueServerBootstrap
  *  <li>HdfsModule</li>
  *  <li>HdfsTriggerStoreModule</li>
  *  <li>HdfsTriggerModule</li>
- *  <li>CoordinationModule</li>
  *  <li>DBStoreModule</li>
  *  <li>PigModule</li>
  * </ul>
@@ -145,7 +144,6 @@ abstract class HdfsReportTestCase extends GroovyTestCase{
 		simpleGlueServer.addModuleBuilder(pigModuleBuilder)
 		simpleGlueServer.addModuleBuilder(new HdfsTriggerModuleBuilder())
 		simpleGlueServer.addModuleBuilder(new HdfsTriggerStoreModuleBuilder())
-		simpleGlueServer.addModuleBuilder(new CoordinationModuleBuilder())
 		simpleGlueServer.addModuleBuilder(new DbStoreModuleBuilder())
 
 		//add the count_clicks to the unit repository
