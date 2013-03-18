@@ -1,8 +1,6 @@
 package org.glue.unit.process
 
-import java.io.File;
-import java.util.Set;
-
+import org.apache.log4j.Logger
 import org.glue.unit.om.Provider
 
 /**
@@ -12,6 +10,8 @@ import org.glue.unit.om.Provider
 
 class DefaultJavaProcessProvider extends Provider<JavaProcess>{
 
+	private static final Logger LOG = Logger.getLogger(DefaultJavaProcessProvider.class)
+	
 	String mainClass
 	Set<String> classpath = []
 	Set<String> javaOpts = []
@@ -62,19 +62,20 @@ class DefaultJavaProcessProvider extends Provider<JavaProcess>{
 		def localJavaOpts = javaOpts;
 		def localClasspath = classpath
 		
+		println "Objs: $objs"
 		if(objs && objs.length > 0 && objs[0]){
 			String name = objs[0].toString()
 			
-			if(config.hasProperty("${name}_processJavaOpts")){
+			if(config.containsKey("${name}_processJavaOpts".intern())){
 				localJavaOpts = config."${name}_processJavaOpts"
 				
-				println "Using javaOpts specified for $name"
+				LOG.info("Using javaOpts specified for $name")
 			}
 			
-		    if(config.hasProperty("${name}_processClassPath")){
-				localJavaOpts = config."${name}_processClassPath"
+		    if(config.containsKey("${name}_processClassPath".intern())){
+				localClasspath = config."${name}_processClassPath"
 				
-				println "Using classpath specified for $name"
+				LOG.info("Using classpath specified for $name")
 		    }
 		}
 		
