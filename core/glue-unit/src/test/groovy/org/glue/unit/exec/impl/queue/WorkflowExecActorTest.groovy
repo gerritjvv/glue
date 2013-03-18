@@ -28,7 +28,7 @@ class WorkflowExecActorTest {
 
 		WorkflowRunner.testMode = false
 
-		def provider = new DefaultJavaProcessProvider()
+		def provider = new DefaultJavaProcessProvider([:])
 		provider.javaOpts = ['-Xmx64m']
 		provider.addCurrentClassPath()
 
@@ -66,7 +66,7 @@ class WorkflowExecActorTest {
 		def execConf = new File('src/test/resources/module_conf/exec_conf.groovy').absolutePath
 		def modulesConf = new File('src/test/resources/module_conf/empty_conf.groovy').absolutePath
 
-		def provider = new DefaultJavaProcessProvider()
+		def provider = new DefaultJavaProcessProvider([:])
 		provider.javaOpts = ['-Xmx64m']
 		provider.addCurrentClassPath()
 

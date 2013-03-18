@@ -95,7 +95,7 @@ class WorkflowExecActor extends ThreadedActor<QueuedWorkflow>{
 		}
 		
 
-		JavaProcess process = provider.get()
+		JavaProcess process = provider.get(qwf.name)
 
 		def args = [
 			'-execConf',
