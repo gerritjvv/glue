@@ -48,7 +48,7 @@ class QueuedExecServiceImplTest {
 
 		
 		QueuedExecServiceImpl exec = new QueuedExecServiceImpl(
-				2, [], [],
+				2, [:], [], [],
 				repo,
 				new DefaultGlueUnitBuilder(),
 				new File('src/test/resources/module_conf/exec_conf.groovy').absolutePath,
@@ -81,7 +81,7 @@ class QueuedExecServiceImplTest {
 		])
 
 		QueuedExecServiceImpl exec = new QueuedExecServiceImpl(
-				2, [], [],
+				2, [:], [], [],
 				repo,
 				new DefaultGlueUnitBuilder(),
 				new File('src/test/resources/module_conf/exec_conf.groovy').absolutePath,
@@ -137,7 +137,7 @@ class QueuedExecServiceImplTest {
 		])
 
 		QueuedExecServiceImpl exec = new QueuedExecServiceImpl(
-				2, [], [],
+				2, [:], [], [],
 				repo,
 				new DefaultGlueUnitBuilder(),
 				new File('src/test/resources/module_conf/exec_conf.groovy').absolutePath,

@@ -76,6 +76,10 @@ class UnitStatusResource extends ServerResource {
 					//we convert ProcessStatus to a map
 					//and find the GlueProcess definition to add its dependencies to the map
 					def op = process.toMap()
+					if(!op){
+						op = [:]
+					}
+					  
 					
 					op.error = (op.error!=null) ? op.error=op.error.split ('\n')[0] : ""
 					LOG.info("ProcessName is "+process.processName);

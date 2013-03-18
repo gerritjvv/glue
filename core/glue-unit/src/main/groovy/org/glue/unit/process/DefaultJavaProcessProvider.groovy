@@ -17,7 +17,15 @@ class DefaultJavaProcessProvider extends Provider<JavaProcess>{
 	Set<String> javaOpts = []
 	File workingDirectory
 	
-
+	/**
+	 * the map is used to push through any extra or future config that can only be decided during execution time.
+	 */
+	Map<String, String> config;
+	
+	public DefaultJavaProcessProvider(Map<String, String> config){
+		this.config = config;
+	}
+	
 	/**
 	 * Add the current java.class.path to the classpath variable, plus the paths:
 	 * <ul> 
@@ -41,14 +49,31 @@ class DefaultJavaProcessProvider extends Provider<JavaProcess>{
 	 * Returns a new instance of JavaProcess with the same configuration parameters<br/>
 	 * that the DefaultJavaProcessProvider has.
 	 */
-	JavaProcess get(){
+	JavaProcess get(String name = null){
+		
+		def localJavaOpts = javaOpts;
+		def localClasspath = classpath
+		
+		if(name){
+			if(config."${name}_processJavaOpts"){
+				localJavaOpts = config."${name}_processJavaOpts"
+				
+				println "Using javaOpts specified for $name"
+			}
+			
+		    if(config."${name}_processClassPath"){
+				localJavaOpts = config."${name}_processClassPath"
+				
+				println "Using classpath specified for $name"
+		    }
+		}
 		
 		def process = new JavaProcess(
 			workingDirectory:workingDirectory,
 			mainClass:mainClass, 
-			javaOpts:javaOpts)	
+			javaOpts:localJavaOpts)	
 		
-		classpath?.each { item ->
+		localClasspath?.each { item ->
 			
 			File file = new File(item)
 			if(file.isDirectory()){

@@ -67,6 +67,7 @@ class LauncherDI {
 
 		return new QueuedExecServiceImpl(
 		config.executorMaxProcesses,
+		configObject,
 		config.processJavaOpts,
 		config.processClassPath,
 		repo,

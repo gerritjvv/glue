@@ -35,7 +35,8 @@ class LauncherConfig {
 	def processJavaOpts = []
 	def processClassPath = []
 	
-	static LauncherConfig getInstance(String[] args ){
+	
+	static LauncherConfig getInstance(String[] args){
 
 		String 	execConfigPath=args[0];
 		String 	moduleConfigPath=args[1];
@@ -123,7 +124,7 @@ class LauncherConfig {
 
 		//java options for each workflow process
 		def processJavaOpts
-		if(execConfig.processJavaOpts){
+	    if(execConfig.processJavaOpts){
 			processJavaOpts = execConfig.processJavaOpts
 		}else{
 			processJavaOpts = []

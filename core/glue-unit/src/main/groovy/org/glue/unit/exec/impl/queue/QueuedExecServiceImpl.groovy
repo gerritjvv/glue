@@ -76,7 +76,8 @@ class QueuedExecServiceImpl implements GlueExecutor{
 	 * The workflow will get executed in another java process with its own context.
 	 */
 	GlueContextBuilder contextBuilder;
-
+	
+	ConfigObject config;
 	
 	/**
 	 * 
@@ -85,7 +86,7 @@ class QueuedExecServiceImpl implements GlueExecutor{
 	 * @param glueUnitBuilder
 	 */
 	@Typed(TypePolicy.MIXED)
-	public QueuedExecServiceImpl(int maxGlueProcesses, Collection<String> javaOpts, Collection<String> classPath, GlueUnitRepository glueUnitRepository,
+	public QueuedExecServiceImpl(int maxGlueProcesses, Map<String, String> config, Collection<String> javaOpts, Collection<String> classPath, GlueUnitRepository glueUnitRepository,
 	GlueUnitBuilder glueUnitBuilder,
 	String execConf,
 	String moduleConf,
@@ -96,7 +97,7 @@ class QueuedExecServiceImpl implements GlueExecutor{
 		this.contextBuilder = contextBuilder
 
 		//create the default java process provider
-		DefaultJavaProcessProvider provider = new DefaultJavaProcessProvider()
+		DefaultJavaProcessProvider provider = new DefaultJavaProcessProvider(config)
 
 		if(classPath){
 			classPath.each{ provider.classpath << it }
@@ -130,7 +131,7 @@ class QueuedExecServiceImpl implements GlueExecutor{
 		execActor.start()
 
 	}
-
+	
 	public Map<String, UnitExecutor> getUnitList(){
 		return [:]
 	}
