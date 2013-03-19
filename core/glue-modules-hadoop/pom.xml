@@ -69,6 +69,22 @@
 			<version>0.20.2</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>cascalog</groupId>
+			<artifactId>cascalog</artifactId>
+			<version>1.10.0</version>
+			<exclusions>
+			<exclusion>
+				<groupId>org.ow2.asm</groupId>
+				<artifactId>asm</artifactId>
+			</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>clojure-jsr223</groupId>
+			<artifactId>clojure-jsr223</artifactId>
+			<version>1.0</version>
+		</dependency>
 		<!-- <dependency> <groupId>org.apache.pig</groupId> <artifactId>pig-test</artifactId> 
 			<version>${pig.version}</version> <scope>test</scope> </dependency> -->
 		<dependency>
@@ -77,4 +93,10 @@
 			<version>5.1.14</version>
 		</dependency>
 	</dependencies>
+	<repositories>
+		<repository>
+			<id>clojars.org</id>
+			<url>http://clojars.org/repo</url>
+		</repository>
+	</repositories>
 </project>
