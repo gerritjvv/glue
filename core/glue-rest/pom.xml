@@ -14,7 +14,7 @@
 	<name>glue-rest</name>
 	<url>http://maven.apache.org</url>
 	<properties>
-		<restlet.version>2.1-M4</restlet.version>
+		<restlet.version>2.1.2</restlet.version>
 		<spring.version>3.0.5.RELEASE</spring.version>
 		<commons-cli.version>1.2</commons-cli.version>
 		<jackson-asl.version>1.9.1</jackson-asl.version>

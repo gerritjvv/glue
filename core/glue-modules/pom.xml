@@ -19,7 +19,7 @@
 		<hibernate-entitymanager.version>3.4.0.GA</hibernate-entitymanager.version>
 		<slf4j-simple.version>1.4.2</slf4j-simple.version>
 		<hsqldb.version>1.8.0.10</hsqldb.version>
-		<restlet.version>2.0-M7</restlet.version>
+		<restlet.version>2.1.2</restlet.version>
 		<mysql.version>5.1.13</mysql.version>
 		<commons-net.version>3.0.1</commons-net.version>
 		<mockftp.version>2.3</mockftp.version>
@@ -137,6 +137,11 @@
 				</exclusion>
 			</exclusions>
 
+		</dependency>
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk</artifactId>
+			<version>1.4.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.hsqldb</groupId>
