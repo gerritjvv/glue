@@ -58,7 +58,7 @@ class S3Module implements GlueModule{
 
 
 	ObjectMetadata getFileMetaData(String file){
-		getFileMetaDAta(null, null, file)
+		getFileMetaData(null, null, file)
 	}
 	ObjectMetadata getFileMetaData(String bucket, String file){
 		getFileMetaData(null, bucket, file)
@@ -68,7 +68,7 @@ class S3Module implements GlueModule{
 	}
 
 	void getFile(String file, String dest){
-		getFile(null, null, bucket, file, dest)
+		getFile(null, null, file, dest)
 	}
 
 	void getFile(String bucket, String file, String dest){
