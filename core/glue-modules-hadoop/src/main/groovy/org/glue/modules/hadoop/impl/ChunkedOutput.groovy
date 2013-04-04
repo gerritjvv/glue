@@ -3,9 +3,11 @@ package org.glue.modules.hadoop.impl
 import org.apache.hadoop.conf.Configurable
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
+import org.apache.hadoop.io.compress.BZip2Codec;
 import org.apache.hadoop.io.compress.CompressionCodec
 import org.apache.hadoop.io.compress.CompressionCodecFactory
 import org.apache.hadoop.io.compress.Compressor
+import org.apache.hadoop.io.compress.GzipCodec;
 
 /**
  * 
@@ -58,8 +60,14 @@ class ChunkedOutput {
 		}
 
 		Configuration conf = new Configuration()
-		def fact = new CompressionCodecFactory(conf)
 
+		def codecs =  conf.get("io.compression.codecs", BZip2Codec.class.getName())
+		codecs += "," + GzipCodec.class.getName()
+		
+		conf.set("io.compression.codecs", codecs)
+		
+		def fact = new CompressionCodecFactory(conf)
+		
 		codec = fact.getCodec(new Path("mypath.${compression.toLowerCase()}"))
 
 		if(!codec)

@@ -71,6 +71,29 @@ public class HDFSModuleImpl implements HDFSModule {
 	String cat(String hadoopPath, String fileName){
 		cat(null, hadoopPath, fileName)
 	}
+	
+	
+	void downloadChunked(String hdfsDir, String localDir, Closure callback){
+		downloadChunked(hdfsDir, localDir, 1073741824, "gz", callback)
+	}
+	
+	void downloadChunked(String hdfsDir, String localDir, int chunkSize, String compression, Closure callback){
+		downloadChunked(null, hdfsDir, localDir, chunkSize, compression, callback)
+	}
+	
+	void downloadChunked(String clusterName, String hdfsDir, String localDir, int chunkSize, String compression, Closure callback){
+		
+		def chunkedOutput = new ChunkedOutput(new File(localDir), "part-", chunkSize, compression, callback)
+		try{
+			eachLine(clusterName, hdfsDir, { String line ->
+				chunkedOutput.write(line + '\n');
+			});
+		}finally{
+		   chunkedOutput.close()
+		}
+		
+		
+	}
 
 	String cat(String clusterName, String hadoopPath, String fileName) {
 
