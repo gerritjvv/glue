@@ -147,7 +147,7 @@ class S3Module implements GlueModule{
 		getClient(server).deleteBucket(bucket)
 	}
 
-	String getBucetLocation(String server=null, String bucket){
+	String getBucketLocation(String server=null, String bucket){
 		return getClient(server).getBucketLocation(bucket)
 	}
 
