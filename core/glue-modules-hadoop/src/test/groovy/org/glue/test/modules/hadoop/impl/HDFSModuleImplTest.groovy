@@ -21,6 +21,25 @@ class HDFSModuleImplTest{
 	static HDFSModule hdfsModule
 	static MiniDFSCluster dfsCluster
 	
+	@Test
+	public void testDownloadChunked(){
+		
+		String dir = "target/test/HFDSModuleImplTest/testDownloadChunked/findfiles/"
+		String newFile = "$dir/newFile.txt"
+		String localFile = "src/test/resources/testlog.txt"
+		
+		String localDir = "target/test/hdfsModuleImpTest/testDownoadChunked/localfiles"
+		new File(localDir).mkdirs()
+		
+		//put file on hdfs
+		hdfsModule.put localFile, newFile
+		
+		int files = 0
+		//download the chunked files
+		hdfsModule.downloadChunked dir, localDir, 100, "gz", {files++}
+		
+		println "Files: $files"
+	}
 	
 	@Test
 	public void testFindNewFiles(){
