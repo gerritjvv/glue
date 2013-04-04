@@ -38,7 +38,7 @@ class HDFSModuleImplTest{
 		//download the chunked files
 		hdfsModule.downloadChunked dir, localDir, 100, "gz", {files++}
 		
-		println "Files: $files"
+		assertEquals(1, files)
 	}
 	
 	@Test
