@@ -36,7 +36,7 @@ class HDFSModuleImplTest{
 		
 		int files = 0
 		//download the chunked files
-		hdfsModule.downloadChunked dir, localDir, 100, "gz", {files++}
+		hdfsModule.downloadChunked([dir], localDir, 100, "gz", {files++})
 		
 		assertEquals(1, files)
 	}

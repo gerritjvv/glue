@@ -1,5 +1,7 @@
 package org.glue.modules.hadoop;
 
+import java.util.Collection;
+
 import org.glue.unit.om.GlueModule;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -14,9 +16,9 @@ import org.apache.hadoop.fs.FileStatus;
  */
 public interface HDFSModule extends GlueModule {
 
-	void downloadChunked(String hdfsDir, String localDir, Closure callback)
-	void downloadChunked(String hdfsDir, String localDir, int chunkSize, String compression, Closure callback)
-	void downloadChunked(String clusterName, String hdfsDir, String localDir, int chunkSize, String compression, Closure callback)
+	void downloadChunked(Collection<String> hdfsDir, String localDir, Closure callback)
+	void downloadChunked(Collection<String> hdfsDir, String localDir, int chunkSize, String compression, Closure callback)
+	void downloadChunked(String clusterName, Collection<String> hdfsDir, String localDir, int chunkSize, String compression, Closure callback)
 	
 	String cat(String hadoopPath, String fileName)
 	String cat(String hadoopPath)
