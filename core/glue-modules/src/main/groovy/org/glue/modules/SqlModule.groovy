@@ -278,7 +278,7 @@ public class SqlModule implements GlueModule {
 						if(i != 0)
 							writer.append(delimiter)
 
-						if(row[i]){
+						if(row[i] != null){
 							writer.append(row[i].toString());
 						}
 					}
