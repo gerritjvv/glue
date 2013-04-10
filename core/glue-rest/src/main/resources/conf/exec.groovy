@@ -14,6 +14,10 @@ processClassPath = ['/opt/glue/lib-pig', '/opt/glue/lib-hadoop', '/opt/glue/lib'
 //cloudera hadoop, pig, hive
 //processClassPath = ['/opt/glue/lib/', '/usr/lib/pig', '/usr/lib/pig/lib', '/usr/lib/hadoop/lib/', '/usr/lib/hadoop', '/opt/glue/conf', '/usr/lib/hive', '/usr/lib/hive/lib']
 
+//disable commons logging to avoid excess logging for hadoop and s3
+processJavaOpts = [
+  '-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.NoOpLog' 
+  ]
 //processJavaOpts = ['-Djava.library.path=/opt/hadoop/lib/native/Linux-amd64-64']
 
 
