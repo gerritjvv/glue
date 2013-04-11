@@ -13,6 +13,9 @@ import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.Bucket
 import com.amazonaws.services.s3.model.ObjectListing
 import com.amazonaws.services.s3.model.ObjectMetadata
+import com.amazonaws.services.s3.model.ProgressEvent
+import com.amazonaws.services.s3.model.ProgressListener
+import com.amazonaws.services.s3.model.PutObjectRequest
 import com.amazonaws.services.s3.model.PutObjectResult
 import com.amazonaws.services.s3.model.S3Object
 import com.amazonaws.services.s3.model.S3ObjectSummary
@@ -132,7 +135,31 @@ class S3Module implements GlueModule{
 	}
 
 	PutObjectResult putFile(String server, String bucket, String file, String dest){
-		return getClient(server).putObject(getBucket(server, bucket), dest, new File(file))
+		def localFile = new File(file)
+		def fileSize = localFile.length()
+		def bytesTransfered = 0
+		def i = 0
+		
+		def putReq = new PutObjectRequest(getBucket(server, bucket), dest, localFile)
+		.withMetadata(new ObjectMetadata())
+		putReq.setProgressListener(
+			new ProgressListener(){ 
+			public void progressChanged(ProgressEvent progressEvent){
+				if(progressEvent.getEventCode() == ProgressEvent.CANCELED_EVENT_CODE)
+				  println("Error: " + progressEvent.getEventCode())
+				else if(progressEvent.getEventCode() == ProgressEvent.FAILED_EVENT_CODE)
+				  println("Error: " + progressEvent.getEventCode())
+				else if(progressEvent.getEventCode() == ProgressEvent.COMPLETED_EVENT_CODE)
+				  println("Complete")
+				else{
+				  bytesTransfered += progressEvent.getBytesTransfered()
+				  if(i % 10 == 0)
+				    println(bytesTransfered + " of " + fileSize)
+				}
+				
+		}});
+		
+		return getClient(server).putObject(putReq)
 	}
 
 	Bucket createBucket(String server=null, String bucket){
