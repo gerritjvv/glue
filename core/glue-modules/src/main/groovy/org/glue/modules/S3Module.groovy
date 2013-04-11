@@ -149,11 +149,12 @@ class S3Module implements GlueModule{
 				  println("Error: " + progressEvent.getEventCode())
 				else if(progressEvent.getEventCode() == ProgressEvent.FAILED_EVENT_CODE)
 				  println("Error: " + progressEvent.getEventCode())
-				else if(progressEvent.getEventCode() == ProgressEvent.COMPLETED_EVENT_CODE)
+				else if(progressEvent.getEventCode() == ProgressEvent.COMPLETED_EVENT_CODE){
+				  println(fileSize + " of " + fileSize)
 				  println("Complete")
-				else{
+				}else{
 				  bytesTransfered += progressEvent.getBytesTransfered()
-				  if(i % 10 == 0)
+				  if(i++ % 100 == 0)
 				    println(bytesTransfered + " of " + fileSize)
 				}
 				
