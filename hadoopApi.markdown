@@ -42,6 +42,8 @@ getContentSummary(clusterName:String = null, file:String)[ContentSummary](http:/
 getDefaultBlockSize(clusterName:String = null):long | Returns the default block size
 getDefaultReplication(clusterName:String = null):short | Returns the default replication
 timeSeries(n:String,tableHDFSDir:String,nowdate:Date, modifyTime:String, partitionFormatter:Closure<String>, dateIncrement:Closure<Date>, collector:Collector = null)| Iterates from nowdate-n (e.g. nowdate - 2.hours) on a date increment over a series of date partitioned HDFS files and return true if all of the partitions have files and have not been modified since a specified amount of time  
+downloadChunked(clusterName:String=null, hdfsDir:Collection<String>, localDir:String, chunkSize:int=1073741824, compression:String = "gz", callBack:Closure) | Performs a eachLine on each of the direcotries in hdfsDir, writing the data (compressed) to a local part file, when the chunk size is reached the file is rolled and its file name send to the callBack closure. |
+
 
 
   

@@ -54,11 +54,15 @@ Glue Documentation Index
 	* [Download File](hadoopDownloadFileExample.html)
 	* [Each Line](hadoopEachLineExample.html)
 	* [Time Series Data](hadoopTimeSeriesExample.html)
+        * [Test](s3Api.html)
 * Pig
 	* [API](pigApi.html)
 	* [Run Script](pigRunScriptExample.html)
+* S3    
+        * [s3](s3Api.html)
 * FTP
 	* [API](ftpApi.html)
+
 * [Bash/Python CMDs](bashPythonScripts.html)
 * [Monitoring and Nagios](nagios.html)
 * [Notify with Emails ](mailnotifications.html)
