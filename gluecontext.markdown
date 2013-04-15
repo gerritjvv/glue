@@ -49,7 +49,8 @@ The context is used to:
 
 # Utility Methods
 
-Method | Description 
+| Method | Description |
+| ------- | ---------- |
 eval(clsName:String, method:String, values:Collection):Object| Creates a new instance of the class clsName and calls the method "method" passing the method arguments values 
 eval(clsName:String):Object | Creates a new instance of the class clsName and calls the method "method" without arguments
 newInstance(clsName:String, args:Collection):Object| Creates a new instance of the class clsName passing the constructor arguments args
