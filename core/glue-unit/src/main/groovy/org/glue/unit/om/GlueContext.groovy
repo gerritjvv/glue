@@ -39,6 +39,8 @@ public interface GlueContext {
 	def newInstance(className, arg)
 	def newInstance(className)
 	
+	def withTimeout(long timeout, Closure clj)
+	
 	/**
 	 * Called to allow the context to remove and resources
 	 */

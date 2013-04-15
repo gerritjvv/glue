@@ -1,12 +1,11 @@
 package org.glue.unit.om.impl
 
-import java.util.Map;
-
-import org.glue.unit.log.GlueExecLogger;
+import org.glue.unit.log.GlueExecLogger
 import org.glue.unit.om.GlueContext
-import org.glue.unit.om.GlueModuleFactory;
-import org.glue.unit.om.GlueUnit;
-import org.glue.unit.status.GlueUnitStatusManager;
+import org.glue.unit.om.GlueModuleFactory
+import org.glue.unit.om.GlueUnit
+import org.glue.unit.om.TimeoutWrapper
+import org.glue.unit.status.GlueUnitStatusManager
 
 /**
  * 
@@ -58,6 +57,10 @@ class GlueContextWrapper implements GlueContext{
 	
 	void write(Writer writer) throws IOException{
 		parent.write(writer)	
+	}
+	
+	def withTimeout(long timeout, Closure cl) {
+		parent.withTimeout(timeout, cl)
 	}
 	
 }

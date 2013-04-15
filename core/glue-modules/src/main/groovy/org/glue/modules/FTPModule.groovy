@@ -268,7 +268,7 @@ class FTPModule implements GlueModule{
 		String uid = validate(conf.user as String, "uid")
 		String pwd = validate(conf.pwd as String, "pwd")
 		
-		long timeout = (conf.timeout) ? timeout = Long.parseLong(conf.timeout as String) : 10000L
+//		long timeout = (conf.timeout) ? timeout = Long.parseLong(conf.timeout as String) : 10000L
 		
 		FileSystemManager fsManager = VFS.getManager()
 		StaticUserAuthenticator auth = new StaticUserAuthenticator(null, uid, pwd)
