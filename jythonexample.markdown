@@ -31,7 +31,8 @@ To convert Jython methods to Groovy Closures use the class org.glue.unit.om.impl
 
     Closure( f , [arg1, arg2] 
 
-The function f will be called as f(arg1, arg2)
+The function f will be called as 
+    f(arg1, arg2)
 
 Note that if the arguments provided are prepended to that of the glue function calling f.
 e.g.
