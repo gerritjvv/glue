@@ -33,6 +33,8 @@ public interface GlueContext {
 	GlueExecLogger getLogger()
 	void setLogger(GlueExecLogger logger)
 
+	def parallel(int threads, boolean failOnError)
+	
 	def eval(className, method, values)
 	def eval(className, method)
 	

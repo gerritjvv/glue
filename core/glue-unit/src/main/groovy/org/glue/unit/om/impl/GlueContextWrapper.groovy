@@ -4,7 +4,7 @@ import org.glue.unit.log.GlueExecLogger
 import org.glue.unit.om.GlueContext
 import org.glue.unit.om.GlueModuleFactory
 import org.glue.unit.om.GlueUnit
-import org.glue.unit.om.TimeoutWrapper
+import org.glue.unit.process.TaskExecutor
 import org.glue.unit.status.GlueUnitStatusManager
 
 /**
@@ -49,6 +49,10 @@ class GlueContextWrapper implements GlueContext{
 	}
 	def newInstance(className){
 		parent.newInstance(className)
+	}
+	
+	def parallel(int threads, boolean failOnError){
+		return new TaskExecutor(threads, failOnError)
 	}
 	
 	void destroy(){
