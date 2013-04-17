@@ -26,9 +26,10 @@ To convert Jython methods to Groovy Closures use the class org.glue.unit.om.impl
 
 ## Passing arguments to the Closure
 
-def f(a, b, c)
+    def f(a, b, c):
+        print(str(a) + str(b) + str(c))
 
-Closure( f , [arg1, arg2] 
+    Closure( f , [arg1, arg2] 
 
 The function f will be called as f(arg1, arg2)
 
@@ -38,12 +39,13 @@ lets say a list files function of glue calls the function p(fileName) but we wan
 
 we can do this like the following code:
 
-def p(arg1, arg2, fileName): 
-    print(str(arg1) + str(arg2) + str(fileName))
+    def p(arg1, arg2, fileName): 
+        print(str(arg1) + str(arg2) + str(fileName))
 
-Closure(p, [arg1, arg2])
+    Closure(p, [arg1, arg2])
 
-The function p will be called as: p(arg1, arg2, fileName)
+The function p will be called as: 
+    p(arg1, arg2, fileName)
 
 
 
