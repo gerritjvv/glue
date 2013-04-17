@@ -24,6 +24,29 @@ Glue and all of its modules are written using Closures.
 
 To convert Jython methods to Groovy Closures use the class org.glue.unit.om.impl.jython.Closure
 
+## Passing arguments to the Closure
+
+def f(a, b, c)
+
+Closure( f , [arg1, arg2] 
+
+The function f will be called as f(arg1, arg2)
+
+Note that if the arguments provided are prepended to that of the glue function calling f.
+e.g.
+lets say a list files function of glue calls the function p(fileName) but we want to add to the call arg1 arg2
+
+we can do this like the following code:
+
+def p(arg1, arg2, fileName): 
+    print(str(arg1) + str(arg2) + str(fileName))
+
+Closure(p, [arg1, arg2])
+
+The function p will be called as: p(arg1, arg2, fileName)
+
+
+
 
 #Example
 
