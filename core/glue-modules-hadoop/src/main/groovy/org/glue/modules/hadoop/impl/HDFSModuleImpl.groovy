@@ -83,7 +83,7 @@ public class HDFSModuleImpl implements HDFSModule {
 	
 	void downloadChunked(String clusterName, Collection<String> hdfsDir, String localDir, int chunkSize, String compression, Closure callback){
 		
-		def chunkedOutput = new ChunkedOutput(new File(localDir), "part-", chunkSize, compression, callback)
+		def chunkedOutput = new ChunkedOutput(new File(localDir), "parts", chunkSize, compression, callback)
 		try{
 			hdfsDir.each { dir ->
 			   eachLine(clusterName, dir, { String line ->

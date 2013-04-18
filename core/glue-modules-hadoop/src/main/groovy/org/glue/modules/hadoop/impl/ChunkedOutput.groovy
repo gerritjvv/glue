@@ -3,11 +3,11 @@ package org.glue.modules.hadoop.impl
 import org.apache.hadoop.conf.Configurable
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.io.compress.BZip2Codec;
+import org.apache.hadoop.io.compress.BZip2Codec
 import org.apache.hadoop.io.compress.CompressionCodec
 import org.apache.hadoop.io.compress.CompressionCodecFactory
 import org.apache.hadoop.io.compress.Compressor
-import org.apache.hadoop.io.compress.GzipCodec;
+import org.apache.hadoop.io.compress.GzipCodec
 
 /**
  * 
@@ -36,6 +36,8 @@ class ChunkedOutput {
 
 	final Closure callback
 
+	final Random random = new Random();
+	
 	/**
 	 * Writes out chunked files 
 	 * @param dir
@@ -89,9 +91,15 @@ class ChunkedOutput {
 		resetWriter()
 	}
 
+	
+	private final void waitRandom(){
+			Thread.sleep(random.nextInt(2) * 1000)
+	}
+	
 	private final void resetWriter() throws FileNotFoundException, IOException {
-
-		final File file = new File(dir, prefix + "-" + System.currentTimeMillis()
+		//we wait random to avoid name conflicts between multiple threads and processes plus append a nextInt(100) suffix
+		waitRandom()
+		final File file = new File(dir, prefix + "-" + System.nanoTime() + "." + random.nextInt(100)
 				+ extension + "_")
 
 		if (compressor != null)
@@ -128,17 +136,17 @@ class ChunkedOutput {
 	}
 
 	
-	public void write(String seq) throws IOException {
+	public synchronized void write(String seq) throws IOException {
 		checkRoll();
 		writer.write(seq.getBytes("UTF-8"))
 	}
 
-	public void close() throws IOException {
+	public synchronized void close() throws IOException {
 		doRoll();
 	}
 
 
-	def  write(byte[] data) throws IOException {
+	def synchronized void write(byte[] data) throws IOException {
 		checkRoll();
 		writer.write(data);
 	}
