@@ -46,6 +46,10 @@ class TaskExecutor {
 		return this
 	}
 
+	public void terminate(){
+		service.shutdownNow();
+	}
+	
 	/**
 	 * Waits for all tasks to complete.<br/>
 	 * After this method is called no more tasks can be sent.<br/>
@@ -54,9 +58,13 @@ class TaskExecutor {
 	 */
 	public void await(long timeout){
 		service.shutdown()
-		if(!service.awaitTermination(timeout, TimeUnit.MILLISECONDS))
-			throw new TimeoutException()
-
+		try{
+		   if(!service.awaitTermination(timeout, TimeUnit.MILLISECONDS))
+			  throw new TimeoutException()
+		}finally{
+			service.shutdownNow()
+		}
+		
 		if(failed.get())
 			throw excpRef.get()
 		
