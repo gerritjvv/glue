@@ -1,15 +1,9 @@
 package org.glue.modules.hadoop.pigutil
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.util.List;
-import java.util.Properties;
-import org.apache.pig.PigServer; 
-import org.apache.pig.impl.PigContext; 
-import org.apache.pig.impl.util.UDFContext; 
-import org.apache.pig.tools.parameters.ParameterSubstitutionPreprocessor; 
+import org.apache.pig.ExecType
+import org.apache.pig.PigServer
+import org.apache.pig.impl.PigContext
+import org.apache.pig.tools.parameters.ParameterSubstitutionPreprocessor
 
 /**
  * Utility Class to create and load the Pig Server and its Context Properties
@@ -38,12 +32,22 @@ public class PigServerUtil {
 	        if (properties.get("udf.import.list")!=null)
 	            PigContext.initializeImportList((String)properties.get("udf.import.list"));
 
-			PigContext pigContext = new PigContext(PigServer.parseExecType(execType), properties);
+			PigContext pigContext = new PigContext(parseExecType(execType), properties);
 			return new PigServer(pigContext);
 		
 	}
 	
-
+	private static final ExecType parseExecType(String execType){
+		String str = execType.toUpperCase()
+		String type = null;
+		
+		if(str.equals("MAPRED"))
+		   str = "MAPREDUCE"
+		else if(str.equals("PIGBODY"))
+		   str = "PIG"
+		   
+		return ExecType.valueOf(str)
+	}
 	
 	/**
 	 *  returns the stream of final pig script to be passed to Grunt

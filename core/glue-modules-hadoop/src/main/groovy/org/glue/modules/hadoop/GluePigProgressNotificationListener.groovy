@@ -2,6 +2,7 @@ package org.glue.modules.hadoop
 
 import java.util.concurrent.CountDownLatch
 
+import org.apache.pig.backend.hadoop.executionengine.mapReduceLayer.plans.MROperPlan;
 import org.apache.pig.tools.pigstats.JobStats
 import org.apache.pig.tools.pigstats.OutputStats
 import org.apache.pig.tools.pigstats.PigProgressNotificationListener
@@ -199,5 +200,10 @@ class GluePigProgressNotificationListener implements PigProgressNotificationList
 	@Override
 	public void progressUpdatedNotification(String arg0, int arg1) {
 		progressUpdatedNotification(arg1)
+	}
+
+	@Override
+	public void initialPlanNotification(String scriptId, MROperPlan plan) {
+		
 	}
 }
