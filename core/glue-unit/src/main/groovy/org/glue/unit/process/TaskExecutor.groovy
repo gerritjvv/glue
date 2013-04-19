@@ -6,6 +6,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference
 
 /**
@@ -20,7 +21,6 @@ class TaskExecutor {
 	final boolean failOnError;
 	AtomicBoolean failed = new AtomicBoolean(false);
 	AtomicReference<Throwable> excpRef = new AtomicReference<Throwable>()
-
 
 	public TaskExecutor(int threads, boolean failOnError){
 		service = Executors.newFixedThreadPool(threads);
@@ -57,12 +57,13 @@ class TaskExecutor {
 	 * A TimeoutException is thrown if the tasks did not complete without the timeout period<br/> 
 	 */
 	public void await(long timeout){
+		
 		service.shutdown()
 		try{
 		   if(!service.awaitTermination(timeout, TimeUnit.MILLISECONDS))
 			  throw new TimeoutException()
 		}finally{
-			service.shutdownNow()
+			terminate()
 		}
 		
 		if(failed.get())

@@ -1,6 +1,7 @@
 package org.glue.test.unit.process
 
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.glue.unit.process.TaskExecutor
 import org.junit.Test
@@ -49,5 +50,34 @@ class TaskExecutorTest {
 				.await(10000)
 
 		assert(t1.get() && t2.get())
+	}
+	
+	
+	/**
+	 * RejectedExecutionException
+	 * Is thrown by script when using two parallels p1 p2, p1 submits to p2.
+	 *on complete p1.await then p2.await is called.
+	 * @throws Throwable
+	 */
+	@Test
+	public void testIssue24() throws Throwable{
+		
+		def p1 = new TaskExecutor(10, true)
+		def p2 = new TaskExecutor(10, true)
+		
+		def work = { println new Random().nextInt() }
+		def submitWork = { (0..10).each { p2.submit(work); Thread.sleep(100);} }
+		
+		(0..10).each {
+			p1.submit(submitWork)
+			
+		}
+				
+		p1.await(1000000)
+		p2.await(1000000)
+		
+		//we're not testing anything more than that we're able to run and submit 
+		//to both p1 p2 and wait for orderly completion.
+		
 	}
 }
