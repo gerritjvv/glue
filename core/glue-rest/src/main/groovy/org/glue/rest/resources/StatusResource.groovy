@@ -68,7 +68,7 @@ class StatusResource extends ServerResource {
 			out.error=t
 			setStatus Status.SERVER_ERROR_INTERNAL, t, t.toString()
 
-			return mapper.writeValueAsString(out)
+			rep = new StringRepresentation( mapper.writeValueAsString(out) )
 		}
 
 		return rep;
