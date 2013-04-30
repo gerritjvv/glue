@@ -7,7 +7,6 @@ import java.sql.ResultSet;
 import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -252,7 +251,7 @@ public class HdfsTriggersManager implements TriggersManager, Runnable {
 	private final void fillUnitFiles() {
 
 		long start = System.currentTimeMillis();
-
+				
 		// insert entries into unitfiles
 		dbManager
 				.exec("insert ignore into "
@@ -261,7 +260,7 @@ public class HdfsTriggersManager implements TriggersManager, Runnable {
 						+ hdfsfilesTbl
 						+ " hf, "
 						+ unitTriggersTbl
-						+ " ut where (ut.type = 'hdfs' or ut.type = 'hdfs-dir') AND hf.seen=0 AND SUBSTRING(hf.path, 1, LENGTH(ut.data)) = ut.data AND LENGTH(hf.path) >= LENGTH(ut.data)",
+						+ " ut where (ut.type = 'hdfs' or ut.type = 'hdfs-dir') AND hf.seen=0 AND hf.path like CONCAT(ut.data, '/%') AND LENGTH(hf.path) >= LENGTH(ut.data)",
 
 				// ads the seen flag that marks the file as having been
 				// processed
@@ -277,6 +276,8 @@ public class HdfsTriggersManager implements TriggersManager, Runnable {
 								+ unitfilesTbl
 								+ " uf SET hf.seen = 1 WHERE uf.fileid = hf.id AND uf.status='ready'");
 
+		
+		
 		// if a listener is registered
 		// and there are ready files for units,
 		// call launch on listener.
