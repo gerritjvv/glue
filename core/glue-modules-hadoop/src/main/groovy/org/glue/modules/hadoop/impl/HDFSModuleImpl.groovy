@@ -585,9 +585,15 @@ public class HDFSModuleImpl implements HDFSModule {
 	void eachLine(String clusterName, String file, boolean recursive, Closure closure) throws IOException{
 		def eachLineFile = {
 
+			DecompressorValue decVal
+			
 			def key = new DecompressorKey(clusterName:clusterName, file:it)
-			DecompressorValue decVal = decompressorPool.borrowObject(key)
-
+			try{
+			decVal = decompressorPool.borrowObject(key)
+			}catch(Throwable t){
+			  throw new RuntimeException("Error creating decompressor: " + file, t)
+			}
+			
 			if(decVal == null){
 				LOG.debug("Reading $file as plain text")
 				def reader = new BufferedReader(new InputStreamReader( open(clusterName, it as String)))
@@ -616,6 +622,8 @@ public class HDFSModuleImpl implements HDFSModule {
 						reader.close()
 						input.close()
 					}
+				}catch(Throwable t){
+				    throw new RuntimeException("Error creating inputstream for: " + file  + " " + to.toString(), t);
 				}finally{
 					decompressorPool.returnObject(key, decVal)
 				}

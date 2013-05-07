@@ -1,5 +1,7 @@
 package org.glue.modules
 
+import java.security.MessageDigest
+
 import org.apache.commons.io.IOUtils
 import org.glue.unit.exceptions.ModuleConfigurationException
 import org.glue.unit.om.GlueContext
@@ -48,6 +50,10 @@ class S3Module implements GlueModule{
 		return getClient(server).getObject(getBucket(server, bucket), file)
 	}
 
+
+	String getMD5(String file){
+		getFileMetaData(file).getContentMD5()
+	}
 
 	long getSize(String file){
 		getSize(null, null, file)
@@ -111,15 +117,15 @@ class S3Module implements GlueModule{
 		getClient(server).deleteObject(getBucket(server, bucket), file)
 	}
 
-	
+
 	PutObjectResult putFile(InputStream input, ObjectMetadata metadata, String dest){
-		putFile(null, null, input, metadata, dest)	
+		putFile(null, null, input, metadata, dest)
 	}
-	
+
 	PutObjectResult putFile(String bucket, InputStream input, ObjectMetadata metadata, String dest){
 		putFile(null, bucket, input, metadata, dest)
 	}
-	
+
 	PutObjectResult putFile(String server, String bucket, InputStream input, ObjectMetadata metadata, String dest){
 		return getClient(server).putObject(getBucket(server, bucket), dest, input)
 	}
@@ -137,30 +143,56 @@ class S3Module implements GlueModule{
 	PutObjectResult putFile(String server, String bucket, String file, String dest){
 		def localFile = new File(file)
 		def fileSize = localFile.length()
-		def bytesTransfered = 0
-		def i = 0
 		
-		def putReq = new PutObjectRequest(getBucket(server, bucket), dest, localFile)
-		.withMetadata(new ObjectMetadata())
-		putReq.setProgressListener(
-			new ProgressListener(){ 
-			public void progressChanged(ProgressEvent progressEvent){
-				if(progressEvent.getEventCode() == ProgressEvent.CANCELED_EVENT_CODE)
-				  println("Error: " + progressEvent.getEventCode())
-				else if(progressEvent.getEventCode() == ProgressEvent.FAILED_EVENT_CODE)
-				  println("Error: " + progressEvent.getEventCode())
-				else if(progressEvent.getEventCode() == ProgressEvent.COMPLETED_EVENT_CODE){
-				  println(fileSize + " of " + fileSize)
-				  println("Complete")
-				}else{
-				  bytesTransfered += progressEvent.getBytesTransfered()
-				  if(i++ % 100 == 0)
-				    println(bytesTransfered + " of " + fileSize)
-				}
-				
-		}});
+
+
+		for(int retryCount = 0; retryCount < 3; retryCount ++ ){ 
+			def bytesTransfered = 0
+			def i = 0
+			
+			def putReq = new PutObjectRequest(getBucket(server, bucket), dest, localFile)
+					.withMetadata(new ObjectMetadata())
+			putReq.setProgressListener(
+					new ProgressListener(){
+						public void progressChanged(ProgressEvent progressEvent){
+							if(progressEvent.getEventCode() == ProgressEvent.CANCELED_EVENT_CODE)
+								println("Error: " + progressEvent.getEventCode())
+							else if(progressEvent.getEventCode() == ProgressEvent.FAILED_EVENT_CODE)
+								println("Error: " + progressEvent.getEventCode())
+							else if(progressEvent.getEventCode() == ProgressEvent.COMPLETED_EVENT_CODE){
+								println(fileSize + " of " + fileSize)
+								println("Complete")
+							}else{
+								bytesTransfered += progressEvent.getBytesTransfered()
+								if(i++ % 100 == 0)
+									println(bytesTransfered + " of " + fileSize)
+							}
+						}
+					});
+
+			PutObjectResult res = getClient(server).putObject(putReq)
+			//check that the md5 checksum is correct
+			if(localMD5(localFile).equals(getMD5(dest)))
+			   return res
+			else
+			    print("MD5s for remote and local do not match -- retrying ${retryCount+1} of 3")
+		}
 		
-		return getClient(server).putObject(putReq)
+		throw new RuntimeException("Unable to copy file to remote location")
+	}
+
+	private String localMD5(String file){
+		MessageDigest digest = MessageDigest.getInstance("MD5")
+		new File(file).withInputStream(){is->
+			byte[] buffer = new byte[8192]
+			int read = 0
+			while( (read = is.read(buffer)) > 0) {
+				digest.update(buffer, 0, read);
+			}
+		}
+		byte[] md5sum = digest.digest()
+		BigInteger bigInt = new BigInteger(1, md5sum)
+		return bigInt.toString(16)
 	}
 
 	Bucket createBucket(String server=null, String bucket){
