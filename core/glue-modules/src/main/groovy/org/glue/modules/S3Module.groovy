@@ -144,7 +144,7 @@ class S3Module implements GlueModule{
 		def localFile = new File(file)
 		def fileSize = localFile.length()
 		
-
+		try{
 
 		for(int retryCount = 0; retryCount < 3; retryCount ++ ){ 
 			def bytesTransfered = 0
@@ -171,13 +171,24 @@ class S3Module implements GlueModule{
 					});
 
 			PutObjectResult res = getClient(server).putObject(putReq)
+			def md5Local = localMD5(file)
+			println("md5Local:  $md5Local  == ${getMD5(dest)}  ; $dest")
+			
 			//check that the md5 checksum is correct
-			if(localMD5(localFile).equals(getMD5(dest)))
+			if(md5Local.equals(getMD5(dest)))
 			   return res
-			else
-			    print("MD5s for remote and local do not match -- retrying ${retryCount+1} of 3")
+			else{
+				Thread.sleep(1000)
+				if(md5Local.equals(getMD5(dest)))
+				   return res
+				else
+			       println("MD5s for remote and local do not match -- retrying ${retryCount+1} of 3")
+			}
 		}
-		
+		}catch(Throwable t){
+		 t.printStackTrace()
+		 throw t
+		}		
 		throw new RuntimeException("Unable to copy file to remote location")
 	}
 
