@@ -52,7 +52,7 @@ class S3Module implements GlueModule{
 
 
 	String getMD5(String file){
-		getFileMetaData(file).getContentMD5()
+		getFileMetaData(file).getETag()
 	}
 
 	long getSize(String file){
@@ -143,7 +143,7 @@ class S3Module implements GlueModule{
 	PutObjectResult putFile(String server, String bucket, String file, String dest){
 		def localFile = new File(file)
 		def fileSize = localFile.length()
-		
+		def md5Local = localMD5(file)
 		try{
 
 		for(int retryCount = 0; retryCount < 3; retryCount ++ ){ 
@@ -152,6 +152,7 @@ class S3Module implements GlueModule{
 			
 			def putReq = new PutObjectRequest(getBucket(server, bucket), dest, localFile)
 					.withMetadata(new ObjectMetadata())
+					
 			putReq.setProgressListener(
 					new ProgressListener(){
 						public void progressChanged(ProgressEvent progressEvent){
@@ -171,7 +172,7 @@ class S3Module implements GlueModule{
 					});
 
 			PutObjectResult res = getClient(server).putObject(putReq)
-			def md5Local = localMD5(file)
+			
 			println("md5Local:  $md5Local  == ${getMD5(dest)}  ; $dest")
 			
 			//check that the md5 checksum is correct
