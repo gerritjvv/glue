@@ -34,9 +34,11 @@ class TaskExecutor {
 						try{
 							return closure()
 						}catch(Throwable excp){
+						    println("Error: " + excp)
+							excp.printStackTrace()
 							failed.set(true)
 							excpRef.set(excp)
-
+							
 							//this needs to be the last call here
 							if(failOnError)
 								service.shutdownNow()
