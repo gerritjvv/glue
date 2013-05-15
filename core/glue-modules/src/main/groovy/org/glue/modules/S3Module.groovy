@@ -39,6 +39,7 @@ class S3Module implements GlueModule{
 	Map<String, String> buckets = [:]
 	Map<String, AmazonS3Client> clients = [:]
 
+        def useS3cmd = false
 
 	S3Object getFileAsObject(String file){
 		getFileAsObject(null, null, file)
@@ -146,6 +147,17 @@ class S3Module implements GlueModule{
 		def md5Local = localMD5(file)
 		try{
 
+		if(!dest.startsWith('/')) dest = "/" + dest
+ 
+                if(useS3cmd){
+                   def p = ["s3cmd", "sync", file, "s3://" + getBucket(server, bucket) + dest].execute()
+	           p.waitForProcessOutput(System.out, System.err)
+
+		   if(p.exitValue())
+  			throw new RuntimeException("Error running s3cmd")
+
+                }else{
+
 		for(int retryCount = 0; retryCount < 3; retryCount ++ ){ 
 			def bytesTransfered = 0
 			def i = 0
@@ -186,6 +198,7 @@ class S3Module implements GlueModule{
 			       println("MD5s for remote and local do not match -- retrying ${retryCount+1} of 3")
 			}
 		}
+                }
 		}catch(Throwable t){
 		 t.printStackTrace()
 		 throw t
@@ -294,6 +307,11 @@ class S3Module implements GlueModule{
 		if(!config?.servers)
 			throw new ModuleConfigurationException("No servers defined");
 
+
+                if(config?.s3cmd)
+                    useS3cmd = true
+                else
+                    useS3cmd = false
 
 		config?.servers.each { name, ConfigObject conf ->
 

@@ -16,15 +16,15 @@ import org.apache.hadoop.fs.FileStatus;
  */
 public interface HDFSModule extends GlueModule {
 
-	void downloadChunked(Collection<String> hdfsDir, String localDir, Closure callback)
-	void downloadChunked(Collection<String> hdfsDir, String localDir, int chunkSize, String compression, Closure callback)
-	void downloadChunked(String clusterName, Collection<String> hdfsDir, String localDir, int chunkSize, String compression, Closure callback)
+	void downloadChunked(Collection<String> hdfsDir, String localDir, Runnable callback)
+	void downloadChunked(Collection<String> hdfsDir, String localDir, int chunkSize, String compression, Runnable callback)
+	void downloadChunked(String clusterName, Collection<String> hdfsDir, String localDir, int chunkSize, String compression, Runnable callback)
 	
 	String cat(String hadoopPath, String fileName)
 	String cat(String hadoopPath)
 	
-	void findNewFiles(String file, Closure dirHasBeenModified, Closure closure)
-	void findNewFiles(String clusterName, String file, Closure dirHasBeenModified, Closure closure)
+	void findNewFiles(String file, Runnable dirHasBeenModified, Runnable closure)
+	void findNewFiles(String clusterName, String file, Runnable dirHasBeenModified, Runnable closure)
 	
 	/**
 	 * Loads a local file to hdfs
@@ -204,7 +204,7 @@ public interface HDFSModule extends GlueModule {
 	 * @param closure
 	 * @throws IOException
 	 */
-	void open(String file, Closure closure) throws IOException;
+	void open(String file, Runnable closure) throws IOException;
 
 	/**
 	 * Opens the file and sends each line to the closure<br/>
@@ -217,7 +217,7 @@ public interface HDFSModule extends GlueModule {
 	 * @param closure
 	 * @throws IOException
 	 */
-	void eachLine(String file, Closure closure) throws IOException;
+	void eachLine(String file, Runnable closure) throws IOException;
 
 	/**
 	 * Opens the file and sends each line to the closure<br/>
@@ -230,7 +230,7 @@ public interface HDFSModule extends GlueModule {
 	 * @param closure
 	 * @throws IOException
 	 */
-	void eachLine(String file, boolean recursive, Closure closure)
+	void eachLine(String file, boolean recursive, Runnable closure)
 			throws IOException;
 
 	/**
@@ -249,7 +249,7 @@ public interface HDFSModule extends GlueModule {
 	 * @param closure
 	 * @throws IOException
 	 */
-	void create(String file, Closure closure) throws IOException;
+	void create(String file, Runnable closure) throws IOException;
 
 	/**
 	* Creates a file and passes the BufferedWriter to the closure
@@ -257,7 +257,7 @@ public interface HDFSModule extends GlueModule {
 	* @param closure
 	* @throws IOException
 	*/
-	void createWithWriter(String file, Closure closure) throws IOException
+	void createWithWriter(String file, Runnable closure) throws IOException
 	
 	/**
 	 * Iterate through the files in the directory specified.<br/>
@@ -267,7 +267,7 @@ public interface HDFSModule extends GlueModule {
 	 *            can be a file glob
 	 * @param closure
 	 */
-	void list(String file, Closure closure);
+	void list(String file, Runnable closure);
 
 	/**
 	 * Iterate through the files in the directory specified.<br/>
@@ -279,7 +279,7 @@ public interface HDFSModule extends GlueModule {
 	 *            default is true
 	 * @param closure
 	 */
-	void list(String file, boolean recursive, Closure closure);
+	void list(String file, boolean recursive, Runnable closure);
 
 	/**
 	 * Iterate through the files in the directory specified.<br/>
@@ -293,7 +293,7 @@ public interface HDFSModule extends GlueModule {
 	 * @param closure
 	 *            passed a String file name
 	 */
-	void list(String file, long lastUpdated, Closure closure);
+	void list(String file, long lastUpdated, Runnable closure);
 
 	/**
 	 * Iterate through the files in the directory specified.
@@ -307,6 +307,6 @@ public interface HDFSModule extends GlueModule {
 	 * @param closure
 	 *            passed a String file name
 	 */
-	void list(String file, boolean recursive, long lastUpdated, Closure closure);
+	void list(String file, boolean recursive, long lastUpdated, Runnable closure);
 
 }

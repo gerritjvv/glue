@@ -73,15 +73,15 @@ public class HDFSModuleImpl implements HDFSModule {
 	}
 	
 	
-	void downloadChunked(Collection<String> hdfsDir, String localDir, Closure callback){
+	void downloadChunked(Collection<String> hdfsDir, String localDir, Runnable callback){
 		downloadChunked(hdfsDir, localDir, 1073741824, "gz", callback)
 	}
 	
-	void downloadChunked(Collection<String> hdfsDir, String localDir, int chunkSize, String compression, Closure callback){
+	void downloadChunked(Collection<String> hdfsDir, String localDir, int chunkSize, String compression, Runnable callback){
 		downloadChunked(null, hdfsDir, localDir, chunkSize, compression, callback)
 	}
 	
-	void downloadChunked(String clusterName, Collection<String> hdfsDir, String localDir, int chunkSize, String compression, Closure callback){
+	void downloadChunked(String clusterName, Collection<String> hdfsDir, String localDir, int chunkSize, String compression, Runnable callback){
 		
 		def chunkedOutput = new ChunkedOutput(new File(localDir), "parts", chunkSize, compression, callback)
 		try{
@@ -125,7 +125,7 @@ public class HDFSModuleImpl implements HDFSModule {
 		return f.getAbsolutePath();
 	}
 
-	boolean timeSeries(String n, String tableHDFSDir, Date nowdate, String modifyTime, Closure<String> partitionFormatter, Closure<Date> dateIncrement, Closure collector = null){
+	boolean timeSeries(String n, String tableHDFSDir, Date nowdate, String modifyTime, Callable<String> partitionFormatter, Runnable<Date> dateIncrement, Callable collector = null){
 		timeSeries(null, n, tableHDFSDir, nowdate, modifyTime, partitionFormatter, dateIncrement, collector)	
 	}
 	
@@ -140,7 +140,7 @@ public class HDFSModuleImpl implements HDFSModule {
 	 * @param dateIncrement Receives the date value and should return the incremented date e.g. date + 1.hours
 	 * @param collector for every file that meet the condition the closure is called with date, file
 	 */
-	boolean timeSeries(String clusterName, String n, String tableHDFSDir, Date nowdate, String modifyTime, Closure<String> partitionFormatter, Closure<Date> dateIncrement, Closure collector = null){
+	boolean timeSeries(String clusterName, String n, String tableHDFSDir, Date nowdate, String modifyTime, Callable<String> partitionFormatter, Callable<Date> dateIncrement, Callable collector = null){
 		
 		final String[] modTimeParsed = modifyTime.toLowerCase().split('\\.')
 		final String[] nParsed = n.toLowerCase().split('\\.')
@@ -434,11 +434,11 @@ public class HDFSModuleImpl implements HDFSModule {
 		}
 	}
 
-	void withDecompressedInputStream(String file, Closure closure) throws IOException{
+	void withDecompressedInputStream(String file, Runnable closure) throws IOException{
 		withDecompressedInputStream(null, file, closure)
 	}
 
-	void withDecompressedInputStream(String clusterName, String file, Closure closure) throws IOException{
+	void withDecompressedInputStream(String clusterName, String file, Runnable closure) throws IOException{
 	
 			def key = new DecompressorKey(clusterName:clusterName, file:file)
 			DecompressorValue decVal = decompressorPool.borrowObject(key)
@@ -481,7 +481,7 @@ public class HDFSModuleImpl implements HDFSModule {
 	}
 
 
-	void open(String file, Closure closure) throws IOException{
+	void open(String file, Runnable closure) throws IOException{
 		open(null, file, closure)
 	}
 	/**
@@ -490,7 +490,7 @@ public class HDFSModuleImpl implements HDFSModule {
 	 * @param closure
 	 * @throws IOException
 	 */
-	void open(String clusterName, String file, Closure closure) throws IOException{
+	void open(String clusterName, String file, Runnable closure) throws IOException{
 		FSDataInputStream input = open(clusterName, file)
 		try{
 			closure.call(input)
@@ -514,7 +514,7 @@ public class HDFSModuleImpl implements HDFSModule {
 		getFileSystem(clusterName).create (new Path(file))
 	}
 
-	void createWithWriter(String file, Closure closure) throws IOException{
+	void createWithWriter(String file, Runnable closure) throws IOException{
 		createWithWriter(null, file, closure)
 	}
 
@@ -524,7 +524,7 @@ public class HDFSModuleImpl implements HDFSModule {
 	 * @param closure
 	 * @throws IOException
 	 */
-	void createWithWriter(String clusterName, String file, Closure closure) throws IOException{
+	void createWithWriter(String clusterName, String file, Runnable closure) throws IOException{
 		FSDataOutputStream fsDataOut = getFileSystem(clusterName).create (new Path(file))
 		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fsDataOut))
 
@@ -536,7 +536,7 @@ public class HDFSModuleImpl implements HDFSModule {
 		}
 	}
 
-	void create(String file, Closure closure) throws IOException{
+	void create(String file, Runnable closure) throws IOException{
 		create(null, file, closure)
 	}
 
@@ -546,7 +546,7 @@ public class HDFSModuleImpl implements HDFSModule {
 	 * @param closure
 	 * @throws IOException
 	 */
-	void create(String clusterName, String file, Closure closure) throws IOException{
+	void create(String clusterName, String file, Runnable closure) throws IOException{
 		FSDataOutputStream fsDataOut = getFileSystem(clusterName).create (new Path(file))
 		try{
 			closure(fsDataOut)
@@ -555,7 +555,7 @@ public class HDFSModuleImpl implements HDFSModule {
 		}
 	}
 
-	void eachLine(String file, Closure closure) throws IOException{
+	void eachLine(String file, Runnable closure) throws IOException{
 		eachLine(null, file, closure)
 	}
 
@@ -566,11 +566,11 @@ public class HDFSModuleImpl implements HDFSModule {
 	 * @param closure
 	 * @throws IOException
 	 */
-	void eachLine(String clusterName, String file, Closure closure) throws IOException{
+	void eachLine(String clusterName, String file, Runnable closure) throws IOException{
 		eachLine(clusterName, file, true, closure)
 	}
 
-	void eachLine(String file, boolean recursive, Closure closure) throws IOException{
+	void eachLine(String file, boolean recursive, Runnable closure) throws IOException{
 		eachLine(null, file, recursive, closure)
 	}
 
@@ -582,7 +582,7 @@ public class HDFSModuleImpl implements HDFSModule {
 	 * @param closure
 	 * @throws IOException
 	 */
-	void eachLine(String clusterName, String file, boolean recursive, Closure closure) throws IOException{
+	void eachLine(String clusterName, String file, boolean recursive, Runnable closure) throws IOException{
 		def eachLineFile = {
 
 			DecompressorValue decVal
@@ -638,7 +638,7 @@ public class HDFSModuleImpl implements HDFSModule {
 		}
 	}
 
-	void list(String file, Closure closure){
+	void list(String file, Runnable closure){
 		list(null, file, closure)
 	}
 
@@ -650,11 +650,11 @@ public class HDFSModuleImpl implements HDFSModule {
 	 *            can be a file glob
 	 * @param closure
 	 */
-	void list(String clusterName, String file, Closure closure){
+	void list(String clusterName, String file, Runnable closure){
 		list(clusterName, file, true, closure)
 	}
 
-	void list(String file, boolean recursive, Closure closure){
+	void list(String file, boolean recursive, Runnable closure){
 		list(null, file, recursive, closure)
 	}
 
@@ -667,7 +667,7 @@ public class HDFSModuleImpl implements HDFSModule {
 	 * @param dirHasBeenModified
 	 * @param closure
 	 */
-	void findNewFiles(String clusterName = null, String file, Closure dirHasBeenModified, Closure closure){
+	void findNewFiles(String clusterName = null, String file, Callable<Boolean> dirHasBeenModified, Runnable closure){
 		
 		def findClosure = null
 		findClosure = { path, FileStatus status ->
@@ -694,7 +694,7 @@ public class HDFSModuleImpl implements HDFSModule {
 	 * @param recursive default is true
 	 * @param closure
 	 */
-	void list(String clusterName, String file, boolean recursive, Closure closure){
+	void list(String clusterName, String file, boolean recursive, Runnable closure){
 		PathFilter pathFilter =  { Path path ->
 			!path.name.startsWith("_")
 		} as PathFilter
@@ -748,7 +748,7 @@ public class HDFSModuleImpl implements HDFSModule {
 		}
 	}
 
-	void list(String file, long lastUpdated, Closure closure){
+	void list(String file, long lastUpdated, Runnable closure){
 		list(null,file, lastUpdated,  closure)
 	}
 
@@ -759,11 +759,11 @@ public class HDFSModuleImpl implements HDFSModule {
 	 * @param closure passed a String file name
 	 * @param lastUpdated only files with update time bigger or equal than this value will be included
 	 */
-	void list(String clusterName, String file, long lastUpdated, Closure closure){
+	void list(String clusterName, String file, long lastUpdated, Runnable closure){
 		list(clusterName, file, true, lastUpdated, closure)
 	}
 
-	void list(String file, boolean recursive, long lastUpdated, Closure closure){
+	void list(String file, boolean recursive, long lastUpdated, Runnable closure){
 		list(null, file, recursive, lastUpdated, closure)
 	}
 
@@ -776,9 +776,9 @@ public class HDFSModuleImpl implements HDFSModule {
 	 * @param lastUpdated only files with update time bigger or equal than this value will be included
 	 */
 	@Typed(TypePolicy.MIXED)
-	void list(String clusterName, String file, boolean recursive, long lastUpdated, Closure closure){
+	void list(String clusterName, String file, boolean recursive, long lastUpdated, Runnable closure){
 
-		Closure clsToCall = closure
+		Runnable clsToCall = closure
 
 		if(closure.getMaximumNumberOfParameters() == 1){
 			clsToCall = { f, m ->
@@ -823,7 +823,7 @@ public class HDFSModuleImpl implements HDFSModule {
 	 * @param filter
 	 * @param closure
 	 */
-	private void listStatusRecursiveHelper(String clusterName, FileStatus dirStatus, PathFilter filter, Closure closure){
+	private void listStatusRecursiveHelper(String clusterName, FileStatus dirStatus, PathFilter filter, Runnable closure){
 
 		List<Actor> actors = []
 		FileSystem fs = getFileSystem(clusterName)

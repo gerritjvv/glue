@@ -176,10 +176,10 @@ public class SqlModule implements GlueModule {
 	 * @param db String database name
 	 * @param closure
 	 */
-	public void withSql(db, Closure closure){
+	public void withSql(db, Runnable closure){
 		def sqlObj = getSql(db)
 		try{
-			closure(sqlObj)
+			closure.run(sqlObj)
 		}finally{
 			sqlObj.close()
 		}
@@ -207,10 +207,10 @@ public class SqlModule implements GlueModule {
 	 * @param sql
 	 * @param closure Closure is called with one parameter which is an instance of GroovyResultSet
 	 */
-	public void eachSqlResult(db, sql, Closure closure) {
+	public void eachSqlResult(db, sql, Runnable closure) {
 		def sqlObj = getSql(db)
 		try{
-			sqlObj.eachRow(sql.toString()){ row -> closure(row) }
+			sqlObj.eachRow(sql.toString()){ row -> closure.run(row) }
 		}finally{
 			sqlObj.close()
 		}

@@ -107,8 +107,8 @@ class FTPModule implements GlueModule{
 		
 	}
 	
-	public void withInputStream(String server = null, String pathName, Closure closure){
-		withFTP(server, pathName, { FileSystemManager fsman, FileObject fsobj -> closure(fsobj.content.inputStream) } )
+	public void withInputStream(String server = null, String pathName, Runnable closure){
+		withFTP(server, pathName, { FileSystemManager fsman, FileObject fsobj -> closure.run(fsobj.content.inputStream) } )
 	}
 
 	public boolean rename(server = null, from, to){
@@ -125,12 +125,12 @@ class FTPModule implements GlueModule{
 		} )
 	}
 
-	public void withWriter(server = null, pathName, Closure closure){
+	public void withWriter(server = null, pathName, Runnable closure){
 		
 		withFTP(server, pathName, { FileSystemManager fsman, FileObject fsobj ->  
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fsobj.content.outputStream))
 			try{
-				closure(writer)
+				closure.run(writer)
 			}finally{
 			  writer.close()
 			}
@@ -140,9 +140,9 @@ class FTPModule implements GlueModule{
 		
 	}
 	
-	public void withOutputStream(server = null, pathName, Closure closure){
+	public void withOutputStream(server = null, pathName, Runnable closure){
 		
-		withFTP(server, pathName, { FileSystemManager fsman, FileObject fsobj ->  closure(fsobj.content.outputStream) } )
+		withFTP(server, pathName, { FileSystemManager fsman, FileObject fsobj ->  closure.run(fsobj.content.outputStream) } )
 		
 	}
 
@@ -258,7 +258,7 @@ class FTPModule implements GlueModule{
 	}
 
 	
-	public Object withFTP(String server, String fsPath, Closure closure){
+	public Object withFTP(String server, String fsPath, Runnable closure){
 		ConfigObject conf = (server)? serverConfigurations[server.toString()] : defaultConfiguration
 		
 		if(conf == null)
@@ -281,7 +281,7 @@ class FTPModule implements GlueModule{
 		FileObject fsObj = null;
 		try{
 		 fsObj = fsManager.resolveFile(url, opts)
-		 ret = closure(fsManager, fsObj)
+		 ret = closure.run(fsManager, fsObj)
 		}finally{
 		  fsObj?.close()
 		}	
