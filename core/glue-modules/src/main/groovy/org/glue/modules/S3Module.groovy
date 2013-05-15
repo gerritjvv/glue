@@ -39,7 +39,7 @@ class S3Module implements GlueModule{
 	Map<String, String> buckets = [:]
 	Map<String, AmazonS3Client> clients = [:]
 
-        def useS3cmd = false
+        def s3configFile
 
 	S3Object getFileAsObject(String file){
 		getFileAsObject(null, null, file)
@@ -149,8 +149,8 @@ class S3Module implements GlueModule{
 
 		if(!dest.startsWith('/')) dest = "/" + dest
  
-                if(useS3cmd){
-                   def p = ["s3cmd", "sync", file, "s3://" + getBucket(server, bucket) + dest].execute()
+                if(s3configFile){
+                   def p = ["s3cmd", "-c", s3configFile, "sync", file, "s3://" + getBucket(server, bucket) + dest].execute()
 	           p.waitForProcessOutput(System.out, System.err)
 
 		   if(p.exitValue())
@@ -309,9 +309,7 @@ class S3Module implements GlueModule{
 
 
                 if(config?.s3cmd)
-                    useS3cmd = true
-                else
-                    useS3cmd = false
+                    s3configFile =config.s3cmd
 
 		config?.servers.each { name, ConfigObject conf ->
 
