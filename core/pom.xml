@@ -148,17 +148,13 @@
 	</build>
         <pluginRepositories>
                 <pluginRepository>
-                        <id>dtrott</id>
-                        <url>http://maven.davidtrott.com/repository</url>
+                        <id>groovypp</id>
+                        <url>http://groovypp.artifactoryonline.com/groovypp/libs-releases-local</url>
                         <snapshots>
 		            <enabled>true</enabled>
 		        </snapshots>
                 </pluginRepository>
 
-		<pluginRepository>
-                        <id>groovypp</id>
-                        <url>http://www.gridgainsystems.com/maven2</url>
-                </pluginRepository>
                 <pluginRepository>
 		       <id>klej-snapshots</id>
                        <url>https://klej.googlecode.com/svn/mvnrepo/snapshots</url>
@@ -193,6 +189,10 @@
                         <id>klej-snapshots</id>
                         <url>https://klej.googlecode.com/svn/mvnrepo/snapshots</url>
                 </repository>
+		<repository>
+			<id>groovypp2</id>
+			<url>http://groovypp.artifactoryonline.com/groovypp/libs-releases-local/</url>
+		</repository>
 
 	</repositories>
 
