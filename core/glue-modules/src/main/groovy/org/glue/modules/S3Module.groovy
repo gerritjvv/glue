@@ -39,7 +39,7 @@ class S3Module implements GlueModule{
 	Map<String, String> buckets = [:]
 	Map<String, AmazonS3Client> clients = [:]
 
-        def s3configFile
+	def s3configFile
 
 	S3Object getFileAsObject(String file){
 		getFileAsObject(null, null, file)
@@ -147,63 +147,71 @@ class S3Module implements GlueModule{
 		def md5Local = localMD5(file)
 		try{
 
-		if(!dest.startsWith('/')) dest = "/" + dest
- 
-                if(s3configFile){
-                   def p = ["s3cmd", "-c", s3configFile, "sync", file, "s3://" + getBucket(server, bucket) + dest].execute()
-	           p.waitForProcessOutput(System.out, System.err)
+			if(!dest.startsWith('/')) dest = "/" + dest
 
-		   if(p.exitValue())
-  			throw new RuntimeException("Error running s3cmd")
+			if(s3configFile){
+				def p = [
+					"s3cmd",
+					"-c",
+					s3configFile,
+					"sync",
+					file,
+					"s3://" + getBucket(server, bucket) + dest
+				].execute()
+				p.waitForProcessOutput(System.out, System.err)
 
-                }else{
+				if(p.exitValue())
+					throw new RuntimeException("Error running s3cmd")
+			}else{
 
-		for(int retryCount = 0; retryCount < 3; retryCount ++ ){ 
-			def bytesTransfered = 0
-			def i = 0
-			
-			def putReq = new PutObjectRequest(getBucket(server, bucket), dest, localFile)
-					.withMetadata(new ObjectMetadata())
-					
-			putReq.setProgressListener(
-					new ProgressListener(){
-						public void progressChanged(ProgressEvent progressEvent){
-							if(progressEvent.getEventCode() == ProgressEvent.CANCELED_EVENT_CODE)
-								println("Error: " + progressEvent.getEventCode())
-							else if(progressEvent.getEventCode() == ProgressEvent.FAILED_EVENT_CODE)
-								println("Error: " + progressEvent.getEventCode())
-							else if(progressEvent.getEventCode() == ProgressEvent.COMPLETED_EVENT_CODE){
-								println(fileSize + " of " + fileSize)
-								println("Complete")
-							}else{
-								bytesTransfered += progressEvent.getBytesTransfered()
-								if(i++ % 100 == 0)
-									println(bytesTransfered + " of " + fileSize)
-							}
-						}
-					});
+				for(int retryCount = 0; retryCount < 3; retryCount ++ ){
+					def bytesTransfered = 0
+					def i = 0
 
-			PutObjectResult res = getClient(server).putObject(putReq)
-			
-			println("md5Local:  $md5Local  == ${getMD5(dest)}  ; $dest")
-			
-			//check that the md5 checksum is correct
-			if(md5Local.equals(getMD5(dest)))
-			   return res
-			else{
-				Thread.sleep(1000)
-				if(md5Local.equals(getMD5(dest)))
-				   return res
-				else
-			       println("MD5s for remote and local do not match -- retrying ${retryCount+1} of 3")
+					def putReq = new PutObjectRequest(getBucket(server, bucket), dest, localFile)
+							.withMetadata(new ObjectMetadata())
+
+					putReq.setProgressListener(
+							new ProgressListener(){
+								public void progressChanged(ProgressEvent progressEvent){
+									if(progressEvent.getEventCode() == ProgressEvent.CANCELED_EVENT_CODE)
+										println("Error: " + progressEvent.getEventCode())
+									else if(progressEvent.getEventCode() == ProgressEvent.FAILED_EVENT_CODE)
+										println("Error: " + progressEvent.getEventCode())
+									else if(progressEvent.getEventCode() == ProgressEvent.COMPLETED_EVENT_CODE){
+										println(fileSize + " of " + fileSize)
+										println("Complete")
+									}else{
+										bytesTransfered += progressEvent.getBytesTransfered()
+										if(i++ % 100 == 0)
+											println(bytesTransfered + " of " + fileSize)
+									}
+								}
+							});
+
+					PutObjectResult res = getClient(server).putObject(putReq)
+
+					println("md5Local:  $md5Local  == ${getMD5(dest)}  ; $dest")
+
+					//check that the md5 checksum is correct
+					if(md5Local.equals(getMD5(dest)))
+						return res
+					else{
+						Thread.sleep(1000)
+						if(md5Local.equals(getMD5(dest)))
+							return res
+						else
+							println("MD5s for remote and local do not match -- retrying ${retryCount+1} of 3")
+					}
+				}
+				
+				throw new RuntimeException("Unable to copy file to remote location")
 			}
-		}
-                }
 		}catch(Throwable t){
-		 t.printStackTrace()
-		 throw t
-		}		
-		throw new RuntimeException("Unable to copy file to remote location")
+			t.printStackTrace()
+			throw t
+		}
+		
 	}
 
 	private String localMD5(String file){
@@ -308,8 +316,8 @@ class S3Module implements GlueModule{
 			throw new ModuleConfigurationException("No servers defined");
 
 
-                if(config?.s3cmd)
-                    s3configFile =config.s3cmd
+		if(config?.s3cmd)
+			s3configFile =config.s3cmd
 
 		config?.servers.each { name, ConfigObject conf ->
 
