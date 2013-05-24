@@ -1,14 +1,8 @@
-package glue.ui
-import java.io.*
 
 class DsSelectorController {
 
     def dsSelectorService
 
-    def index = {
-       println "HI"
-       render "HI"
-    }
     
     def setDataSourceNameToSession={
 
