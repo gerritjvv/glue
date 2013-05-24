@@ -18,7 +18,6 @@ class DsSelectorService  implements org.springframework.beans.factory.Initializi
     def databaseService
 
     DsSelectorService()    {
-                
     }
 
 	def void afterPropertiesSet(){
@@ -36,6 +35,8 @@ class DsSelectorService  implements org.springframework.beans.factory.Initializi
 	
     public getCurrentConfig()
     {
+        if(!config) afterPropertiesSet()
+
         return (config) ? config[currentConfigName] : null;
     }
 
