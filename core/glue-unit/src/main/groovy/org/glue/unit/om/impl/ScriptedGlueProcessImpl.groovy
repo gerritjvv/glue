@@ -55,6 +55,8 @@ class ScriptedGlueProcessImpl extends GlueProcessImpl{
 				new PythonContextAdaptor())
 		}else if(lang == "jruby"){
 			lang = "ruby"
+		} else if (lang == "clj") {
+			lang = "Clojure"
 		}
 
 		ScriptEngine engine = factory.getEngineByName(lang);
