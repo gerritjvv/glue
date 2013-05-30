@@ -4,6 +4,9 @@
 
 servers{
 	test1{
+		stats{
+			workflows="daily_uniques_us_insert"
+		}
 	    glueUrl{
 	        url="http://192.168.56.101:8025"
 	    }
