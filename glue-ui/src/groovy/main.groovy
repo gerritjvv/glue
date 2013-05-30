@@ -5,7 +5,7 @@
 servers{
 	test1{
 	    glueUrl{
-	        url="http://localhost:8025"
+	        url="http://192.168.56.101:8025"
 	    }
 	    glueDb {
 	        driverClassName = "com.mysql.jdbc.Driver"
@@ -13,7 +13,7 @@ servers{
 	        password = "glue"
 	
 	        dbCreate = "validate"
-	        url = "jdbc:mysql://localhost/glue"
+	        url = "jdbc:mysql://192.168.56.101/glue"
 	        showSql=true
 	    }
 	    auxillaryDb {
@@ -21,7 +21,7 @@ servers{
 	        username = "readonly"
 	        password = ""
 	
-	        url = "jdbc:mysql://localhost/master"
+	        url = "jdbc:mysql://192.168.56.101/master"
 	        showSql=true
 	    }
 	}

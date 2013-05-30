@@ -1,4 +1,5 @@
 import groovy.sql.Sql;
+import groovyx.gpars.GParsPool
 
 class StatsService {
   
@@ -13,6 +14,54 @@ class StatsService {
     def getSql()  {
         return dsSelectorService.getSqlInstance();
     }
+	
+	/**
+	 * Returns for all units run during the last 30 days and 60 day daily average execution time history.
+	 * The values returned are [{name: workflow name, data: array of data } ]
+	 * @return
+	 */
+	public String getLineGraph(){
+		//unique names for units run for the last 30 days
+		def q1 = "select distinct name from units where TIME_TO_SEC(now() - end_date) > 259200 order by start_date desc"
+	    def names = getSql().rows(q1.toString()).collect { it['name'] } as List
+		names = names[0..( names.size() > 10 ? 10 : names.size() ) -1]
+		
+		def days = 60
+		def startDate = (new Date()-days)
+		def (year, month, day) = startDate.format("yyyy-MM-dd").split('-')
+		
+//		def data = GParsPool.withPool {
+			names.collect( { name -> [name:"\'$name\'", 
+				                 data:selectUnitData(name, days)
+								  ] } )
+//		}
+		
+	}
+	
+	/**
+	 * Return the evarage daily execution time for a unit for the last 90 days. 
+	 * If no value for a date the value is set to 0.
+	 * The values are ordered by date asc.
+	 * @param name
+	 * @return
+	 */
+	def selectUnitData(name, days){
+		
+		def q1 = "select name, DATE_FORMAT(start_date, '%Y%m%d') as daydate, FLOOR(AVG(TIME_TO_SEC(end_date-start_date)/60)) as avg from units where name = '$name' and start_date > 0 and end_date > 0  group by daydate order by daydate desc limit $days"
+		
+		def dateMap = new TreeMap( (new Date()-days .. new Date()).inject([:]) { p,q ->  
+			  def d = q.format('yyyyMMdd') as Integer
+			  p.put(d, ["'$d'", 0 ] ); p} )
+		
+		getSql().rows(q1.toString()).each { row ->
+			def k = row['daydate'] as Integer
+			if(dateMap.containsKey(k) && row['avg'])
+			   dateMap[k] = ["'$k'", row['avg'] ]
+		}
+		
+		dateMap.values()
+	}
+	
 
     def getStatsByUnit(int dayCount) {
         def q="""SELECT name,
@@ -26,7 +75,7 @@ class StatsService {
   GROUP BY name
   ORDER BY name""".toString();
 
-
+  		
         return getSql().rows(q.toString());
     }
 

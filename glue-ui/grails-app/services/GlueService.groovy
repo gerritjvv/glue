@@ -186,6 +186,7 @@ class GlueService {
 
 		return out
 	}
+	
 	public String getGraph(String jobId){
 
 		//Please see Bootstrap where this varaible must be set

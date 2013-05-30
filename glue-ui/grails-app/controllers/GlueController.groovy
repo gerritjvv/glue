@@ -7,7 +7,7 @@ class GlueController {
 	
 	
     def glueService;
-	
+	def statsService;
 	
     def index = { 
         def map = ['url':glueService.getHost(), 'modules':glueService.getModules()]
@@ -60,6 +60,9 @@ class GlueController {
 
     }
 
+	def perfgraph={
+      ['graph': statsService.getLineGraph() ]
+	}
 
 }	
 

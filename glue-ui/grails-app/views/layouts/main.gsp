@@ -17,7 +17,7 @@
     <div id=menu>
       <ul>
         <li><g:link controller="glue" action="index">Monitoring</g:link></li>
-        <li><g:link controller="stats" action="index">Stat</g:link></li>
+        <li><g:link controller="stats" action="perfgraph">Stat</g:link></li>
          <glue:pluginMenuItems/>
       </ul>
       <g:include controller="dsSelector" action="loadDsList"/>

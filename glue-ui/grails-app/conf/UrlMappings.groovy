@@ -11,7 +11,8 @@ class UrlMappings {
       
       "/dsSelector/$action/?"( controller:"dsSelector")
       "/stats/$action/?"( controller:"stats")
-      
+	  "/stats/perfgraph"( controller:"glue", action: "perfgraph")
+	  
       
       /* 
       "/stats/$action/?"(controller: "stats" )
