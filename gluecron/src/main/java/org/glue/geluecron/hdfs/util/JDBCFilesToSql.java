@@ -81,9 +81,9 @@ public final class JDBCFilesToSql implements FilesToSql<FileStatus> {
 						// meaning that this modified version has not been seen
 						// before
 						if(resetTS)
-							buff.append(" on duplicate key update seen=if(ts < values(ts), 0, 1), ts=values(ts)");
+							buff.append(" on duplicate key update path=path, seen=if(ts < values(ts), 0, 1), ts=values(ts)");
 						else 
-							buff.append(" on duplicate key update ts=values(ts)");
+							buff.append(" on duplicate key update path=path, ts=values(ts)");
 						
 						
 						st.execute(buff.toString());
@@ -95,6 +95,11 @@ public final class JDBCFilesToSql implements FilesToSql<FileStatus> {
 
 				// add remaining:
 				if (buff.length() > 0) {
+					if(resetTS)
+						buff.append(" on duplicate key update path=path, seen=if(ts < values(ts), 0, 1), ts=values(ts)");
+					else 
+						buff.append(" on duplicate key update path=path, ts=values(ts)");
+					
 					st.execute(buff.toString());
 					buff.delete(0, buff.length());
 				}
@@ -109,6 +114,8 @@ public final class JDBCFilesToSql implements FilesToSql<FileStatus> {
 			LOG.info("Total rows: " + rows);
 
 		} catch (Throwable t) {
+			LOG.error(buff.toString());
+			t.printStackTrace();
 			RuntimeException rte = new RuntimeException(t.toString(), t);
 			rte.setStackTrace(t.getStackTrace());
 			throw rte;
@@ -119,5 +126,5 @@ public final class JDBCFilesToSql implements FilesToSql<FileStatus> {
 		}
 
 	}
-
+	
 }
