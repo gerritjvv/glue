@@ -125,7 +125,7 @@ public class HDFSModuleImpl implements HDFSModule {
 		return f.getAbsolutePath();
 	}
 
-	boolean timeSeries(String n, String tableHDFSDir, Date nowdate, String modifyTime, Callable<String> partitionFormatter, Runnable<Date> dateIncrement, Callable collector = null){
+	boolean timeSeries(String n, String tableHDFSDir, Date nowdate, String modifyTime, Callable<String> partitionFormatter, Closure<Date> dateIncrement, Callable collector = null){
 		timeSeries(null, n, tableHDFSDir, nowdate, modifyTime, partitionFormatter, dateIncrement, collector)	
 	}
 	
@@ -623,7 +623,7 @@ public class HDFSModuleImpl implements HDFSModule {
 						input.close()
 					}
 				}catch(Throwable t){
-				    throw new RuntimeException("Error creating inputstream for: " + file  + " " + to.toString(), t);
+				    throw new RuntimeException("Error creating inputstream for: " + file  + " " + t.toString(), t);
 				}finally{
 					decompressorPool.returnObject(key, decVal)
 				}
@@ -783,7 +783,7 @@ public class HDFSModuleImpl implements HDFSModule {
 		if(closure.getMaximumNumberOfParameters() == 1){
 			clsToCall = { f, m ->
 				closure(f)
-			}
+			} as Runnable
 		}
 		def out=[];
 		AtomicInteger count = new AtomicInteger(0)

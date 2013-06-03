@@ -23,8 +23,8 @@ public interface HDFSModule extends GlueModule {
 	String cat(String hadoopPath, String fileName)
 	String cat(String hadoopPath)
 	
-	void findNewFiles(String file, Runnable dirHasBeenModified, Runnable closure)
-	void findNewFiles(String clusterName, String file, Runnable dirHasBeenModified, Runnable closure)
+	void findNewFiles(String file, Callable dirHasBeenModified, Runnable closure)
+	void findNewFiles(String clusterName, String file, Callable dirHasBeenModified, Runnable closure)
 	
 	/**
 	 * Loads a local file to hdfs

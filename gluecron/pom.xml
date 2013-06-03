@@ -85,7 +85,7 @@
 					<copyright>http://www.apache.org/licenses/LICENSE-2.0</copyright>
 					<distribution>Glue Task Manager Trigger and Cron Daemon</distribution>
 					<group>utilties</group>
-					<release>1</release>
+					<release>2</release>
 					<packager>http://code.google.com/p/glue/</packager>
 					<provides>
 						<provide>gluecron</provide>
