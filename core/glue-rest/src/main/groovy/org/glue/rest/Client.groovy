@@ -125,6 +125,18 @@ public class Client {
 
 			}
 
+		}else if(line.hasOption('kill')){
+		
+		  String unitId = line.getOptionValue("kill")?.trim()
+		  
+		  if(unitId && unitId.length() > 0){
+			cmd(config, ['kill', unitId] as String[])  
+		  }
+		
+		}else if(line.hasOption('running')){
+		  
+			cmd(config, ['running'] as String[])  
+		
 		}else if(line.hasOption('status')){
 			String[] statusArgs = line.getOptionValues('status')
 
@@ -249,7 +261,12 @@ public class Client {
 				.hasArg()
 				.withDescription("Submits the work flow for execution")
 				.create("submit")
-
+				
+		Option kill = OptionBuilder.withArgName('unitid')
+						.hasArg()
+						.withDescription("Kills a workflow")
+						.create("kill")
+		
 
 		Option status = OptionBuilder.withArgName('[unit_id] [process_name]')
 				.hasOptionalArgs(2)
@@ -264,6 +281,9 @@ public class Client {
 				.withDescription( "use value for given property" )
 				.create( "D" );
 
+				
+		Option running = new Option('running', false, 'Lists the running workflows')
+				
 		Option modules = new Option('modules', false, 'Lists the available modules')
 		Option stop = new Option('stop', false, 'Asks the glue server to shutdown')
 
@@ -272,8 +292,10 @@ public class Client {
 		Options options = new Options()
 		options.addOption(help)
 		options.addOption(submit)
+		options.addOption(kill)
 		options.addOption(tail)
 		options.addOption(status)
+		options.addOption(running)
 		options.addOption(modules)
 		options.addOption(stop)
 		options.addOption(property)

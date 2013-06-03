@@ -133,7 +133,10 @@ class QueuedExecServiceImpl implements GlueExecutor{
 	}
 	
 	public Map<String, UnitExecutor> getUnitList(){
-		return [:]
+		return executingUnits.collectEntries { unitId, ctx -> 
+			
+			//[unitId,  ] 
+		}
 	}
 
 	void terminate(String unitId){
@@ -313,7 +316,7 @@ class QueuedExecServiceImpl implements GlueExecutor{
 
 			//if the workflow is a trigger workflow any files needs to be set here.
 			executingUnits[unitId] = context
-			execActor << qw
+			execActor.add(qw)
 			
 			/*
 			if("0".equals(qw.uuid)) {

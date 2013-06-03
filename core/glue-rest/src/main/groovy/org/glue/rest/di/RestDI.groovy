@@ -6,6 +6,7 @@ import org.glue.rest.resources.ModulesResource
 import org.glue.rest.resources.ProcessStatusResource
 import org.glue.rest.resources.ShutdownResource
 import org.glue.rest.resources.StatusResource
+import org.glue.rest.resources.StatusRunningResource
 import org.glue.rest.resources.SubmitUnitResource
 import org.glue.rest.resources.TerminateResource
 import org.glue.rest.resources.UnitStatusResource
@@ -76,6 +77,7 @@ class RestDI {
 		router.attachResource("/check/{workflowName}", 'workflowCheckResource', beanFactory);
 		
 		router.attachResource("/modules", 'modulesResource', beanFactory);
+		router.attachResource("/running", 'statusRunningResource', beanFactory);
 		
 		new Server(router)
 		
@@ -151,4 +153,14 @@ class RestDI {
 		beanFactory.getBean(GlueExecLoggerProvider.class)
 		)
 	}
+	
+	@Bean
+	@Scope('prototype')
+	StatusRunningResource statusRunningResource(){
+		new StatusRunningResource(
+			beanFactory.getBean(GlueExecutor.class)
+		)
+	}
+	
+	
 }
