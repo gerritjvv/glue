@@ -12,7 +12,7 @@ category: tutorial
 
 Two types of triggers are supported:
 
-* HDFS Directory Polling
+* HDFS Directory Polling (file or directory only based)
 * Cron style time execution
 
 For cron expression syntax see [quartz-scheduler](http://www.quartz-scheduler.org/documentation/quartz-1.x/tutorials/crontrigger)
@@ -54,15 +54,15 @@ The tables unitfiles and hdfsfiles maintain the hdfs polling state, and the unit
 
 E.g. below is an example of some entries:
 
-	+----+---------+------+---------------+---------+
-	| id | unit    | type | data          | lastrun |
-	+----+---------+------+---------------+---------+
-	|  1 | test    | hdfs | /logs/test    | NULL    | 
-	|  2 | test1   | hdfs | /logs/a       | NULL    | 
-	|  3 | test1   | hdfs | /logs/b       | NULL    | 
-	|  4 | test1   | hdfs | /logs/c       | NULL    | 
-	|  5 | mytest2 | cron | 0 0/5 * * * ? | NULL    | 
-	+----+---------+------+---------------+---------+
+	+----+---------+----------+---------------+---------+
+	| id | unit    | type     | data          | lastrun |
+	+----+---------+----------+---------------+---------+
+	|  1 | test    | hdfs     | /logs/test    | NULL    | 
+	|  2 | test1   | hdfs     | /logs/a       | NULL    | 
+	|  3 | test1   | hdfs     | /logs/b       | NULL    | 
+	|  4 | test1   | hdfs-dir | /logs/c       | NULL    | 
+	|  5 | mytest2 | cron     | 0 0/5 * * * ? | NULL    | 
+	+----+---------+----------+---------------+---------+
 
 Note: Using hdfs-dir instead of hdfs will only check directories for modification.
 
