@@ -18,7 +18,7 @@ import org.glue.unit.exec.WorkflowsStatus
 /**
  * Reads the status of already running workflows
  */
-class StatusRunningResource extends ServerResource {
+class StatusQueuedResource extends ServerResource {
 
 	private static final Logger LOG = Logger.getLogger(UnitStatusResource.class)
 	static final ObjectMapper mapper = new ObjectMapper()
@@ -27,7 +27,7 @@ class StatusRunningResource extends ServerResource {
 	WorkflowsStatus executor;
 	
 
-	public StatusRunningResource(
+	public StatusQueuedResource(
 			WorkflowsStatus executor) {
 		super();
 		this.executor = executor
@@ -40,18 +40,10 @@ class StatusRunningResource extends ServerResource {
 		try{
 
 			
-			def qwfs = executor.queuedWorkflows()
-			
-			def runningStats = executor.runningWorkflows().collect { 
-				ctx -> [unitId:ctx.unitId, name:ctx.unit.name,
-					    queued: qwfs.contains(ctx.unit.name)
-					]  
-		    } 
-			
 			setStatus(Status.SUCCESS_CREATED);
 			
 			rep = new StringRepresentation(this.mapper.writeValueAsString(
-				[out:runningStats]
+				[out:executor.queuedWorkflows()]
 				),
 					MediaType.APPLICATION_JSON);
 		}catch(Throwable t){

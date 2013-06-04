@@ -3,6 +3,7 @@ package org.glue.unit.exec.impl.queue
 import groovy.util.ConfigObject
 
 import java.net.URL
+import java.util.List;
 import java.util.Map
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
@@ -23,7 +24,7 @@ import org.glue.unit.om.GlueUnitBuilder
 import org.glue.unit.process.DefaultJavaProcessProvider
 import org.glue.unit.repo.GlueUnitRepository
 import org.glue.unit.status.UnitStatus
-
+import org.glue.unit.exec.WorkflowsStatus
 
 /**
  * 
@@ -31,7 +32,7 @@ import org.glue.unit.status.UnitStatus
  *
  */
 @Typed
-class QueuedExecServiceImpl implements GlueExecutor{
+class QueuedExecServiceImpl implements GlueExecutor, WorkflowsStatus{
 
 
 	static final Logger log = Logger.getLogger(QueuedExecServiceImpl.class)
@@ -45,6 +46,13 @@ class QueuedExecServiceImpl implements GlueExecutor{
 	 * only used for testing
 	 */
 	Map<String, Throwable> errors = new ConcurrentHashMap<String, Throwable>()
+	
+	
+	/**
+	 * key = name
+	 */
+	final ConcurrentHashMap<String, GlueContext> runningWorkflows = new ConcurrentHashMap<String, GlueContext>()
+	
 	/**
 	 * Set to true for errors to be logged
 	 */
@@ -121,7 +129,9 @@ class QueuedExecServiceImpl implements GlueExecutor{
 
 		def closure = { executingUnits.remove(it.uuid) }
 		execActor.onErrorListener = { wf, t ->
+			runningWorkflows.remove(wf.name)
 			executingUnits.remove(wf.uuid)
+			
 			if(retainErrors){
 				errors[wf.uuid] = t
 			}
@@ -132,18 +142,20 @@ class QueuedExecServiceImpl implements GlueExecutor{
 
 	}
 	
-	public Map<String, UnitExecutor> getUnitList(){
-		return executingUnits.collectEntries { unitId, ctx -> 
-			
-			//[unitId,  ] 
-		}
-	}
-
 	void terminate(String unitId){
 		execActor.killProcess(unitId)
 	}
 
 
+	List<GlueContext> runningWorkflows(){
+		executingUnits.values().collect { it } as List
+	}
+	
+	Set<String> queuedWorkflows(){
+		executingUnits.values().findAll { GlueContext ctx -> !execActor?.isWorkflowExecuting(ctx?.unit?.name) }.collect { GlueContext ctx -> ctx.unit.name } as Set
+	}
+	
+	
 	GlueState getStatus(String unitId){
 		//via this method we cannot find more information other than running of finished
 		GlueContext ctx = executingUnits[unitId]
@@ -151,6 +163,8 @@ class QueuedExecServiceImpl implements GlueExecutor{
 
 		return (state)?  state: GlueState.FINISHED
 	}
+	
+	public Map<String, UnitExecutor> getUnitList() { [:] }
 
 	/**
 	 * Returns the glue context
@@ -297,12 +311,13 @@ class QueuedExecServiceImpl implements GlueExecutor{
 		}
 		
 		def qw = new QueuedWorkflow(unit.name, unitId, params, unit.priority);
-		if(!execActor.canAdd(qw)) {
+		def context = contextBuilder.build(unitId, unit, params)
+		
+		if(!execActor.canAdd(qw) || runningWorkflows.putIfAbsent(unit.name, context) != null) {
 			println "Workflow ${unit.name} already in queue to run"
 			return "0";
 		}
 		
-		def context = contextBuilder.build(unitId, unit, params)
 		//set an initial status
 		UnitStatus unitStatus = new UnitStatus(status:GlueState.WAITING)
 		unitStatus.unitId = unitId
@@ -316,16 +331,10 @@ class QueuedExecServiceImpl implements GlueExecutor{
 
 			//if the workflow is a trigger workflow any files needs to be set here.
 			executingUnits[unitId] = context
+			
 			execActor.add(qw)
 			
-			/*
-			if("0".equals(qw.uuid)) {
-				unitStatus.status = GlueState.KILLED
-				context.statusManager?.setUnitStatus(unitStatus)
-				return "0";
-			}
-			*/
-
+			
 			return unitId;
 		}
 		catch(UnitSubmissionException t) {

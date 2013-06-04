@@ -48,7 +48,7 @@ class WorkflowExecActor extends ThreadedActor<QueuedWorkflow>{
 		//The queue uses the QueuedWorkflow priority property
 
 		super(threads, Executors.newCachedThreadPool(),
-			new PriorityBlockingQueue<QueuedWorkflow>(10, QueuedWorkflow.PRIORITY_COMPARATOR)
+		new PriorityBlockingQueue<QueuedWorkflow>(10, QueuedWorkflow.PRIORITY_COMPARATOR)
 		)
 		this.provider = provider
 		this.execConf = execConf
@@ -57,14 +57,7 @@ class WorkflowExecActor extends ThreadedActor<QueuedWorkflow>{
 	}
 
 	boolean isWorkflowExecuting(String workflowName){
-
-		synchronized (executingWorkflowNames){
-			for(String v : executingWorkflowNames.values()){
-				if(workflowName == v) return true
-			}
-		}
-		
-		return false;
+		executingWorkflowNames.containsKey(workflowName)
 	}
 
 	void killProcess(String uuid){
@@ -89,14 +82,11 @@ class WorkflowExecActor extends ThreadedActor<QueuedWorkflow>{
 	void react(QueuedWorkflow qwf){
 
 		LOG.debug("running workflow ${qwf.name} ${qwf.uuid}")
-
-		synchronized (executingWorkflowNames) {
-			executingWorkflowNames[qwf.uuid] = qwf.name
-		}
-		
-
 		JavaProcess process = provider.get(qwf.name)
-
+		
+		executingWorkflowNames[qwf.name] = qwf.uuid
+		executingProcesses[qwf.uuid] = process
+		
 		def args = [
 			'-execConf',
 			execConf,
@@ -112,51 +102,39 @@ class WorkflowExecActor extends ThreadedActor<QueuedWorkflow>{
 			args << "-D${key}=${val}"
 		}
 
-		executingProcesses[qwf.uuid] = process
 		GlueExecLogger logger =  (logProvider) ? logProvider.get(qwf.uuid) : null
 		try{
-			
+
 			if(logger){
 				process.run(args, { logger.out("$it\n") } )
 			}else{
 				process.run(args)
 			}
-			
+
 		}finally{
 			executingProcesses.remove(qwf.uuid)
-			synchronized (executingWorkflowNames){
-				executingWorkflowNames.remove(qwf.uuid)
-			}
-			
+			executingWorkflowNames.remove(qwf.uuid)
+
 			logger?.close()
 		}
 		return
 	}
-	
+
 	/**
-	* Returns false if the specified workflow is already in the queue.
-	* This prevents the same one from being queued dozens of times if other workflows are taking a long time.
-	* Limiting a workflow to 1 in the queue still ensures it will run after it needs to.
-	* Note: the uuid is not touched.
-	*/
+	 * Returns false if the specified workflow is already in the queue.
+	 * This prevents the same one from being queued dozens of times if other workflows are taking a long time.
+	 * Limiting a workflow to 1 in the queue still ensures it will run after it needs to.
+	 * Note: the uuid is not touched.
+	 */
 	boolean canAdd(QueuedWorkflow qwf) {
-		final int max = 1;
-		int count = 0;
-		for(QueuedWorkflow x : this.queue) {
-			if(x.name.equals(qwf.name)) {
-				if(++count >= max) {
-					return false;
-				}
-			}
-		}
-		return true;
+		return !executingWorkflowNames.containsKey(qwf.name)
 	}
-	
+
 	/**
-	* Adds a QueuedWorkflow to the end of the queue.
-	* If canAdd returns false, it is not actually queued again and the uuid is set to "0".
-	* @param qwf
-	*/
+	 * Adds a QueuedWorkflow to the end of the queue.
+	 * If canAdd returns false, it is not actually queued again and the uuid is set to "0".
+	 * @param qwf
+	 */
 	@Override
 	void add(QueuedWorkflow qwf){
 		if(!canAdd(qwf)) {
@@ -166,6 +144,6 @@ class WorkflowExecActor extends ThreadedActor<QueuedWorkflow>{
 			this.queue.put(qwf)
 		}
 	}
-	
-	
+
+
 }

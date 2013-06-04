@@ -137,6 +137,10 @@ public class Client {
 		  
 			cmd(config, ['running'] as String[])  
 		
+		}else if(line.hasOption('queued')){
+				
+				  cmd(config, ['queued'] as String[])
+
 		}else if(line.hasOption('status')){
 			String[] statusArgs = line.getOptionValues('status')
 
@@ -283,6 +287,8 @@ public class Client {
 
 				
 		Option running = new Option('running', false, 'Lists the running workflows')
+		
+		Option queued = new Option('queued', false, 'Lists the queued workflows')
 				
 		Option modules = new Option('modules', false, 'Lists the available modules')
 		Option stop = new Option('stop', false, 'Asks the glue server to shutdown')
@@ -296,6 +302,7 @@ public class Client {
 		options.addOption(tail)
 		options.addOption(status)
 		options.addOption(running)
+		options.addOption(queued)
 		options.addOption(modules)
 		options.addOption(stop)
 		options.addOption(property)

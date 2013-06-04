@@ -7,6 +7,7 @@ import org.glue.rest.resources.ProcessStatusResource
 import org.glue.rest.resources.ShutdownResource
 import org.glue.rest.resources.StatusResource
 import org.glue.rest.resources.StatusRunningResource
+import org.glue.rest.resources.StatusQueuedResource
 import org.glue.rest.resources.SubmitUnitResource
 import org.glue.rest.resources.TerminateResource
 import org.glue.rest.resources.UnitStatusResource
@@ -78,6 +79,7 @@ class RestDI {
 		
 		router.attachResource("/modules", 'modulesResource', beanFactory);
 		router.attachResource("/running", 'statusRunningResource', beanFactory);
+		router.attachResource("/queued", 'statusQueuedResource', beanFactory);
 		
 		new Server(router)
 		
@@ -162,5 +164,12 @@ class RestDI {
 		)
 	}
 	
+	@Bean
+	@Scope('prototype')
+	StatusQueuedResource statusQueuedResource(){
+		new StatusQueuedResource(
+			beanFactory.getBean(GlueExecutor.class)
+		)
+	}
 	
 }
