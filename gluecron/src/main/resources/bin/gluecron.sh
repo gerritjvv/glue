@@ -1,4 +1,4 @@
-bspath=$(cd ${0%/*} && echo $PWD/${0##*/})
+abspath=$(cd ${0%/*} && echo $PWD/${0##*/})
 GLUE_BIN_HOME=`dirname $abspath`
 
 GLUE_HOME=/opt/gluecron
