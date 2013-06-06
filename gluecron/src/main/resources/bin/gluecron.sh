@@ -20,6 +20,11 @@ if [ "$JAVA_HOME" = "" ]; then
      exit 1
 fi
 
+
+if [ -f /opt/gluecron/conf/env.sh ]; then
+. /opt/gluecron/conf/env.sh
+fi
+
 JAVA=$JAVA_HOME/bin/java
 
 
@@ -29,7 +34,7 @@ fi
 
 # check envvars which might override default args
 # CLASSPATH initially contains $GLUE_CONF_DIR
-CLASSPATH=${CLASSPATH}:$JAVA_HOME/lib/tools.jar
+CLASSPATH="${CLASSPATH}:$JAVA_HOME/lib/tools.jar:$HADOOP_LIB"
 
 # so that filenames w/ spaces are handled correctly in loops below
 # add libs to CLASSPATH.
@@ -37,7 +42,7 @@ for f in $GLUE_HOME/lib/*.jar; do
   CLASSPATH=${CLASSPATH}:$f;
 done
 
-CLIENT_CLASS="org.glue.gluecron.app.Main"
+CLIENT_CLASS="org.glue.gluecron.app.GlueCron"
 
 CLASSPATH=$GLUE_CONF_DIR:$GLUE_CONF_DIR/META-INF:$CLASSPATH
 

@@ -1,7 +1,6 @@
 package org.glue.gluecron.app;
 
 import java.io.File;
-import java.lang.Thread.UncaughtExceptionHandler;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.PropertiesConfiguration;

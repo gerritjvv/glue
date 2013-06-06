@@ -1,6 +1,6 @@
 package org.glue.gluecron.app;
 
-public class Main {
+public class GlueCron {
 
 	public static void main(String[] args) throws Throwable {
 

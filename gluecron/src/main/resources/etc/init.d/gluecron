@@ -1,156 +1,182 @@
-#!/usr/bin/env bash
+#!/bin/bash
 # chkconfig: 2345 20 80
-# description: glue server
+# description: streams collector
 #
-# /etc/rc.d/init.d/gluecron
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
 #
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+PATH=/usr/bin:/sbin:/bin:/usr/sbin
+export PATH
+
+OK_STAT=0
+DEAD_STAT=1
+UNKOWN_STAT=4
+
+mkdir -p /var/lock/subsys
+
+[ -f /etc/sysconfig/gluecron ] && . /etc/sysconfig/gluecron
+lockfile=${LOCKFILE-/var/lock/subsys/gluecron}
+gcronsd="${GCRONSD-/opt/gluecron/bin/gluecron.sh} cron"
+REGEX="org.glue.gluecron.app.GlueCron"
+
+RETVAL=0
+ISDAEMON=0
 # Source function library.
 
-if [ -f /etc/init.d/functions ]; then
-. /etc/init.d/functions
+FUNCTIONS="/etc/rc.d/init.d/functions"
+[ -f $FUNCTIONS ] && . $FUNCTIONS && ISDAEMON=$(grep "daemon()" /etc/rc.d/init.d/functions  | wc -l)
+
+JAVASH="/etc/profile.d/java.sh"
+[ -f $JAVASH ] && . $JAVASH
+
+ENV_FILE="/opt/gluecron/conf/env.sh"
+[ -f $ENV_FILE ] && . $ENV_FILE
+
+
+if [ -z "$JAVA_HOME" ]; then
+
+  echo "JAVA_HOME not set using /usr/java/latest"
+  export JAVA_HOME="/usr/java/latest"
+
 fi
-
-if [ ! -f /var/lock/subsys ]; then
-  mkdir -p /var/lock/subsys
-fi
-
-
-LOCKFILE="/var/lock/subsys/gluecron"
-PIDFILE="/var/run/gluecron.pid"
-
-#setup glue home variable
-if [ -z "$GLUE_HOME" ]; then
-  export GLUE_HOME="/opt/gluecron"
-fi
-
-LAUNCH_CLASS="org.glue.gluecron.app.Main"
-
-
-startGlueCron(){
-  echo
-
-  LOG="$GLUE_HOME/log/gluecron.log"
-
-  RUN_CMD="$GLUE_HOME/bin/gluecron.sh cron"
-  
-  
-  su - hadoop -l -m -c "nohup $RUN_CMD > "$LOG" 2>&1 >> /dev/null&"
-  
-  RETVAL=$?
-  echo $! > $PIDFILE
-
-  sleep 2; tail "$LOG"
-
-  return $RETVAL
-}
-
-
-stopGlueCron(){
-
-   #stop glue server via the client first
-   
-   
-   while read a ; do kill $a; done < $PIDFILE
-   
-   sleep 5s
-
-   #check if still running after client command was called
-   checkIfRunning
-    ISRUNNING=$?
-
-
-   if [ $ISRUNNING == 0  ]; then
-     echo "gluecron is still running"
-     exit 1
-   fi
-
-
-}
-
-
-exitIfRunning(){
- # Check to see if the glue server is running
- # if so this function calls exit 1
-
- PID=$(pgrep -f $LAUNCH_CLASS)
-
- if [ ! -z $PID ]; then
-   echo "gluecron is running $PID"
-   exit 1
- fi
-
-}
-
-checkIfRunning(){
-  #if the glue server is running this script will return 0 else 1
-  RETVAL=0
-  PID=$(pgrep -f $LAUNCH_CLASS)
-
-  if [ -z $PID ]; then
-   RETVAL=1
-  fi
-
-  return $RETVAL
-}
 
 start() {
 
-          #this method will exit if running
-          exitIfRunning
+   touch $lockfile
 
-          echo -n "Starting : gluecron"
+   status
+   RETVAL=$?
 
-          startGlueCron
-          RETVAL=$?
-          checkIfRunning
-           ISRUNNING=$?
+   if [ $RETVAL = $OK_STAT ]; then
+    echo "The Glue Cron is already running"
+    RETVAL=$OK_STAT
+   else
 
-          if [[ $RETVAL == 0 &&  $ISRUNNING == 0 ]]; then
-           touch $LOCKFILE
-          else
-            echo -n "gluecron could not be started"
-          fi
+    echo -n $"Starting Glue Cron: "
 
-        echo        
-        return $RETVAL
+    if type -p start-stop-daemon ; then
+        su - hadoop -l -m -c "nohup $gcronsd > /opt/gluecron/log/gluecron.log 2>&1 /dev/null&"
+    elif [ "$ISDAEMON" -eq "1" ]; then
+        daemon --user=hadoop $gcronsd -s &> /dev/null&
+    elif type -p daemon ; then
+        daemon --user=hadoop -X "$gcronsd cron"
+    else
+        su - hadoop -l -m -c "nohup $gcronsd > /opt/gluecron/log/gluecron.log 2>&1 /dev/null&"
+    fi
+
+
+    counter=0
+    while [ $counter -lt 5 ]
+    do
+        status
+        RETVAL=$?
+        sleep 1s
+        counter=$(( counter + 1 ))
+    done
+
+   fi
+
+   [ $RETVAL = $OK_STAT ] && echo " OK"
+   [ $RETVAL = $DEAD_STAT ] && echo " FAILED"
+
+   return $RETVAL
+
 }
 
 stop() {
 
-        checkIfRunning
-        ISRUNNING=$?
-        if [ $ISRUNNING == 0 ]; then
-          echo -n "Shutting down : gluecron"
+    status
+    RETVAL=$?
 
-         stopGlueCron
-         rm -f $LOCKFILE
+    if [ $RETVAL = $OK_STAT ]; then
+      echo -n "Stopping Glue Cron: "
 
-        else
-          echo -n "gluecron is not running"
-        fi
+	  kill
+      
+      counter=0
+      while [ $counter -lt 5 ]
+      do
+        status
+        RETVAL=$?
+        sleep 1s
+        counter=$(( counter + 1 ))
 
-        echo
-        return 0
+        [ $counter -gt 3 ] && [ $RETVAL = $OK_STAT ] && kill
+      done
+
+       [ $RETVAL = $DEAD_STAT ] && rm -f ${lockfile} && echo "OK"
+
+    else
+       echo "No Glue Cron instance is running" 
+       RETVAL=$DEAD_STAT
+    fi
+
+    return $RETVAL
+
+}
+
+restart() {
+    stop
+    start
+}
+
+kill() {
+
+  pid=`pgrep -f "$REGEX"`
+  if [ -n "$pid" ]; then
+    su - -c "kill -6 $pid"
+  fi
+
+}
+status() {
+
+   pid=`pgrep -f "$REGEX"`
+   if [ -n "$pid" ]; then
+       RETVAL=$OK_STAT
+   else
+       RETVAL=$DEAD_STAT
+   fi
+
+
+  return $RETVAL
 }
 
 case "$1" in
-    start)
-        start
-        ;;
-    stop)
-        stop
-         ;;
-    status)
-        status gluecron
-        ;;
-    restart)
-        stop
-        start
-        ;;
-    *)
-        echo "Usage: gluecron  {start|stop|status|reload|restart[|probe]"
-        exit 1
-        ;;
+  start)
+    start
+    exit $?
+    ;;
+  stop)
+    stop
+    exit $?
+    ;;
+  restart)
+    stop
+    start
+    exit $?
+    ;;
+  status)
+    status
+    RETVAL=$?
+    [ $RETVAL = $OK_STAT ] && echo "Running"
+    [ $RETVAL = $DEAD_STAT ] && echo "Stopped"
+    exit $RETVAL
+    ;;
+  *)
+    echo $"Usage: $0 {start|stop|status|restart}"
+    exit $DEAD_STAT
 esac
-exit $?
- 
+
+exit $OK_STAT
