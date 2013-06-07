@@ -132,6 +132,8 @@ class DirGlueUnitRepository implements GlueUnitRepository{
 			   
 			   if((file.name.endsWith(".groovy")
 				   || 
+				   file.name.endsWith(".clj")
+				   ||
 				   file.name.endsWith(".jython")
 				   ||
 				   file.name.endsWith(".scala")
