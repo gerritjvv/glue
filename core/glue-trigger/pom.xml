@@ -23,7 +23,7 @@
 	<groupId>org.glue</groupId>
 	<artifactId>glue-trigger</artifactId>
 	<name>glue-trigger</name>
-	<version>0.3.0</version>
+	<version>0.4.0</version>
 
 	<dependencies>
 		<dependency>
