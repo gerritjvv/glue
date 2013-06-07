@@ -16,9 +16,9 @@ and its processes are executed.
 
 Workflows are divided into Processes and their Tasks.
 
-# Using Jython or JRuby?
+# Using Clojure, Jython or JRuby?
 
-This page explains how to write workflows using groovy. For Jython or JRuby pleasee see the [Jython Example](jythonexample.html) or [JRuby Example](jrubyexample.html)
+This page explains how to write workflows using groovy. For Jython or JRuby pleasee see the [Jython Example](jythonexample.html), [JRuby Example](jrubyexample.html) or [Closure Example](clojureexample.html)
 
 # Example
 
