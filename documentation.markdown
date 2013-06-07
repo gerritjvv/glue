@@ -17,6 +17,7 @@ Glue Documentation Index
 	* [Temporary Files](tempfiles.html)
 	* [Workflow DSL](workflowdsl.html)
 	* [Jython Example](jythonexample.html)
+        * [Clojure Example](clojureexample.html)
 	* [Triggers](triggers.html)
 		* [HDFS Data Driven](triggers.html) 
 		* [Cron](triggers.html)

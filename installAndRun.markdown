@@ -100,9 +100,6 @@ Follow the same instructions as for RPM install excep after downloading run sudo
 
 ### Configure
 
-Follow the [configuration steps](configuration.html) outlined in the documentation.
-
-At a minimum or for quick testing do:
 
 1. Install MySQL
 2. Create a database name "glue"
@@ -158,6 +155,21 @@ unittriggers.table | database table from which the triggers are read | unittrigg
 unitfiles.table | table in which the status of each unit's execution against the hdfs files is stored | unitfiles
 unitfiles-history.table | table in which the status of each unit's execution against the hdfs history files is stored | unitfiles
 
+### Configure Hadoop version
+
+It is important that the correct hadoop jars are in the gluecron classpath. One version of Hadoop is not always compatible with another
+and for this reason Glue Cron does not package the hadoop libraries.
+
+Ensure that you have the hadoop client installed.
+
+The script /opt/gluecron/conf/env.sh will try to automatically detect the hadoop install and add the jar and configuration dependencies to the classpath.
+If you have any problems during starting glue please check that the variable HADOOP_LIB points to the correct locations.
+
+To do so follow the instructions below:
+
+1. Open the file /opt/gluecron/conf/env.sh 
+2. Edit and export the variable HADOOP_LIB so that it contains the paths to the hadoop configuration and the hadoop jar files.
+ 
 
 ### Start Glue Cron
 
