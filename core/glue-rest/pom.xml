@@ -165,22 +165,17 @@
 						</mappings>
 						  <preinstallScriptlet>
                         	<script>
-                        	    echo "Checking users"
-                        	    #create hadoop group if not exist
-                        	    GROUP="hadoop"
-                        	    if [ $(cat /etc/group | grep $GROUP | sed -e 's/:.*//g' ) ] ; then 
-                        	    	groupadd $GROUP 
-                        	    	echo "Created $GROUP"
-                        	    fi
-                        	    
-                        		#create glue user if not exist                        		
-                        		USER="glue"
-								if [ $(cat /etc/passwd | grep $USER | sed -e 's/:.*//g' ) ] ; then 
-                        	        useradd -g $GROUP $USER
-                        	        echo "Created $USER"
-                        	    fi
-                        	    
-								
+#!/usr/bin/env bash
+#Creates the glue user and group
+#see http://fedoraproject.org/wiki/Packaging%3aUsersAndGroups
+#safety for when the commands to not exist
+type getent || exit 0
+						 
+getent group glue >/dev/null || groupadd -r glue
+       getent passwd glue >/dev/null || \
+       useradd -r -g glue -d HOMEDIR -s /sbin/nologin \
+       -c "Glue Rest runs under the glue user and group" glue
+exit 
 							</script>
                     	</preinstallScriptlet>
 					</configuration>
