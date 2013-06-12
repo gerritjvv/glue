@@ -1,0 +1,12 @@
+import subprocess
+
+def f():
+  print "Hi"
+  
+  
+ 
+i = subprocess.call(["ls", "-lh"])
+print("status: " + str(i))
+
+
+
