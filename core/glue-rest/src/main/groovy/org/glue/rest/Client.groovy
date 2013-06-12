@@ -62,7 +62,19 @@ public class Client {
 		}
 
 		//---------- Process commands -----------------------------//
-		if(line.hasOption('submit')){
+		if(line.hasOption("repl")){
+			def lang = line.getOptionValue("repl")
+			
+			org.glue.unit.exec.impl.ReplRunner.main(
+				["-lang", lang, "-moduleConf", "/opt/glue/conf/workflow_modules.groovy",
+					"-execConf", "/opt/glue/conf/exec.groovy",
+					"-workflow", "repl",
+					"-uuid", UUID.randomUUID()] as String[]
+				)
+			
+			
+
+		}else if(line.hasOption('submit')){
 
 			String unitName = line.getOptionValue('submit')
 
@@ -266,6 +278,13 @@ public class Client {
 				.withDescription("Submits the work flow for execution")
 				.create("submit")
 				
+				
+	    Option repl = OptionBuilder.withArgName('repl')
+						.hasArg()
+						.withDescription("Runs a repl for groovy/jython/clojure")
+						.create("repl")
+						
+						
 		Option kill = OptionBuilder.withArgName('unitid')
 						.hasArg()
 						.withDescription("Kills a workflow")
@@ -300,6 +319,7 @@ public class Client {
 		options.addOption(submit)
 		options.addOption(kill)
 		options.addOption(tail)
+		options.addOption(repl)
 		options.addOption(status)
 		options.addOption(running)
 		options.addOption(queued)

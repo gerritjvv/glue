@@ -22,7 +22,7 @@ class ScriptedGlueExecutorTest {
 
 
 	@Test
-	public void testUnitExecutorUsingRepository() {
+	public void testUnitExecutorJython() {
 
 		
 		GlueModuleFactory moduleFactory = new GlueModuleFactoryImpl();
@@ -45,6 +45,41 @@ class ScriptedGlueExecutorTest {
 
 		
 		String uid=exec.submitUnitAsName( "jythonworkflow", [:] )
+
+		exec.waitFor uid
+
+		assertEquals(GlueState.FINISHED, exec.getStatus(uid))
+			
+		moduleFactory.addModule("sql", new MockGlueModule())
+		GlueContextImpl ctx = new GlueContextImpl()
+		ctx.moduleFactory = moduleFactory
+		
+	}
+
+	@Test
+	public void testUnitExecutorClojure() {
+
+		
+		GlueModuleFactory moduleFactory = new GlueModuleFactoryImpl();
+
+		ConfigObject execConfig = new ConfigObject();
+
+		Provider<ProcessExecutor> processExecutorProvider = new MockProcessExecutorProvider(errorInExec:false, processExecutorClosure:{ new ProcessExecutorImpl() })
+
+		GlueUnitRepository repo = new DirGlueUnitRepository(new DefaultGlueUnitBuilder(), [
+			'src/test/resources/test-flow-repo'
+		])
+
+		Provider<UnitExecutor> unitExecutorProvider = new MockUnitExecutorProvider(processExecutorProvider:processExecutorProvider)
+
+		GlueExecutor exec = new GlueExecutorImpl(execConfig, repo,
+				new DefaultGlueContextBuilder(new MapGlueModuleFactoryProvider(null)),
+				unitExecutorProvider,
+				new DefaultGlueUnitBuilder()
+				)
+
+		
+		String uid=exec.submitUnitAsName( "myclojure", [:] )
 
 		exec.waitFor uid
 

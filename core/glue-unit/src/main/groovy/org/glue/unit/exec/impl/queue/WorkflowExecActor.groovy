@@ -112,8 +112,11 @@ class WorkflowExecActor extends ThreadedActor<QueuedWorkflow>{
 			}
 
 		}finally{
-			executingProcesses.remove(qwf.uuid)
-			executingWorkflowNames.remove(qwf.uuid)
+		
+		   //ignore any exceptions from the remove command
+		   try{	executingProcesses.remove(qwf.uuid) }catch(Exception e){;}
+		   try{executingWorkflowNames.remove(qwf.name)}catch(Exception e){;}
+		
 
 			logger?.close()
 		}

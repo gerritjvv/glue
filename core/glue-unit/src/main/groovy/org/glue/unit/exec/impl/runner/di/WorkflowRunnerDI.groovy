@@ -41,6 +41,17 @@ class WorkflowRunnerDI {
 	@Autowired(required = true)
 	WorkflowRunnerConfig config
 
+	
+	@Bean
+	org.glue.unit.om.ScriptRepl scriptRepl(){
+		if(config.lang == "jython")
+		   return new org.glue.unit.repl.jython.JythonRepl()
+		else if(config.lang == "clojure")
+		   return new org.glue.unit.repl.clojure.ClojureRepl()
+		else 
+		   return new org.glue.unit.repl.groovy.GroovyRepl()	
+	}
+	
 	@Bean
 	ZLock getZLock(){
 		if(config.execConfig?.zkhost && config.execConfig?.zktimeout){

@@ -559,6 +559,10 @@ public class HDFSModuleImpl implements HDFSModule {
 		eachLine(null, file, closure)
 	}
 
+	clojure.lang.LazySeq seq_eachLine(String clusterName, String file) throws IOException{
+	 	throw new RuntimeException("No yet implemented")  	
+	}
+	
 	/**
 	 * Opens the file and sends each line to the closure<br/>
 	 * This is recursive by default.

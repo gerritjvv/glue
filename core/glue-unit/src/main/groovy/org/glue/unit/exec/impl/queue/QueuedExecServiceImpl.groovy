@@ -127,7 +127,7 @@ class QueuedExecServiceImpl implements GlueExecutor, WorkflowsStatus{
 				logProvider
 				)
 
-		def closure = { executingUnits.remove(it.uuid) }
+		def closure = { executingUnits.remove(it.uuid); runningWorkflows.remove(it.name); }
 		execActor.onErrorListener = { wf, t ->
 			runningWorkflows.remove(wf.name)
 			executingUnits.remove(wf.uuid)

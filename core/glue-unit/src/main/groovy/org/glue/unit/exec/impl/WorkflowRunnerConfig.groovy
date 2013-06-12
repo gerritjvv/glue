@@ -20,7 +20,7 @@ import org.glue.unit.script.ScriptClassCache
  * Encapsulates the WorkflowRunner configuration
  *
  */
- @Typed(TypePolicy.MIXED)
+@Typed(TypePolicy.MIXED)
 class WorkflowRunnerConfig {
 
 	ConfigObject moduleFactoryConfig
@@ -31,6 +31,8 @@ class WorkflowRunnerConfig {
 	String uuid
 	String workflow
 
+	String lang
+	
 	Map<String, String> params
 
 	int executorPoolThreads
@@ -55,7 +57,7 @@ class WorkflowRunnerConfig {
 		}catch(ParseException excp){
 			println excp.toString()
 			HelpFormatter formatter = new HelpFormatter();
-			formatter.printHelp("WorkflowRunner", options)
+			formatter.printHelp("-", options)
 			throw excp
 		}
 
@@ -75,7 +77,8 @@ class WorkflowRunnerConfig {
 
 		def workflowName = line.getOptionValue('workflow')
 		def uuid = line.getOptionValue('uuid')
-
+		
+		def lang = line.getOptionValue('lang')
 
 		//load the status manager
 		if(!(execConfObj.unitStatusManager && execConfObj.unitStatusManager.className)){
@@ -124,6 +127,7 @@ class WorkflowRunnerConfig {
 		uuid:uuid,
 		workflow:workflowName,
 		executorPoolThreads:executorPoolThreads,
+		lang:lang,
 		params:params
 		)
 	}
@@ -179,6 +183,11 @@ class WorkflowRunnerConfig {
 				.withDescription("The execution id assigned to this workflow")
 				.create("uuid")
 
+		Option lang = OptionBuilder.withArgName('lang')
+				.hasArg()
+				.withDescription("The repl language")
+				.create("lang")
+
 		Option property  = OptionBuilder.withArgName( "property=value" )
 				.hasArgs(2)
 				.withValueSeparator()
@@ -191,6 +200,7 @@ class WorkflowRunnerConfig {
 		options.addOption(execConf)
 		options.addOption(workflowName)
 		options.addOption(uuid)
+		options.addOption(lang)
 		options.addOption(property)
 
 		return options
