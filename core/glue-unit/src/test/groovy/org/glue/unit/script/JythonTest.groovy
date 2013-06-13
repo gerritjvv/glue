@@ -26,10 +26,40 @@ import org.junit.Test
  */
 class JythonTest {
 
+	
+	@Test
+	public void specialCharacterEncoding(){
+		
+				def provider = new MapGlueModuleFactoryProvider(null)
+				provider.addModule("enc", new MockGlueUnicodeModule())
+				
+				ConfigObject execConfig = new ConfigObject();
+		
+				Provider<ProcessExecutor> processExecutorProvider = new MockProcessExecutorProvider(errorInExec:false, processExecutorClosure:{ new ProcessExecutorImpl() })
+		
+				GlueUnitRepository repo = new DirGlueUnitRepository(new DefaultGlueUnitBuilder(), [
+					'src/test/resources/test-flow-repo'
+				])
+		
+				Provider<UnitExecutor> unitExecutorProvider = new MockUnitExecutorProvider(processExecutorProvider:processExecutorProvider)
+		
+				GlueExecutor exec = new GlueExecutorImpl(execConfig, repo,
+						new DefaultGlueContextBuilder(provider),
+						unitExecutorProvider,
+						new DefaultGlueUnitBuilder()
+						)
+		
+		
+				String uid=exec.submitUnitAsName( "jythonworkflowencoding", [:] )
+		
+				exec.waitFor uid
+		
+				assertEquals(GlueState.FINISHED, exec.getStatus(uid))
+	}
 
 	/**
 	 * Test issue 52
-	 */
+	 *
 	@Test
 	public void runSubprocess(){
 		GlueModuleFactory moduleFactory = new GlueModuleFactoryImpl();
@@ -61,4 +91,5 @@ class JythonTest {
 		GlueContextImpl ctx = new GlueContextImpl()
 		ctx.moduleFactory = moduleFactory
 	}
+	*/
 }

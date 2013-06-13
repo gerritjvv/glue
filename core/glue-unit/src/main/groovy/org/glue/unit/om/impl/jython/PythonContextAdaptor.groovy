@@ -4,6 +4,7 @@ import org.python.core.PyObject
 import org.python.core.PyObjectDerived
 import org.python.core.PyType
 import org.python.core.adapter.ClassicPyObjectAdapter
+import org.python.core.codecs
 
 /**
  * Initialize the Python Interpreter with the custom PythonContextAdaptor.<br/>
@@ -19,17 +20,25 @@ import org.python.core.adapter.ClassicPyObjectAdapter
  * </code>
  */
 class PythonContextAdaptor extends ClassicPyObjectAdapter{
-
+	
+	static{
+		
+		codecs.setDefaultEncoding("utf-16")
+		
+	}
+	
 	public static PyObjectDerived derive(Object o){
 		def obj = new PyObjectDerived(PyType.fromClassSkippingInners(findClass(o), new HashSet()))
 
 		obj.javaProxy = o
+		
 		return obj
 	}
 
 	public PyObject adapt(Object o) {
 		try{
-			return super.adapt(o)
+			PyObject obj = super.adapt(o)
+			return obj
 		}catch(Throwable excp){
 			//workaround to the class not found exception is to sip the inner classes
 			def obj = new PyObjectDerived(PyType.fromClassSkippingInners(findClass(o), new HashSet()))

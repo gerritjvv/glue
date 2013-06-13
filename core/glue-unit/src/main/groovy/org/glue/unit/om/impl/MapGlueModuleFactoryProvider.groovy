@@ -45,6 +45,10 @@ class MapGlueModuleFactoryProvider implements GlueModuleFactoryProvider{
 			
 	}
 	
+	public void addModule(String name, GlueModule module){
+		singletonMap[name] = module
+	}
+	
 	public void addModule(String name, ConfigObject config, boolean isSingleton){
 		if(isSingleton){
 			singletonMap[name] = createGlueModule(name, config)

@@ -1,0 +1,10 @@
+
+
+def f2(s):
+    print("!!!!!! " + str(s))
+    
+  
+print("Context: " + str(context) + " CTX: " + str(ctx))
+
+ctx.enc().callUnicode(f2)
+print("Unicode: " + str(f2(ctx.enc().getUnicode())))

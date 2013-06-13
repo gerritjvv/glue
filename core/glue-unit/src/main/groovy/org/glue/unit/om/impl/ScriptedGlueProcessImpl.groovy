@@ -6,6 +6,7 @@ import javax.script.ScriptEngineManager
 import org.apache.log4j.Logger
 import org.glue.unit.om.GlueContext
 import org.glue.unit.om.impl.jython.PythonContextAdaptor
+import org.python.core.Py
 import org.python.core.PySystemState
 
 
@@ -51,8 +52,11 @@ class ScriptedGlueProcessImpl extends GlueProcessImpl{
 			//The problem is that all groovy interfaces when the method getDeclaredClasses is called
 			//return a strange [Name]$1 class, which does not exist and cause a ClassNotFoundException in Java.
 			//The PythonContextAdaptor use a work-around
-			PySystemState.initialize(null, null, [""], null, 
-				new PythonContextAdaptor())
+			def adaptor = new PythonContextAdaptor()
+			PySystemState.initialize(null, null, [""], Thread.currentThread().getContextClassLoader(), 
+				adaptor)
+			Py.setAdapter(adaptor)
+			
 		}else if(lang == "jruby"){
 			lang = "ruby"
 		} else if (lang == "clj") {

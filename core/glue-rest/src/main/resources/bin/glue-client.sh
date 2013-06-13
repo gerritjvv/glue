@@ -32,6 +32,20 @@ if [ -z $JAVA_HEAP ]; then
  export JAVA_HEAP="-Xmx2048m"
 fi
 
+#read the processClassPath array and add to CLASSPATH
+cp=$(grep processClassPath $GLUE_BIN_HOME/../conf/exec.groovy | sed -e "s/.*: //" -e "s/#.*//")
+cp=$(echo $cp | tr "=,[]'\"" "\n" | sed "s;processClassPath;;g")
+
+
+for d in $cp
+do
+  if [ -e "$d" -a "$d" != "//" ]; then
+    CLASSPATH="$CLASSPATH:$d"
+  fi
+
+done
+
+
 # check envvars which might override default args
 # CLASSPATH initially contains $GLUE_CONF_DIR
 CLASSPATH=${CLASSPATH}:$JAVA_HOME/lib/tools.jar

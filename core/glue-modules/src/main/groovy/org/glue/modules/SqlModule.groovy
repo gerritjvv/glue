@@ -6,6 +6,7 @@ import groovy.sql.Sql
 import java.util.concurrent.ConcurrentHashMap
 
 import org.glue.unit.exceptions.ModuleConfigurationException
+import org.glue.unit.om.CallHelper
 import org.glue.unit.om.GlueContext
 import org.glue.unit.om.GlueModule
 import org.glue.unit.om.GlueProcess
@@ -176,10 +177,10 @@ public class SqlModule implements GlueModule {
 	 * @param db String database name
 	 * @param closure
 	 */
-	public void withSql(db, Runnable closure){
+	public void withSql(db, Object closure){
 		def sqlObj = getSql(db)
 		try{
-			closure.run(sqlObj)
+			CallHelper.makeCallable(closure).call(sqlObj)
 		}finally{
 			sqlObj.close()
 		}
@@ -207,10 +208,12 @@ public class SqlModule implements GlueModule {
 	 * @param sql
 	 * @param closure Closure is called with one parameter which is an instance of GroovyResultSet
 	 */
-	public void eachSqlResult(db, sql, Runnable closure) {
+	public void eachSqlResult(db, sql, Object closure) {
 		def sqlObj = getSql(db)
 		try{
-			sqlObj.eachRow(sql.toString()){ row -> closure.run(row) }
+			def cls = CallHelper.makeCallable(closure)
+			
+			sqlObj.eachRow(sql.toString()){ row -> cls.call(row) }
 		}finally{
 			sqlObj.close()
 		}
