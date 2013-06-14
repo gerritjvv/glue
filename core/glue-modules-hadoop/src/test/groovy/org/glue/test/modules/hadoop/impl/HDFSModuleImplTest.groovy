@@ -439,6 +439,66 @@ class HDFSModuleImplTest{
 	 * Test listing files
 	 */
 	@Test
+	public void testSeqEachLine(){
+		
+		String localFile = "src/test/resources/testlog.txt"
+		String remoteDir = "target/test/HDFSModuleImplTest/hdfs/testListFilesDir1"
+		def remoteFiles = [
+			"${remoteDir}/testlist.txt",
+			"${remoteDir}/testlist2.txt"
+		]
+		
+		
+		remoteFiles.each { String fileName ->
+			hdfsModule.put localFile, fileName
+		}
+		
+		
+		def files = hdfsModule.seq_eachLine(remoteDir)
+		
+		println("Files: " + files)
+		
+		files.each { line ->
+				println("Line: " + line)
+		}
+
+	}
+	
+	/**
+	 * Test listing files
+	 */
+	@Test
+	public void testListSeqFiles(){
+		
+		String localFile = "src/test/resources/testlog.txt"
+		String remoteDir = "target/test/HDFSModuleImplTest/hdfs/testListFilesDir1"
+		def remoteFiles = [
+			"${remoteDir}/testlist.txt",
+			"${remoteDir}/testlist2.txt"
+		]
+		
+		def remoteFileNames = []
+		remoteFiles.each { String name -> remoteFileNames << new File(name).name }
+		
+		remoteFiles.each { String fileName ->
+			hdfsModule.put localFile, fileName
+		}
+		
+		
+		def files = hdfsModule.seq_list(remoteDir)
+		
+		println("Files: " + files)
+		
+		files.each { file ->
+			assertTrue( new File(file).name in remoteFileNames )
+		}
+
+	}
+	
+	/**
+	 * Test listing files
+	 */
+	@Test
 	public void testListFiles(){
 		
 		String localFile = "src/test/resources/testlog.txt"
