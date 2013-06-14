@@ -804,7 +804,7 @@ public class HDFSModuleImpl implements HDFSModule {
 		def clsToCall = cls
 		if(cls.getMaximumNumberOfParameters() == 1){
 			clsToCall = { f, m ->
-				closure(f)
+				cls(f)
 			}
 		}
 		def out=[];
