@@ -1,8 +1,6 @@
 package org.glue.modules;
 
 import org.apache.commons.io.IOUtils
-import org.apache.commons.net.ftp.FTPClient
-import org.apache.commons.net.ftp.FTPReply
 import org.apache.commons.vfs2.FileContent
 import org.apache.commons.vfs2.FileObject
 import org.apache.commons.vfs2.FileSystemManager
@@ -13,6 +11,7 @@ import org.apache.commons.vfs2.VFS
 import org.apache.commons.vfs2.auth.StaticUserAuthenticator
 import org.apache.commons.vfs2.impl.DefaultFileSystemConfigBuilder
 import org.glue.unit.exceptions.ModuleConfigurationException
+import org.glue.unit.om.CallHelper
 import org.glue.unit.om.GlueContext
 import org.glue.unit.om.GlueModule
 import org.glue.unit.om.GlueProcess
@@ -107,8 +106,10 @@ class FTPModule implements GlueModule{
 		
 	}
 	
-	public void withInputStream(String server = null, String pathName, Runnable closure){
-		withFTP(server, pathName, { FileSystemManager fsman, FileObject fsobj -> closure.run(fsobj.content.inputStream) } )
+	public void withInputStream(String server = null, String pathName, Object closure){
+		def cls = CallHelper.makeCallable(closure)
+		
+		withFTP(server, pathName, { FileSystemManager fsman, FileObject fsobj -> cls.call(fsobj.content.inputStream) } )
 	}
 
 	public boolean rename(server = null, from, to){
@@ -125,12 +126,14 @@ class FTPModule implements GlueModule{
 		} )
 	}
 
-	public void withWriter(server = null, pathName, Runnable closure){
+	public void withWriter(server = null, pathName, Object closure){
+		
+		def cls = CallHelper.makeCallable(closure)
 		
 		withFTP(server, pathName, { FileSystemManager fsman, FileObject fsobj ->  
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fsobj.content.outputStream))
 			try{
-				closure.run(writer)
+				cls.call(writer)
 			}finally{
 			  writer.close()
 			}
@@ -140,9 +143,10 @@ class FTPModule implements GlueModule{
 		
 	}
 	
-	public void withOutputStream(server = null, pathName, Runnable closure){
+	public void withOutputStream(server = null, pathName, Object closure){
+		def cls = CallHelper.makeCallable(closure)
 		
-		withFTP(server, pathName, { FileSystemManager fsman, FileObject fsobj ->  closure.run(fsobj.content.outputStream) } )
+		withFTP(server, pathName, { FileSystemManager fsman, FileObject fsobj ->  cls.call(fsobj.content.outputStream) } )
 		
 	}
 
@@ -258,12 +262,14 @@ class FTPModule implements GlueModule{
 	}
 
 	
-	public Object withFTP(String server, String fsPath, Runnable closure){
+	public Object withFTP(String server, String fsPath, Object closure){
 		ConfigObject conf = (server)? serverConfigurations[server.toString()] : defaultConfiguration
 		
 		if(conf == null)
 			throw new ModuleConfigurationException("No configuration found for server " + server + " in ftp module")
 			
+		def cls = CallHelper.makeCallable(closure)
+		
 		String host = validate(conf.host as String, "host")
 		String uid = validate(conf.user as String, "uid")
 		String pwd = validate(conf.pwd as String, "pwd")
@@ -281,7 +287,7 @@ class FTPModule implements GlueModule{
 		FileObject fsObj = null;
 		try{
 		 fsObj = fsManager.resolveFile(url, opts)
-		 ret = closure.run(fsManager, fsObj)
+		 ret = cls.call(fsManager, fsObj)
 		}finally{
 		  fsObj?.close()
 		}	

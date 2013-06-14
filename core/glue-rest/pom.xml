@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>org.glue</groupId>
 	<artifactId>glue-rest</artifactId>
-	<version>0.4.0</version>
+	<version>0.4.5</version>
 	<name>glue-rest</name>
 	<url>http://maven.apache.org</url>
 	<properties>
