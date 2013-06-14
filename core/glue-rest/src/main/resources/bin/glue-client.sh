@@ -33,7 +33,7 @@ if [ -z $JAVA_HEAP ]; then
 fi
 
 #read the processClassPath array and add to CLASSPATH
-cp=$(grep processClassPath $GLUE_BIN_HOME/../conf/exec.groovy | sed -e "s/.*: //" -e "s/#.*//")
+cp=$(grep processClassPath $GLUE_HOME/conf/exec.groovy | sed -e "s/.*: //" -e "s/#.*//")
 cp=$(echo $cp | tr "=,[]'\"" "\n" | sed "s;processClassPath;;g")
 
 

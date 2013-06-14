@@ -1,10 +1,15 @@
 package org.glue.unit.om.impl.jython
 
+import java.sql.ResultSet
+
+import org.glue.unit.script.GlueResultSetMapWrapper
 import org.python.core.PyObject
 import org.python.core.PyObjectDerived
+import org.python.core.PyString
 import org.python.core.PyType
-import org.python.core.adapter.ClassicPyObjectAdapter
+import org.python.core.PyUnicodeDerived
 import org.python.core.codecs
+import org.python.core.adapter.ClassicPyObjectAdapter
 
 /**
  * Initialize the Python Interpreter with the custom PythonContextAdaptor.<br/>
@@ -23,21 +28,31 @@ class PythonContextAdaptor extends ClassicPyObjectAdapter{
 	
 	static{
 		
-		codecs.setDefaultEncoding("utf-16")
+		codecs.setDefaultEncoding("ISO-8859-1")
 		
 	}
 	
 	public static PyObjectDerived derive(Object o){
+		if(o instanceof ResultSet)
+		   o = new GlueResultSetMapWrapper((ResultSet)o)
+		   
 		def obj = new PyObjectDerived(PyType.fromClassSkippingInners(findClass(o), new HashSet()))
-
 		obj.javaProxy = o
+		
+		
 		
 		return obj
 	}
 
 	public PyObject adapt(Object o) {
 		try{
+			if(o instanceof ResultSet)
+				o = new GlueResultSetMapWrapper((ResultSet)o)
+			
 			PyObject obj = super.adapt(o)
+			if(obj instanceof PyString)
+			    obj = new PyUnicodeDerived(PyString.TYPE, obj);
+				
 			return obj
 		}catch(Throwable excp){
 			//workaround to the class not found exception is to sip the inner classes

@@ -15,7 +15,7 @@ import clojure.lang.IFn
  * Closure functions are all Runnable and Callable.
  */
 @Typed
-class CallHelper {
+final class CallHelper {
 
 	/**
 	 * 
@@ -23,9 +23,10 @@ class CallHelper {
 	 * @param arg
 	 * @return
 	 */
-	public static Closure makeCallable(obj){
-
-		if(obj instanceof PyObject){
+	public static final Closure makeCallable(final Object obj){
+		if(obj instanceof groovy.lang.Closure){
+			return obj
+		}else if(obj instanceof PyObject){
 			def cls = new org.glue.unit.om.impl.jython.Closure((PyObject)obj)
 			return { Object[] args -> cls.call(args)}
 		}else if(obj instanceof IFn){
@@ -37,13 +38,9 @@ class CallHelper {
 		    return { Object[] args -> ((Callable)obj).call() }
 		}else if(obj instanceof Runnable){
 		    return { Object[] args -> ((Runnable)obj).run() }
-		}else if(obj instanceof groovy.lang.Closure){
-		    return obj
 		}else{
 		    throw new IllegalArgumentException("Argument must be a IFn, PyObject, Closure, Runnable or Callable but instead is: " + obj)
 		}
-		
-		
 	}
 
 }

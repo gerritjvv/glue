@@ -44,6 +44,7 @@ class DecompressorPoolableObjectFactory implements KeyedPoolableObjectFactory{
 		DecompressorKey decomKey = (DecompressorKey)key
 		DecompressorValue value
 
+		println("DecompressorPoolableObjectFactory: key.file " + decomKey.file)
 		def codec = getCompressionCodecFactory(decomKey.clusterName).getCodec(new Path(decomKey.file))
 		if(codec){
 

@@ -1,13 +1,11 @@
 package org.glue.unit.repl.jython;
 
-import org.glue.unit.om.impl.jython.PythonContextAdaptor
 import org.glue.unit.om.GlueContext
 import org.glue.unit.om.ScriptRepl
 import org.glue.unit.om.impl.DefaultGlueContextBuilder
-
+import org.glue.unit.om.impl.jython.PythonContextAdaptor
 import org.glue.unit.repo.GlueUnitRepository
-import org.python.util.InteractiveInterpreter;
-
+import org.python.core.Py
 import org.python.core.PySystemState
 import org.python.util.InteractiveConsole
 
@@ -22,10 +20,14 @@ public class JythonRepl implements ScriptRepl{
 		//		PySystemState.initialize(null, null, [""], null,
 		//			new PythonContextAdaptor())
 		//
+		
 		def repo1 = PythonContextAdaptor.derive(repo)
 		def ctx1 = PythonContextAdaptor.derive(DefaultGlueContextBuilder.buildStaticGlueContext(ctx))
 
 		InteractiveConsole.initialize(System.getProperties(), null, new String[0] );
+		def adaptor = new PythonContextAdaptor()
+		Py.setAdapter(adaptor)
+		
 		
 		def sh = new InteractiveConsole()
 		sh.set("ctx", ctx1)
@@ -40,9 +42,9 @@ public class JythonRepl implements ScriptRepl{
 				sh.push(line)
 			}
 		}
-	    if(!exit)
+	    if(!exit){
 		  sh.interact()
-		
+	    }
 	
 	}
 }

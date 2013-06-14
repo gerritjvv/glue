@@ -1,6 +1,7 @@
 
 
 def f2(s):
+    print("!!!!!! type: " + str(type(s))) 
     print("!!!!!! " + str(s))
     
   

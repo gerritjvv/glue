@@ -26,10 +26,10 @@ import org.apache.log4j.Logger
 import org.glue.modules.hadoop.ClosureStopException
 import org.glue.modules.hadoop.HDFSModule
 import org.glue.unit.exceptions.ModuleConfigurationException
+import org.glue.unit.om.CallHelper
 import org.glue.unit.om.GlueContext
 import org.glue.unit.om.GlueProcess
 import org.glue.unit.om.GlueUnit
-import org.glue.unit.om.CallHelper
 
 /**
  *
@@ -83,8 +83,9 @@ public class HDFSModuleImpl implements HDFSModule {
 	}
 	
 	void downloadChunked(String clusterName, Collection<String> hdfsDir, String localDir, int chunkSize, String compression, Object callback){
+		def cls = CallHelper.makeCallable(callback)
 		
-		def chunkedOutput = new ChunkedOutput(new File(localDir), "parts", chunkSize, compression, callback)
+		def chunkedOutput = new ChunkedOutput(new File(localDir), "parts", chunkSize, compression, cls)
 		try{
 			hdfsDir.each { dir ->
 			   eachLine(clusterName, dir, { String line ->
@@ -143,26 +144,27 @@ public class HDFSModuleImpl implements HDFSModule {
 	 */
 	boolean timeSeries(String clusterName, String n, String tableHDFSDir, Date nowdate, String modifyTime, Object partitionFormatter, Object dateIncrement, Object collector = null){
 		
-		def clsPartitionFormatter = CallHelper.makeCallable(partitionFormatter)
-		def clsDateIncrement = CallHelper.makeCallable(dateIncrement)
-		def clsCollector = CallHelper.makeCallable(collector)
+		
+		def cls_partitionFormatter = CallHelper.makeCallable(partitionFormatter)
+		def cls_dateIncrement = CallHelper.makeCallable(dateIncrement)
+		def cls_collector = CallHelper.makeCallable(collector)
 		
 		final String[] modTimeParsed = modifyTime.toLowerCase().split('\\.')
 		final String[] nParsed = n.toLowerCase().split('\\.')
-//		
+		
 		use(TimeCategory){
 			final long lastUpdateTime = (nowdate - (modTimeParsed[0] as int)."${modTimeParsed[1]}" ).getTime()
 			Date prevdate = (nowdate - (nParsed[0] as int)."${nParsed[1]}")
 			try{
 				while(prevdate <  nowdate){
 					
-					final String partitionPath = "$tableHDFSDir/${clsPartitionFormatter.call(prevdate)}"
+					final String partitionPath = "$tableHDFSDir/${cls_partitionFormatter(prevdate)}"
 					int countA = 0, countB = 0
 					list(clusterName, partitionPath, { file ->
 						countA++ 
 						if(getFileStatus(clusterName,file)?.modificationTime < lastUpdateTime){
 							countB++
-							if(collector) clsCollector.call(prevdate, file)
+							if(collector) cls_collector(prevdate, file)
 						}
 					})
 					
@@ -170,7 +172,7 @@ public class HDFSModuleImpl implements HDFSModule {
 						throw new ClosureStopException("Empty partition or the partition is still edited $prevDate")
 					
 					//the closure must return a Date object
-					prevdate = clsDateIncrement.call(prevdate)
+					prevdate = cls_dateIncrement(prevdate)
 						
 				}//eof while
 			}catch(ClosureStopException exc){
@@ -446,14 +448,14 @@ public class HDFSModuleImpl implements HDFSModule {
 	void withDecompressedInputStream(String clusterName, String file, Object closure) throws IOException{
 	
 			def cls = CallHelper.makeCallable(closure)
-		
+			
 			def key = new DecompressorKey(clusterName:clusterName, file:file)
 			DecompressorValue decVal = decompressorPool.borrowObject(key)
 
 			if(decVal == null){
 				FSDataInputStream input = open(clusterName, file)
 				try{
-					cls.call(input)
+					cls(input)
 				}finally{
 					input.close()
 				}
@@ -462,7 +464,7 @@ public class HDFSModuleImpl implements HDFSModule {
 					
 					CompressionInputStream input = decVal.createInputStream(open(clusterName, file))
 					try{
-						cls.call(input)	
+						cls(input)	
 					}finally{
 						input.close()
 					}
@@ -498,11 +500,9 @@ public class HDFSModuleImpl implements HDFSModule {
 	 * @throws IOException
 	 */
 	void open(String clusterName, String file, Object closure) throws IOException{
-		def cls = CallHelper.makeCallable(closure)
-		
 		FSDataInputStream input = open(clusterName, file)
 		try{
-			cls.call(input)
+			CallHelper.makeCallable(closure).call(input)
 		}finally{
 			input.close()
 		}
@@ -536,10 +536,9 @@ public class HDFSModuleImpl implements HDFSModule {
 	void createWithWriter(String clusterName, String file, Object closure) throws IOException{
 		FSDataOutputStream fsDataOut = getFileSystem(clusterName).create (new Path(file))
 		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fsDataOut))
-		def cls = CallHelper.makeCallable(closure)
-		
+
 		try{
-			cls.call(writer)
+			CallHelper.makeCallable(closure).call(writer)
 		}finally{
 			writer.close()
 			fsDataOut.close()
@@ -558,10 +557,8 @@ public class HDFSModuleImpl implements HDFSModule {
 	 */
 	void create(String clusterName, String file, Object closure) throws IOException{
 		FSDataOutputStream fsDataOut = getFileSystem(clusterName).create (new Path(file))
-		def cls = CallHelper.makeCallable(closure)
-		
 		try{
-			cls.call(fsDataOut)
+			CallHelper.makeCallable(closure).call(fsDataOut)
 		}finally{
 			fsDataOut.close()
 		}
@@ -599,22 +596,23 @@ public class HDFSModuleImpl implements HDFSModule {
 	 * @throws IOException
 	 */
 	void eachLine(String clusterName, String file, boolean recursive, Object closure) throws IOException{
+		
 		def cls = CallHelper.makeCallable(closure)
 		
-		def eachLineFile = {
+		def eachLineFile = { file2 ->
 
 			DecompressorValue decVal
 			
-			def key = new DecompressorKey(clusterName:clusterName, file:it)
+			def key = new DecompressorKey(clusterName:clusterName, file:file2)
 			try{
 			decVal = decompressorPool.borrowObject(key)
 			}catch(Throwable t){
-			  throw new RuntimeException("Error creating decompressor: " + file, t)
+			  throw new RuntimeException("Error creating decompressor: " + file2, t)
 			}
 			
 			if(decVal == null){
 				LOG.debug("Reading $file as plain text")
-				def reader = new BufferedReader(new InputStreamReader( open(clusterName, it as String)))
+				def reader = new BufferedReader(new InputStreamReader( open(clusterName, file2 as String)))
 				try{
 					reader.eachLine(closure)
 				}finally{
@@ -624,12 +622,12 @@ public class HDFSModuleImpl implements HDFSModule {
 				try{
 					LOG.debug("Reading $file using ${decVal.codec}")
 
-					CompressionInputStream input = decVal.createInputStream(open(clusterName, it as String))
+					CompressionInputStream input = decVal.createInputStream(open(clusterName, file2 as String))
 					BufferedReader reader = new BufferedReader(new InputStreamReader(input))
 					try{
 
 						try{
-							reader.eachLine {  line -> cls.call(line)  }
+							reader.eachLine {  line -> cls(line)  }
 						}catch(NullPointerException npe){
 							//end of stream was reached.
 							//this error is given by the compression codec when end of stream
@@ -641,7 +639,7 @@ public class HDFSModuleImpl implements HDFSModule {
 						input.close()
 					}
 				}catch(Throwable t){
-				    throw new RuntimeException("Error creating inputstream for: " + file  + " " + t.toString(), t);
+				    throw new RuntimeException("Error creating inputstream for: " + file2  + " " + t.toString(), t);
 				}finally{
 					decompressorPool.returnObject(key, decVal)
 				}
@@ -685,8 +683,9 @@ public class HDFSModuleImpl implements HDFSModule {
 	 * @param dirHasBeenModified
 	 * @param closure
 	 */
-	void findNewFiles(String clusterName = null, String file, Object dirHasBeenModified, Object closure){
-		def clsDirHasBeenModified = CallHelper.makeCallable(dirHasBeenModified)
+	void findNewFiles(String clusterName = null, String file, Object  dirHasBeenModified, Object closure){
+		
+		def cls_dirHasBeenModified = CallHelper.makeCallable(dirHasBeenModified)
 		def cls = CallHelper.makeCallable(closure)
 		
 		def findClosure = null
@@ -694,11 +693,11 @@ public class HDFSModuleImpl implements HDFSModule {
 			   //if it is a directory, and the directory hasBeenModified returns true
 			   //then call the list method recursively
 					
-			   if(status.isDir() && clsDirHasBeenModified.call(status)){
+			   if(status.isDir() && cls_dirHasBeenModified(status)){
 				 list(clusterName, path, false, findClosure)  
 			   }else{
 			      //closure should decide if the file is new or not
-			   	  cls.call(status)
+			   	  cls(status)
 			   }
 			
 		}
@@ -799,9 +798,11 @@ public class HDFSModuleImpl implements HDFSModule {
 	 */
 	@Typed(TypePolicy.MIXED)
 	void list(String clusterName, String file, boolean recursive, long lastUpdated, Object closure){
-		def cls = CallHelper.makeCallable(closure)
 
-		def clsToCall = cls
+		def cls = CallHelper.makeCallable(closure)
+		
+		Object clsToCall = cls
+		
 		if(cls.getMaximumNumberOfParameters() == 1){
 			clsToCall = { f, m ->
 				cls(f)
@@ -845,10 +846,8 @@ public class HDFSModuleImpl implements HDFSModule {
 	 * @param filter
 	 * @param closure
 	 */
-	private void listStatusRecursiveHelper(String clusterName, FileStatus dirStatus, PathFilter filter, Object closure){
+	private void listStatusRecursiveHelper(String clusterName, FileStatus dirStatus, PathFilter filter, Closure closure){
 
-		def cls = CallHelper.makeCallable(closure)
-		
 		List<Actor> actors = []
 		FileSystem fs = getFileSystem(clusterName)
 		AtomicBoolean isStop = new AtomicBoolean(false)
@@ -870,10 +869,10 @@ public class HDFSModuleImpl implements HDFSModule {
 					}
 				}
 			}else{
-				if(cls.getMaximumNumberOfParameters() > 1){
-					cls.call(status.path.toUri().toString(), status)
+				if(closure.getMaximumNumberOfParameters() > 1){
+					closure.call(status.path.toUri().toString(), status)
 				}else{
-					cls.call(status.path.toUri().toString())
+					closure.call(status.path.toUri().toString())
 				}
 			}
 		}
