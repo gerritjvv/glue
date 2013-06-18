@@ -34,7 +34,7 @@
 						<copyright>http://www.apache.org/licenses/LICENSE-2.0</copyright>
 						<distribution>Glue task manager</distribution>
 						<group>utilties</group>
-						<release>1</release>
+						<release>2</release>
 						<packager>http://code.google.com/p/glue/</packager>
 						<provides>
 							<provide>glue-server</provide>
@@ -173,7 +173,7 @@ type getent || exit 0
 						 
 getent group glue >/dev/null || groupadd -r glue
        getent passwd glue >/dev/null || \
-       useradd -r -g glue -d HOMEDIR -s /sbin/nologin \
+       useradd -r -g glue -m -s /sbin/nologin \
        -c "Glue Rest runs under the glue user and group" glue
 exit 
 							</script>

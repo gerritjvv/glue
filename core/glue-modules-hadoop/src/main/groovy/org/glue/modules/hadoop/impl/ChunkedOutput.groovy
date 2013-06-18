@@ -1,13 +1,16 @@
 package org.glue.modules.hadoop.impl
 
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configurable
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.compress.BZip2Codec
 import org.apache.hadoop.io.compress.CompressionCodec
 import org.apache.hadoop.io.compress.CompressionCodecFactory
+import org.apache.hadoop.io.compress.CompressionOutputStream
 import org.apache.hadoop.io.compress.Compressor
 import org.apache.hadoop.io.compress.GzipCodec
+import org.apache.commons.io.IOUtils
 
 /**
  * 
@@ -23,7 +26,7 @@ class ChunkedOutput {
 	final String prefix
 
 	final int chunkSize
-	BufferedOutputStream writer
+	CompressionOutputStream writer
 	File currentFile
 
 	final int batchCheck
@@ -37,6 +40,8 @@ class ChunkedOutput {
 	final Closure callback
 
 	final Random random = new Random();
+	
+	int counter = 0
 	
 	/**
 	 * Writes out chunked files 
@@ -65,10 +70,9 @@ class ChunkedOutput {
 
 		def codecs =  conf.get("io.compression.codecs", BZip2Codec.class.getName())
 		codecs += "," + GzipCodec.class.getName()
+		def fact = new CompressionCodecFactory(conf)
 		
 		conf.set("io.compression.codecs", codecs)
-		
-		def fact = new CompressionCodecFactory(conf)
 		
 		codec = fact.getCodec(new Path("mypath.${compression.toLowerCase()}"))
 
@@ -99,15 +103,13 @@ class ChunkedOutput {
 	private final void resetWriter() throws FileNotFoundException, IOException {
 		//we wait random to avoid name conflicts between multiple threads and processes plus append a nextInt(100) suffix
 		waitRandom()
-		final File file = new File(dir, prefix + "-" + System.nanoTime() + "." + random.nextInt(100)
+		final File file = new File(dir, prefix + "-" + System.nanoTime() + "." + (counter++)
 				+ extension + "_")
 
-		if (compressor != null)
-			compressor.reset()
-
-		writer = new BufferedOutputStream(
+		
+		writer = 
 				codec.createOutputStream(
-				new FileOutputStream(file), compressor))
+				new FileOutputStream(file), compressor)
 
 		currentFile = file;
 	}
@@ -126,12 +128,22 @@ class ChunkedOutput {
 	}
 
 	private synchronized void doRoll() throws IOException {
-		writer.close();
+		
+		try{
+			writer.finish() //call finish on CompressionOutputStream
+		}catch(Exception e){}
+		
+		IOUtils.closeQuietly(writer); //then close
+		
+		if(compressor != null)
+			compressor.reset()
+		
 		String name = currentFile.getAbsolutePath();
 		def fileName = new File(name.substring(0, name.length() - 1))
 
 		currentFile.renameTo(fileName);
-
+		FileUtils.moveFile(currentFile, fileName)
+		
 		callback(fileName)
 	}
 

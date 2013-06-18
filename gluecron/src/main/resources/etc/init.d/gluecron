@@ -71,7 +71,7 @@ start() {
     elif [ "$ISDAEMON" -eq "1" ]; then
         daemon --user=hadoop $gcronsd -s &> /dev/null&
     elif type -p daemon ; then
-        daemon --user=hadoop -X "$gcronsd cron"
+        daemon --user=hadoop -X "$gcronsd"
     else
         su - hadoop -l -m -c "nohup bash $gcronsd > /opt/gluecron/log/gluecron.log 2>&1 /dev/null&"
     fi
