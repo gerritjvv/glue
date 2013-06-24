@@ -141,7 +141,6 @@ class ChunkedOutput {
 		String name = currentFile.getAbsolutePath();
 		def fileName = new File(name.substring(0, name.length() - 1))
 
-		currentFile.renameTo(fileName);
 		FileUtils.moveFile(currentFile, fileName)
 		
 		callback(fileName)
