@@ -24,7 +24,8 @@ abstract class TriggerStore2 {
 	 *  
 	 */
 	abstract void listReadyFiles(String unitName, Closure closure, boolean lock = true)
-
+	abstract Collection listReadyFiles(String unitName, boolean lock = true)
+	
 	/**
 	* Marks a collection or list of files as processed
 	* @param unitName

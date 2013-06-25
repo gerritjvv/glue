@@ -48,6 +48,7 @@ class DBTriggerStoreIntegrationTest {
 		assertEquals 0, i
 	}
 	
+	
 	/**
 	 * Check that we can mark files as ready, mark them as processed and then remark them as ready.
 	 */

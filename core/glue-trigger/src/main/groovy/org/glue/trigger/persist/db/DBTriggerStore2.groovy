@@ -71,7 +71,17 @@ class DBTriggerStore2 extends TriggerStore2{
 			conn.close()
 		}
 	}
-
+ 
+	/**
+	 * Returns a Collection of Object Arrays [id:int, name:String]
+	 */
+	public Collection listReadyFiles(String unitName, boolean lock = true){
+		def readyFiles = []
+		
+		listReadyFiles(unitName, { id, name ->  readyFiles << [id, name] as Object[] }, lock)
+		
+		return readyFiles
+	}
 	/**
 	 * Tries to lock a trigger file. if the lock cannot be acquired false is returned
 	 * @param unintName
