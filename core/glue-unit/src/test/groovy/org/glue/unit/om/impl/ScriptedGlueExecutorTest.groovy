@@ -60,20 +60,21 @@ class ScriptedGlueExecutorTest {
 	public void testUnitExecutorClojure() {
 
 		
-		GlueModuleFactory moduleFactory = new GlueModuleFactoryImpl();
-
-		ConfigObject execConfig = new ConfigObject();
-
-		Provider<ProcessExecutor> processExecutorProvider = new MockProcessExecutorProvider(errorInExec:false, processExecutorClosure:{ new ProcessExecutorImpl() })
+		MapGlueModuleFactoryProvider moduleFactory = new MapGlueModuleFactoryProvider();
+		moduleFactory.addModule("sql", new MockGlueModule())
+		
+		Provider<ProcessExecutor> processExecutorProvider = 
+			new MockProcessExecutorProvider(errorInExec:false, processExecutorClosure:{ new ProcessExecutorImpl() })
 
 		GlueUnitRepository repo = new DirGlueUnitRepository(new DefaultGlueUnitBuilder(), [
 			'src/test/resources/test-flow-repo'
 		])
 
 		Provider<UnitExecutor> unitExecutorProvider = new MockUnitExecutorProvider(processExecutorProvider:processExecutorProvider)
-
+		ConfigObject execConfig = new ConfigObject();
+		
 		GlueExecutor exec = new GlueExecutorImpl(execConfig, repo,
-				new DefaultGlueContextBuilder(new MapGlueModuleFactoryProvider(null)),
+				new DefaultGlueContextBuilder(moduleFactory),
 				unitExecutorProvider,
 				new DefaultGlueUnitBuilder()
 				)
@@ -84,10 +85,6 @@ class ScriptedGlueExecutorTest {
 		exec.waitFor uid
 
 		assertEquals(GlueState.FINISHED, exec.getStatus(uid))
-			
-		moduleFactory.addModule("sql", new MockGlueModule())
-		GlueContextImpl ctx = new GlueContextImpl()
-		ctx.moduleFactory = moduleFactory
 		
 	}
 

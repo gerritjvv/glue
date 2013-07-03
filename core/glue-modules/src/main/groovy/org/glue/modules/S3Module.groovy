@@ -150,6 +150,7 @@ class S3Module implements GlueModule{
 			if(!dest.startsWith('/')) dest = "/" + dest
 
 			if(s3configFile){
+				println("s3cmd -c " + s3configFile + " sync " + file)
 				def p = [
 					"s3cmd",
 					"-c",
@@ -163,7 +164,7 @@ class S3Module implements GlueModule{
 				if(p.exitValue())
 					throw new RuntimeException("Error running s3cmd")
 			}else{
-
+				println("Java API put")
 				for(int retryCount = 0; retryCount < 3; retryCount ++ ){
 					def bytesTransfered = 0
 					def i = 0
