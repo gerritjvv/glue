@@ -48,6 +48,15 @@ Reasons for choosing groovy are:
 
 For more on Groovy please see: http://groovy.codehaus.org/
 
+##Clojure
+
+Clojure scripts can be written using the Groovy and Java libraries provided by Glue.
+
+e.g.
+
+  (.exec (.ctx cascalog) (def input (hfs-textline "/data/a.log")) (?<- (stdout) [?line] (input ?line)) )
+
+
 ##Jython
 
 Jython scripts can be written using the Groovy and Java libraries provided by Glue.
