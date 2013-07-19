@@ -52,6 +52,7 @@ class SettingsModule implements GlueModule {
 				File f = new File(settingsdir + "/" + name + SettingsFileType.DOT_EXT);
 				if(f.exists())
 				{
+					println "Loading settings from '$f'";
 					def co = new ConfigSlurper(environment).parse(f.toURI().toURL());
 					mergeSettingsMap(m, co);
 				}
@@ -63,6 +64,7 @@ class SettingsModule implements GlueModule {
 				File f = new File(settingsdir + "/" + environment + "/" + name + SettingsFileType.DOT_EXT);
 				if(f.exists())
 				{
+					println "Loading settings from '$f'";
 					def co = new ConfigSlurper(environment).parse(f.toURI().toURL());
 					mergeSettingsMap(m, co);
 				}
@@ -167,13 +169,14 @@ class SettingsModule implements GlueModule {
 		(new File(settingsdir + "/linked/" + environment)).mkdirs()
 		(new File(settingsdir + "/" + environment)).mkdirs()
 		
-		println "Initialized settings directory '$settingsdir' for environment '$environment'"
+		println "Settings directory '$settingsdir' for environment '$environment'"
 		
 		SettingsFileType sft = new SettingsFileType();
 		
 		// global:
 		for(File f : (new File(settingsdir + "/linked/global")).listFiles(sft))
 		{
+			println "Loading init settings from '$f'";
 			def co = new ConfigSlurper(environment).parse(f.toURI().toURL());
 			mergeSettingsMap(linkedSettings, co);
 		}
@@ -181,6 +184,7 @@ class SettingsModule implements GlueModule {
 		// env:
 		for(File f : (new File(settingsdir + "/linked/" + environment)).listFiles(sft))
 		{
+			println "Loading init settings from '$f'";
 			def co = new ConfigSlurper(environment).parse(f.toURI().toURL());
 			mergeSettingsMap(linkedSettings, co);
 		}
