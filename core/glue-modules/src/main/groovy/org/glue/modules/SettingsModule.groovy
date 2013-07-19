@@ -234,33 +234,33 @@ class SettingsModule implements GlueModule {
 
 settingsdir=/opt/glue/workflow_settings
 
-echo "baz = "mytestBAZx"
-	bat = "mytestBATx"
+echo "baz = 'mytestBAZx'
+	bat = 'mytestBATx'
 	stuff = [
-			c : "mytestCx",
-			d : "mytestDx",
+			c : 'mytestCx',
+			d : 'mytestDx',
 	]" > $settingsdir/mytest.set
-echo "bat = "envmytestBATx"
+echo "bat = 'envmytestBATx'
 	stuff = [
-			d : "envmytestDx",
+			d : 'envmytestDx',
 	]" > $settingsdir/test/mytest.set
-echo "bar = "envBARx"
-	baz = "envBAZx"
-	bat = "envBATx"
+echo "bar = 'envBARx'
+	baz = 'envBAZx'
+	bat = 'envBATx'
 	stuff = [
-			b : "envBx",
-			c : "envCx",
-			d : "envDx",
+			b : 'envBx',
+			c : 'envCx',
+			d : 'envDx',
 	]" > $settingsdir/linked/test/evmt.set
-echo "foo = "globalFOOx"
-	bar = "globalBARx"
-	baz = "globalBAZx"
-	bat = "globalBATx"
+echo "foo = 'globalFOOx'
+	bar = 'globalBARx'
+	baz = 'globalBAZx'
+	bat = 'globalBATx'
 	stuff = [
-			a : "globalAx",
-			b : "globalBx",
-			c : "globalCx",
-			d : "globalDx",
+			a : 'globalAx',
+			b : 'globalBx',
+			c : 'globalCx',
+			d : 'globalDx',
 	]" > $settingsdir/linked/global/gvmt.set
 
 # from workflow:
