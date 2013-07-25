@@ -208,6 +208,14 @@ Properties are:
 	}
 
 
+# Update triggers manually for reprocessing
+
+In mysql do
+
+
+     update unitfiles dest, (select unitid,fileid,status from hdfsfiles, unitfiles where unitid in ($list-of-unitids-from-unittriggers) and fileid=id and path like '%year=$yearPartition/month=$month/day=$day%') src set dest.status="ready" where dest.status="processed" and dest.unitid=src.unitid and dest.fileid=src.fileid ;
+
+
 
 	
 	
