@@ -136,13 +136,14 @@ Run either:
 	) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 	
 	CREATE TABLE `hdfsfiles` (
-	  `id` int(11) NOT NULL AUTO_INCREMENT,
-	  `path` varchar(1000) NOT NULL,
-	  `seen` tinyint(4) DEFAULT '0',
-	  PRIMARY KEY (`id`),
-	  UNIQUE KEY `path` (`path`),
-	  KEY `seen1` (`seen`)
-	) ENGINE=MyISAM AUTO_INCREMENT=1032955 DEFAULT CHARSET=latin1;
+  	  `id` int(11) NOT NULL AUTO_INCREMENT,
+          `path` varchar(1000) NOT NULL,
+          `seen` tinyint(4) DEFAULT '0',
+          `ts` bigint(20) NOT NULL,
+          PRIMARY KEY (`id`),
+          UNIQUE KEY `path` (`path`),
+          KEY `seen1` (`seen`)
+        ) ENGINE=MyISAM AUTO_INCREMENT=1289221 DEFAULT CHARSET=latin1
 
 ### Configuration Parameters
 
