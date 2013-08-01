@@ -64,11 +64,13 @@ public class Client {
 		//---------- Process commands -----------------------------//
 		if(line.hasOption("repl")){
 			def lang = line.getOptionValue("repl")
+			def workflowName = line.getOptionValue("name")
+			if(!workflowName) workflowName = "repl"
 			
 			org.glue.unit.exec.impl.ReplRunner.main(
 				["-lang", lang, "-moduleConf", "/opt/glue/conf/workflow_modules.groovy",
 					"-execConf", "/opt/glue/conf/exec.groovy",
-					"-workflow", "repl",
+					"-workflow", workflowName,
 					"-uuid", UUID.randomUUID()] as String[]
 				)
 			
@@ -284,6 +286,11 @@ public class Client {
 						.withDescription("Runs a repl for groovy/jython/clojure")
 						.create("repl")
 						
+		Option name = OptionBuilder.withArgName('name')
+										.hasArg()
+										.withDescription("Use with repl to specify the workflow name")
+										.create("name")
+										
 						
 		Option kill = OptionBuilder.withArgName('unitid')
 						.hasArg()
@@ -320,6 +327,7 @@ public class Client {
 		options.addOption(kill)
 		options.addOption(tail)
 		options.addOption(repl)
+		options.addOption(name)
 		options.addOption(status)
 		options.addOption(running)
 		options.addOption(queued)

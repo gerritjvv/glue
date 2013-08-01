@@ -85,8 +85,8 @@ class ReplRunner {
 
 		//build dummy workflow
 		GlueUnit unit = di.getBean(GlueUnitBuilder).build("tasks{ }")
-		unit.name = "repl-workflow"
-		
+		unit.name = config.workflow
+		println "ReplRunner.run : unit.name " + unit?.name + " config.worfklow " + config?.workflow
 		GlueContext context
 
 		try{

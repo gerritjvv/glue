@@ -57,40 +57,65 @@ class ScriptedGlueProcessImpl extends GlueProcessImpl{
 				adaptor)
 			Py.setAdapter(adaptor)
 			
-		}else if(lang == "jruby"){
+			config = scriptEngineConfig(config, lang, script)
+			
+		}else if(lang == "jruby" || lang == "ruby"){
 			lang = "ruby"
+			config = scriptEngineConfig(config, lang, script)
 		} else if (lang == "clj") {
 			lang = "Clojure"
-		}
 
-		ScriptEngine engine = factory.getEngineByName(lang);
-
-		if(engine == null)
-			engine = factory.getEngineByExtension(lang);
-
-		if(engine == null){
-			throw new RuntimeException("No libraries was found for the language " + lang + " specified in " + config)
-		}
-
-
-		log.info("overwriting tasks with closure for language " + lang)
-
-
-		config.tasks = { GlueContext ctx ->
+			//we run clojure from the Clojure Repl
+			config.tasks = { GlueContext ctx ->
+				org.glue.unit.repl.clojure.ClojureRepl.run(ctx.repo, ctx, script.value.decodeBase64())
+			}
 			
-			GlueContext ctx1 = DefaultGlueContextBuilder.buildStaticGlueContext(ctx)
-			log.info("setting memory to: context|ctx => GlueContext : ")
-			def bindings = engine.createBindings()
-			bindings.put("context", ctx1)
-			bindings.put("ctx", ctx1)
 			
-			log.info("binding.context: " + ctx + " class: " + ctx1.getClass())
-			engine.eval(
-				new String(script.value.decodeBase64())
-				, bindings)
+		}else{
+			config = scriptEngineConfig(config, lang, script)
 		}
+
+		
 
 		return config
+	}
+	
+	/**
+	 * Used for script languages run via the ScriptEngine
+	 * @param lang
+	 * @param script
+	 * @return
+	 */
+	@Typed(TypePolicy.MIXED)
+	private static ConfigObject scriptEngineConfig(ConfigObject config, String lang, script) {
+				ScriptEngine engine = factory.getEngineByName(lang);
+		
+				if(engine == null)
+					engine = factory.getEngineByExtension(lang);
+		
+				if(engine == null){
+					throw new RuntimeException("No libraries was found for the language " + lang + " specified in " + config)
+				}
+		
+		
+				log.info("overwriting tasks with closure for language " + lang)
+		
+		
+				config.tasks = { GlueContext ctx ->
+					
+					GlueContext ctx1 = DefaultGlueContextBuilder.buildStaticGlueContext(ctx)
+					log.info("setting memory to: context|ctx => GlueContext : ")
+					def bindings = engine.createBindings()
+					bindings.put("context", ctx1)
+					bindings.put("ctx", ctx1)
+					
+					log.info("binding.context: " + ctx + " class: " + ctx1.getClass())
+					engine.eval(
+						new String(script.value.decodeBase64())
+						, bindings)
+				}
+				
+				return config
 	}
 
 	@Override
