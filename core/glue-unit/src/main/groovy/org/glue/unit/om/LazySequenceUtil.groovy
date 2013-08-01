@@ -15,8 +15,10 @@ class LazySequenceUtil {
 			  "Creates a lazy sequence of messages for this datasource"
 			  (letfn [  
 			           (m-seq [buff pos] 
-			                   (let [buff2 (if (empty? buff) (f-select pos) buff)]
-			                         (cons (first buff2) (lazy-seq (m-seq (rest buff2) (inc pos) )))         
+			                   (let [buff2 (if (empty? buff) (f-select pos) buff)
+									 a (first buff2)
+									]
+			                        (if-not a nil (cons a (lazy-seq (m-seq (rest buff2) (inc pos) ))))         
 			                     )
 			                   )
 			           ]

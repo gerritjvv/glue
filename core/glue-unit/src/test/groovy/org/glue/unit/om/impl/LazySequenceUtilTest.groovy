@@ -18,7 +18,6 @@ class LazySequenceUtilTest {
 	public void callStr() {
 
 		int selectCalled = 0
-		
 		def seq = LazySequenceUtil.seq(
 			
 			{ pos -> 
