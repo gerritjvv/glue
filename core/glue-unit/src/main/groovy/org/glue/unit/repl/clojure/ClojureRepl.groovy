@@ -1,6 +1,5 @@
 package org.glue.unit.repl.clojure;
 
-import javax.script.ScriptEngineManager
 
 import org.glue.unit.om.GlueContext
 import org.glue.unit.om.ScriptRepl
@@ -15,8 +14,6 @@ import clojure.lang.Compiler
  * 
  */
 public class ClojureRepl implements ScriptRepl{
-
-	static final ScriptEngineManager factory = new ScriptEngineManager(Thread.currentThread().getContextClassLoader());
 
 	static {
 		RT.init()
@@ -44,7 +41,10 @@ public class ClojureRepl implements ScriptRepl{
                
                 """
 		
+		ClojureContextBuilder.buildClojureFunctions(ctx).each { fn -> str += fn }
 
+		println "Loading $str"
+		
 		Compiler.load(new StringReader(str))
 		
 		

@@ -212,7 +212,6 @@ public class SqlModule implements GlueModule {
 		def sqlObj = getSql(db)
 		try{
 			def cls = CallHelper.makeCallable(closure)
-			
 			sqlObj.eachRow(sql.toString()){ row -> cls.call(row) }
 		}finally{
 			sqlObj.close()
