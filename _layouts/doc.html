@@ -14,8 +14,8 @@
     <script src="javascripts/scale.fix.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
        <!-- jquery ui - tabs http://jqueryui.com/tabs -->
-
- 	<script src="javascripts/jquery-1.9.1.js"></script>
+ 	<script src="http://www.showdown.im/showdown/example/showdown.js"> </script>
+        <script src="javascripts/jquery-1.9.1.js"></script>
         <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
         <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
         <script src="javascripts/ui/jquery.ui.core.js"></script>
@@ -25,7 +25,17 @@
  		$(function() {
     			$( "#tabs" ).tabs();
   		});
-  	</script>
+        </script>
+        <script>
+		$(function() {
+      			// replace markdown text 
+      			$('script[type="text/markdown"]').after(function(index){
+        		converter = new Showdown.converter();
+        		return converter.makeHtml(this.textContent);
+      			});
+    		});  
+
+	</script>
 
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>

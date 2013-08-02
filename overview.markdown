@@ -35,18 +35,23 @@ Glue via GlueCron gives the ability to register one or more workflows to one or 
 
 ##Groovy
 
-The wofklow logic language is groovy and supports the whole groovy syntax.
 
-Reasons for choosing groovy are:
+Groovy is supported as a DSL.
 
-* Provides any java library which makes extending glue and access functionality already provided in java procects trivial.
-	* Usage of JDBC allows automatic and simple support for many databases including NoSQL Hive or Netezza.
-	* In BigData currently most software is written either in Java or support Java Directly. 
-* Use of dynamic variables and lambda/closure functions is ideal for workflows
-* Simple to learn and well supported
-* Groovy naturally supports scripting
+{% highlight groovy %}
 
-For more on Groovy please see: http://groovy.codehaus.org/
+tasks{
+
+  myprocess1 {
+    tasks = { ctx ->
+       ctx.sql.eachSqlResult('glue', 'select unit_id from units', { rs -> println rs })
+    }
+  }
+
+}
+
+{% endhighlight %}
+
 
 ##Clojure
 
@@ -54,8 +59,11 @@ Clojure scripts can be written using the Groovy and Java libraries provided by G
 
 e.g.
 
-  (.exec (.ctx cascalog) (def input (hfs-textline "/data/a.log")) (?<- (stdout) [?line] (input ?line)) )
+{% highlight clojure %}
 
+(.exec (.ctx cascalog) (def input (hfs-textline "/data/a.log")) (?<- (stdout) [?line] (input ?line)) )
+
+{% endhighlight %}
 
 ##Jython
 
@@ -64,39 +72,34 @@ Jython scripts can be written using the Groovy and Java libraries provided by Gl
 e.g.
 
 
-    def f2(res):
-       print(str(res))
-    
-    ctx.sql().eachSqlResult('glue', 'select unit_id from units', Closure(f2))
+{% highlight python %}
 
-    
+def f2(res):
+   print(str(res))
+   ctx.sql().eachSqlResult('glue', 'select unit_id from units', f2)
+
+{% endhighlight %}
+
 ##JRuby
 
 JRuby scripts can be written using the Groovy and Java libraries provided by Glue.
 
 e.g.
 
+{% highlight ruby %}
 
-    $ctx.sql().eachSqlResult('glue', 'select unit_id from units', Closure.new(
+$ctx.sql().eachSqlResult('glue', 'select unit_id from units', Closure.new(
 
-     lambda{ | res |
-        puts "Hi #{res}"
-     }
+ lambda{ | res |
+   puts "Hi #{res}"
+ }
 
-    ))
+))
 
+{% endhighlight %}
 
 ## No XML Workflows
 
 XML is a terrible language for humans to write in, expecially when writing workflows and process oriented scripts.
 
 
-##Test
-
-
-{% highlight python %}
-def yourfunction():
-     print "Hello World!"
-{% endhighlight %}
-
- 
