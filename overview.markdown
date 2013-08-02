@@ -93,7 +93,7 @@ XML is a terrible language for humans to write in, expecially when writing workf
 
 ##Test
 
-#!python
+:::python
  def hi():
    print("hi")
 
