@@ -93,9 +93,10 @@ XML is a terrible language for humans to write in, expecially when writing workf
 
 ##Test
 
-:::python
- def hi():
-   print("hi")
 
+{% highlight python %}
+def yourfunction():
+     print "Hello World!"
+{% endhighlight %}
 
  
