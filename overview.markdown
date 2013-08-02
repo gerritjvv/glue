@@ -54,18 +54,26 @@ Clojure scripts can be written using the Groovy and Java libraries provided by G
 
 e.g.
 
+```clojure
+
   (.exec (.ctx cascalog) (def input (hfs-textline "/data/a.log")) (?<- (stdout) [?line] (input ?line)) )
 
+```
 
 ##Jython
 
 Jython scripts can be written using the Groovy and Java libraries provided by Glue.
 
 e.g.
+
+```python
+
     def f2(res):
        print(str(res))
     
     ctx.sql().eachSqlResult('glue', 'select unit_id from units', Closure(f2))
+
+```
     
 ##JRuby
 
@@ -73,6 +81,7 @@ JRuby scripts can be written using the Groovy and Java libraries provided by Glu
 
 e.g.
 
+```ruby
     $ctx.sql().eachSqlResult('glue', 'select unit_id from units', Closure.new(
 
      lambda{ | res |
@@ -81,6 +90,7 @@ e.g.
 
     ))
 
+```
 
 ## No XML Workflows
 
