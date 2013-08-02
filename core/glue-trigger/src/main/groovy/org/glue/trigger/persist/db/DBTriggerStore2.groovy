@@ -1,18 +1,14 @@
 
 package org.glue.trigger.persist.db
 
-import groovy.lang.Closure
-import groovy.util.ConfigObject
+import java.sql.*
 
-import java.util.Date
-import java.util.Map
-import java.util.Properties
-import java.util.Set
-import java.sql.*;
-import org.glue.trigger.persist.TriggerStore2;
-
+import org.glue.trigger.persist.TriggerStore2
+import org.glue.unit.om.LazySequenceUtil
 import org.streams.commons.zookeeper.ZConnection
 import org.streams.commons.zookeeper.ZLock
+
+import clojure.lang.PersistentVector;
 
 
 /**
@@ -38,6 +34,10 @@ class DBTriggerStore2 extends TriggerStore2{
 		shutdown()
 	}
 
+	private String createListReadyFilesSql(String unitName){
+		"select fileid, path from unitfiles uf, hdfsfiles hf, unittriggers ut WHERE uf.status = 'ready' AND uf.fileid = hf.id AND ut.id = uf.unitid AND ut.unit = '${unitName}'"
+	}
+	
 	/**
 	 * List all files that where updated as READY by the trigger<br/>
 	 * The closure is called with (entityName:String, filePath:String)<br/>
@@ -55,8 +55,8 @@ class DBTriggerStore2 extends TriggerStore2{
 		Connection conn = DriverManager.getConnection(url, uid, pwd);
 		Statement st = conn.createStatement();
 		try{
-			String sql = " select fileid, path from unitfiles uf, hdfsfiles hf, unittriggers ut WHERE uf.status = 'ready' AND uf.fileid = hf.id AND ut.id = uf.unitid AND ut.unit = '${unitName}'"
-			ResultSet rs = st.executeQuery(sql);
+			
+			ResultSet rs = st.executeQuery(createListReadyFilesSql(unitName));
 
 			if(rs.first()){
 				while(true){
@@ -76,11 +76,37 @@ class DBTriggerStore2 extends TriggerStore2{
 	 * Returns a Collection of Object Arrays [id:int, name:String]
 	 */
 	public Collection listReadyFiles(String unitName, boolean lock = true){
-		def readyFiles = []
 		
-		listReadyFiles(unitName, { id, name ->  readyFiles << [id, name] as Object[] }, lock)
+		def batchLen = 500
 		
-		return readyFiles
+		def flist = { pos ->
+			//query batch from the db
+			Connection conn = DriverManager.getConnection(url, uid, pwd)
+			Statement st = conn.createStatement()
+			ResultSet rs = st.executeQuery(createListReadyFilesSql(unitName))
+			rs.setFetchSize(batchLen)
+			
+			def list = [] as ArrayList
+			
+		    try{
+				//move to position pos
+				if( (pos == 0)? rs.first() : rs.absolute(pos as int) ){
+					for(int i = 0; i < batchLen; i++){
+				  	     list << PersistentVector.create(rs.getInt(1), rs.getString(2))
+						 if(!rs.next())
+						   break;
+					}
+				}
+			}finally{
+			    st.close()
+				conn.close()
+			}
+			
+			list
+		}
+		
+		//the lazy sequence will call the flist for every batch
+		return LazySequenceUtil.seq(flist, 0)
 	}
 	/**
 	 * Tries to lock a trigger file. if the lock cannot be acquired false is returned

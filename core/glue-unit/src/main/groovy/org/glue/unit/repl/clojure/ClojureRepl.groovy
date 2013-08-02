@@ -51,7 +51,7 @@ public class ClojureRepl implements ScriptRepl{
                
                 """)
 		
-		ClojureContextBuilder.buildClojureFunctions(ctx).each { fn -> str.append(fn) }
+		ClojureContextBuilder.buildClojureFunctions(ctx).each { fn -> str.append(fn).append("\n") }
 
 		println "Loading ${str.toString()}"
 	
