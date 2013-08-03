@@ -15,8 +15,8 @@ The SQL Result Objects returned are from the class (GroovyRowResult)[http://groo
 
 <div id="tabs" style="width:100%">
   <ul>
-    <li><a href="#tabs-2">Clojure</a></li>
     <li><a href="#tabs-1">Groovy</a></li>
+    <li><a href="#tabs-2">Clojure</a></li>
     <li><a href="#tabs-3">Jython</a></li>
   </ul>
   <div id="tabs-1">
