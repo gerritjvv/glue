@@ -27,6 +27,10 @@ Examples
 
 (def lines (ctx-hdfs eachLine "/myhdfsfile"))
 
+(def rs (glue/ctx-sql eachSqlResult "glue" "select * from unitfiles"))
+
+(take 10 rs)
+
 ```
 
 ```python
@@ -35,6 +39,10 @@ def doLine(line):
     print(str(line))
 
 ctx.hdfs().eachLine(doLine)
+
+s = ctx.triggerStore2().listReadyFiles(ctx)
+s[0]
+
 
 ```
 
