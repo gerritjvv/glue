@@ -17,7 +17,7 @@ Class: [SQLModule](https://github.com/gerritjvv/glue/blob/master/core/glue-modul
 Exceptions: All methods throw RunttimeExceptions when an error happened on the database side.
 
 
-<div id="tabs">
+<div id="tabs" style="width:100%">
   <ul>
     <li><a href="#tabs-1">Groovy</a></li>
     <li><a href="#tabs-2">Clojure</a></li>
@@ -36,7 +36,11 @@ Exceptions: All methods throw RunttimeExceptions when an error happened on the d
 </thead>
 <tbody>
 <tr>
-<td>{% highlight groovy %} withSql( db:String, closure ) {% endhighlight %} </td>
+<td>
+{% highlight groovy %} 
+withSql( db:String, closure ) 
+{% endhighlight %} 
+</td>
 <td> creates a <a href="http://groovy.codehaus.org/api/groovy/sql/Sql.html">Groovy SQL object</a> and passes it to the closure as an argument, the sql object is automatically closed after the closure returns  </td>
 <td>{% highlight groovy %}  ctx.sql.withSql 'mydb', { sql -> sql.execute ('create table mytable (test varchar(10) )' } {% endhighlight %} </td>
 </tr>
