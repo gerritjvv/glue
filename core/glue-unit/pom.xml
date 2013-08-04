@@ -7,6 +7,7 @@
 		<groupId>org.glue</groupId>
 		<version>0.2.0</version>
 	</parent>
+
 	<properties>
 		<json.version>20090211</json.version>
 		<jmail.version>1.4.1</jmail.version>
