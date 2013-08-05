@@ -81,7 +81,7 @@ public class CronApp {
 
 		Thread.currentThread().getContextClassLoader().loadClass(driver);
 
-		LOG.info("Connecting to DB " + url + " user: " + uid + " db: " + db);
+		LOG.info("Connecting to DB " + url + " user: " + uid);
 		return new DBManagerImpl(url, uid, pwd);
 
 	}
