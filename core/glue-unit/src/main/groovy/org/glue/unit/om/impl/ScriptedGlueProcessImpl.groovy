@@ -1,5 +1,7 @@
 package org.glue.unit.om.impl
 
+import java.beans.javax_swing_border_MatteBorder_PersistenceDelegate;
+
 import javax.script.ScriptEngine
 import javax.script.ScriptEngineManager
 
@@ -8,7 +10,6 @@ import org.glue.unit.om.GlueContext
 import org.glue.unit.om.impl.jython.PythonContextAdaptor
 import org.python.core.Py
 import org.python.core.PySystemState
-
 
 /**
  * 
@@ -58,8 +59,15 @@ class ScriptedGlueProcessImpl extends GlueProcessImpl{
 			Py.setAdapter(adaptor)
 			
 			config = scriptEngineConfig(config, lang, script)
-			
-		}else if(lang == "jruby" || lang == "ruby"){
+		
+		}else if(lang == "scala"){
+			config.tasks = { GlueContext ctx ->
+				ScriptEngine e = new ScriptEngineManager().getEngineByName("scala");
+				e.getContext().setAttribute("ctx", DefaultGlueContextBuilder.buildStaticGlueContext(ctx), javax.script.ScriptContext.ENGINE_SCOPE);
+				e.eval(script.value.decodeBase64());
+				
+			}
+		}else if(lang == "jruby" || lang == "ruby"){	
 			lang = "ruby"
 			config = scriptEngineConfig(config, lang, script)
 		} else if (lang == "clj") {

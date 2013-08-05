@@ -31,13 +31,19 @@
 	<version>0.4.5</version>
 
 	<dependencies>
-	<!-- 
 		<dependency>
-			<groupId>org.clojure</groupId>
-			<artifactId>clojure.async</artifactId>
-			<version>0.1.0-SNAPSHOT</version>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-library</artifactId>
+			<version>2.11.0-M4</version>
 		</dependency>
-		-->
+		<dependency>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-compiler</artifactId>
+			<version>2.11.0-M4</version>
+		</dependency>
+		            
+		<!-- <dependency> <groupId>org.clojure</groupId> <artifactId>clojure.async</artifactId> 
+			<version>0.1.0-SNAPSHOT</version> </dependency> -->
 		<dependency>
 			<groupId>reply</groupId>
 			<artifactId>reply</artifactId>
@@ -275,12 +281,8 @@
 			<name>Clojars</name>
 			<url>http://clojars.org/repo/</url>
 		</repository>
-		<!-- 
-		<repository>
-			<id>thiloplanz-snapshot</id>
-			<url>http://repository-thiloplanz.forge.cloudbees.com/snapshot/</url>
-		</repository>
-      -->
+		<!-- <repository> <id>thiloplanz-snapshot</id> <url>http://repository-thiloplanz.forge.cloudbees.com/snapshot/</url> 
+			</repository> -->
 		<repository>
 			<id>sonatype-oss-public</id>
 			<url>https://oss.sonatype.org/content/groups/public/</url>

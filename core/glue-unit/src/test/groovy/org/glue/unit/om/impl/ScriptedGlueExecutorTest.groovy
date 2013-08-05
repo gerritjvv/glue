@@ -21,6 +21,42 @@ class ScriptedGlueExecutorTest {
 	static final Logger log = Logger.getLogger(ScriptedGlueExecutorTest.class)
 
 
+	
+	@Test
+	public void testUnitExecutorScala() {
+
+		
+		GlueModuleFactory moduleFactory = new GlueModuleFactoryImpl();
+
+		ConfigObject execConfig = new ConfigObject();
+
+		Provider<ProcessExecutor> processExecutorProvider = new MockProcessExecutorProvider(errorInExec:false, processExecutorClosure:{ new ProcessExecutorImpl() })
+
+		GlueUnitRepository repo = new DirGlueUnitRepository(new DefaultGlueUnitBuilder(), [
+			'src/test/resources/test-flow-repo'
+		])
+
+		Provider<UnitExecutor> unitExecutorProvider = new MockUnitExecutorProvider(processExecutorProvider:processExecutorProvider)
+
+		GlueExecutor exec = new GlueExecutorImpl(execConfig, repo,
+				new DefaultGlueContextBuilder(new MapGlueModuleFactoryProvider(null)),
+				unitExecutorProvider,
+				new DefaultGlueUnitBuilder()
+				)
+
+		
+		String uid=exec.submitUnitAsName( "scalaworfklow", [:] )
+
+		exec.waitFor uid
+
+		assertEquals(GlueState.FINISHED, exec.getStatus(uid))
+			
+		moduleFactory.addModule("sql", new MockGlueModule())
+		GlueContextImpl ctx = new GlueContextImpl()
+		ctx.moduleFactory = moduleFactory
+		
+	}
+	
 	@Test
 	public void testUnitExecutorJython() {
 

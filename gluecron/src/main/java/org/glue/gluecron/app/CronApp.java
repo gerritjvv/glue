@@ -78,12 +78,11 @@ public class CronApp {
 				Driver.class.getName());
 		final String uid = conf.getString("db.uid", "glue");
 		final String pwd = conf.getString("db.pwd", "glue");
-		final String db = conf.getString("db.name", "glue");
 
 		Thread.currentThread().getContextClassLoader().loadClass(driver);
 
 		LOG.info("Connecting to DB " + url + " user: " + uid + " db: " + db);
-		return new DBManagerImpl(url + "/" + db, uid, pwd);
+		return new DBManagerImpl(url, uid, pwd);
 
 	}
 
