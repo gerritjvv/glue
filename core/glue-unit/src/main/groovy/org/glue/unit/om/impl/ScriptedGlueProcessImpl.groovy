@@ -1,7 +1,5 @@
 package org.glue.unit.om.impl
 
-import java.beans.javax_swing_border_MatteBorder_PersistenceDelegate;
-
 import javax.script.ScriptEngine
 import javax.script.ScriptEngineManager
 
@@ -10,6 +8,11 @@ import org.glue.unit.om.GlueContext
 import org.glue.unit.om.impl.jython.PythonContextAdaptor
 import org.python.core.Py
 import org.python.core.PySystemState
+
+import scala.tools.nsc.interpreter.IMain
+import scala.tools.nsc.interpreter.NamedParamClass
+
+import com.googlecode.scalascriptengine.*
 
 /**
  * 
@@ -61,12 +64,17 @@ class ScriptedGlueProcessImpl extends GlueProcessImpl{
 			config = scriptEngineConfig(config, lang, script)
 		
 		}else if(lang == "scala"){
+			
 			config.tasks = { GlueContext ctx ->
-				ScriptEngine e = new ScriptEngineManager().getEngineByName("scala");
-				e.getContext().setAttribute("ctx", DefaultGlueContextBuilder.buildStaticGlueContext(ctx), javax.script.ScriptContext.ENGINE_SCOPE);
-				e.eval(script.value.decodeBase64());
+				
+				def ctx1 = DefaultGlueContextBuilder.buildStaticGlueContextMap(ctx)
+
+				def imain = new IMain()
+                                imain.bind(new NamedParamClass("ctx", "java.util.Map[String, Object]", ctx1))
+				imain.interpret(new String(script.value.decodeBase64()))
 				
 			}
+			
 		}else if(lang == "jruby" || lang == "ruby"){	
 			lang = "ruby"
 			config = scriptEngineConfig(config, lang, script)
@@ -95,7 +103,7 @@ class ScriptedGlueProcessImpl extends GlueProcessImpl{
 	 * @return
 	 */
 	@Typed(TypePolicy.MIXED)
-	private static ConfigObject scriptEngineConfig(ConfigObject config, String lang, script) {
+	private static ConfigObject scriptEngineConfig(ConfigObject config, String lang, script, Closure f_bindings = null) {
 				ScriptEngine engine = factory.getEngineByName(lang);
 		
 				if(engine == null)
@@ -113,9 +121,14 @@ class ScriptedGlueProcessImpl extends GlueProcessImpl{
 					
 					GlueContext ctx1 = DefaultGlueContextBuilder.buildStaticGlueContext(ctx)
 					log.info("setting memory to: context|ctx => GlueContext : ")
+
 					def bindings = engine.createBindings()
-					bindings.put("context", ctx1)
-					bindings.put("ctx", ctx1)
+                    if(f_bindings){
+						f_bindings(engine, bindings, ctx1)
+					}else{
+				    	bindings.put("context", ctx1)
+				 	    bindings.put("ctx", ctx1)
+					}
 					
 					log.info("binding.context: " + ctx + " class: " + ctx1.getClass())
 					engine.eval(

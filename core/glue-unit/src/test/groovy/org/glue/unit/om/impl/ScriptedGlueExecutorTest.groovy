@@ -21,7 +21,7 @@ class ScriptedGlueExecutorTest {
 	static final Logger log = Logger.getLogger(ScriptedGlueExecutorTest.class)
 
 
-	
+	/*
 	@Test
 	public void testUnitExecutorScala() {
 
@@ -55,7 +55,7 @@ class ScriptedGlueExecutorTest {
 		GlueContextImpl ctx = new GlueContextImpl()
 		ctx.moduleFactory = moduleFactory
 		
-	}
+	}*/
 	
 	@Test
 	public void testUnitExecutorJython() {
