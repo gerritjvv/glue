@@ -6,9 +6,12 @@ import javax.script.ScriptEngineManager
 import org.apache.log4j.Logger
 import org.glue.unit.om.GlueContext
 import org.glue.unit.om.impl.jython.PythonContextAdaptor
+import org.glue.unit.repl.scala.ScalaClassLoader
 import org.python.core.Py
 import org.python.core.PySystemState
 
+import scala.Function1
+import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter.IMain
 import scala.tools.nsc.interpreter.NamedParamClass
 
@@ -64,14 +67,40 @@ class ScriptedGlueProcessImpl extends GlueProcessImpl{
 			config = scriptEngineConfig(config, lang, script)
 		
 		}else if(lang == "scala"){
-			
+		
 			config.tasks = { GlueContext ctx ->
 				
+				
+				def settings = new Settings()
+				def imain = new IMain(settings)
+				imain.setContextClassLoader()
+			
+				
+			
+				imain.interpret("""
+                   import scala.tools.nsc.interpreter._
+				   import scala.tools.nsc._
+                   def getIMain(cls:ClassLoader) = {
+					   val s = new Settings
+                       s.usejavacp.value = true
+                       s.ignoreinnercls.value = true
+                       s.embeddedDefaults(cls)
+                       new IMain(s){
+                         override protected def parentClassLoader:ClassLoader = cls
+                       }
+                   }
+				   val m = getIMain _
+                """)
+				
+				def v = imain.valueOfTerm("m").get().asType(Function1).apply(
+					new ScalaClassLoader(ctx.class.classLoader))
+				v.setContextClassLoader()
+				
 				def ctx1 = DefaultGlueContextBuilder.buildStaticGlueContextMap(ctx)
-
-				def imain = new IMain()
-                                imain.bind(new NamedParamClass("ctx", "java.util.Map[String, Object]", ctx1))
-				imain.interpret(new String(script.value.decodeBase64()))
+				imain.bind(new NamedParamClass("ctx", "java.util.Map[String, Object]", ctx1))
+				
+				v.bind(new NamedParamClass("ctx", "java.util.Map[String, Object]", ctx1))
+				v.interpret(new String(script.value.decodeBase64()))
 				
 			}
 			
