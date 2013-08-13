@@ -48,6 +48,8 @@ class WorkflowRunnerDI {
 		   return new org.glue.unit.repl.jython.JythonRepl()
 		else if(config.lang == "clojure")
 		   return new org.glue.unit.repl.clojure.ClojureRepl()
+		else if(config.lang == "scala")
+		   return new org.glue.unit.repl.scala.ScalaRepl()
 		else 
 		   return new org.glue.unit.repl.groovy.GroovyRepl()	
 	}

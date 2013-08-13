@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>org.glue</groupId>
 	<artifactId>glue-rest</artifactId>
-	<version>0.4.5</version>
+	<version>0.5.0</version>
 	<name>glue-rest</name>
 	<url>http://maven.apache.org</url>
 	<properties>
@@ -34,8 +34,8 @@
 						<copyright>http://www.apache.org/licenses/LICENSE-2.0</copyright>
 						<distribution>Glue task manager</distribution>
 						<group>utilties</group>
-						<release>9</release>
-						<packager>http://code.google.com/p/glue/</packager>
+						<release>1</release>
+						<packager>https://github.com/glue</packager>
 						<provides>
 							<provide>glue-server</provide>
 						</provides>

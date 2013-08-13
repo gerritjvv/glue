@@ -11,6 +11,6 @@ import org.glue.unit.om.GlueContext
  */
 public interface ScriptRepl {
 	
-	public void run(GlueUnitRepository repo, GlueContext ctx, String... cmds);
+	public void run(GlueContext ctx, String... cmds);
 
 }

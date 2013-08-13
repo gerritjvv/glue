@@ -4,7 +4,6 @@ package org.glue.unit.repl.clojure;
 import org.glue.unit.om.GlueContext
 import org.glue.unit.om.ScriptRepl
 import org.glue.unit.om.impl.DefaultGlueContextBuilder
-import org.glue.unit.repo.GlueUnitRepository
 
 import clojure.lang.RT
 import clojure.lang.Compiler
@@ -20,24 +19,22 @@ public class ClojureRepl implements ScriptRepl{
 		RT.init()
 	}
 	
-	public static run(GlueUnitRepository repo, GlueContext ctx, String script){
-		new ClojureRepl().run(repo, ctx, script)
+	public static dorun(GlueContext ctx, String script){
+		new ClojureRepl().run(ctx, script)
 	}
 	
 	/**
 	 * Runs either the clojure repl or the script passed in as argument.
 	 */
-	public void run(GlueUnitRepository repo, GlueContext ctx, String... cmds){
+	public void run(GlueContext ctx, String... cmds){
 		
 		//here the ctx.unit.name is already repl
 		
-		// Pass the repo and ctx variables to the script engine
 		GlueContext ctx1 = DefaultGlueContextBuilder.buildStaticGlueContext(ctx)
         
 
 		RT.var("glue", "ctx", ctx1)
 		RT.var("glue", "context", ctx1)
-		RT.var("glue", "repo", repo)
 		
 		
 		StringBuilder str = new StringBuilder("""
@@ -46,7 +43,6 @@ public class ClojureRepl implements ScriptRepl{
 			  (prn "Glue adds three vars to interact with it")
                           (prn "glue/ctx ")
                           (prn "glue/context -- same as glue/ctx")
-                          (prn "glue/repo")
 			         )
                
                 """)

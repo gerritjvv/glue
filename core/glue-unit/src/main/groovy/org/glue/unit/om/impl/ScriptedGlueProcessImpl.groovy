@@ -1,19 +1,13 @@
 package org.glue.unit.om.impl
-
 import javax.script.ScriptEngine
 import javax.script.ScriptEngineManager
 
 import org.apache.log4j.Logger
 import org.glue.unit.om.GlueContext
 import org.glue.unit.om.impl.jython.PythonContextAdaptor
-import org.glue.unit.repl.scala.ScalaClassLoader
+import org.glue.unit.repl.scala.ScalaRepl
 import org.python.core.Py
 import org.python.core.PySystemState
-
-import scala.Function1
-import scala.tools.nsc.Settings
-import scala.tools.nsc.interpreter.IMain
-import scala.tools.nsc.interpreter.NamedParamClass
 
 import com.googlecode.scalascriptengine.*
 
@@ -60,51 +54,21 @@ class ScriptedGlueProcessImpl extends GlueProcessImpl{
 			//return a strange [Name]$1 class, which does not exist and cause a ClassNotFoundException in Java.
 			//The PythonContextAdaptor use a work-around
 			def adaptor = new PythonContextAdaptor()
-			PySystemState.initialize(null, null, [""], Thread.currentThread().getContextClassLoader(), 
-				adaptor)
+			PySystemState.initialize(null, null, [""], Thread.currentThread().getContextClassLoader(),
+			adaptor)
 			Py.setAdapter(adaptor)
-			
+
 			config = scriptEngineConfig(config, lang, script)
-		
+
 		}else if(lang == "scala"){
-		
+
 			config.tasks = { GlueContext ctx ->
 				
-				
-				def settings = new Settings()
-				def imain = new IMain(settings)
-				imain.setContextClassLoader()
-			
-				
-			
-				imain.interpret("""
-                   import scala.tools.nsc.interpreter._
-				   import scala.tools.nsc._
-                   def getIMain(cls:ClassLoader) = {
-					   val s = new Settings
-                       s.usejavacp.value = true
-                       s.ignoreinnercls.value = true
-                       s.embeddedDefaults(cls)
-                       new IMain(s){
-                         override protected def parentClassLoader:ClassLoader = cls
-                       }
-                   }
-				   val m = getIMain _
-                """)
-				
-				def v = imain.valueOfTerm("m").get().asType(Function1).apply(
-					new ScalaClassLoader(ctx.class.classLoader))
-				v.setContextClassLoader()
-				
-				def ctx1 = DefaultGlueContextBuilder.buildStaticGlueContextMap(ctx)
-				imain.bind(new NamedParamClass("ctx", "java.util.Map[String, Object]", ctx1))
-				
-				v.bind(new NamedParamClass("ctx", "java.util.Map[String, Object]", ctx1))
-				v.interpret(new String(script.value.decodeBase64()))
+				ScalaRepl.dorun(ctx, new String(script.value.decodeBase64()))
 				
 			}
-			
-		}else if(lang == "jruby" || lang == "ruby"){	
+
+		}else if(lang == "jruby" || lang == "ruby"){
 			lang = "ruby"
 			config = scriptEngineConfig(config, lang, script)
 		} else if (lang == "clj") {
@@ -112,19 +76,19 @@ class ScriptedGlueProcessImpl extends GlueProcessImpl{
 
 			//we run clojure from the Clojure Repl
 			config.tasks = { GlueContext ctx ->
-				org.glue.unit.repl.clojure.ClojureRepl.run(ctx.repo, ctx, script.value.decodeBase64())
+				org.glue.unit.repl.clojure.ClojureRepl.dorun(ctx, new String(script.value.decodeBase64()))
 			}
-			
-			
+
+
 		}else{
 			config = scriptEngineConfig(config, lang, script)
 		}
 
-		
+
 
 		return config
 	}
-	
+
 	/**
 	 * Used for script languages run via the ScriptEngine
 	 * @param lang
@@ -133,39 +97,39 @@ class ScriptedGlueProcessImpl extends GlueProcessImpl{
 	 */
 	@Typed(TypePolicy.MIXED)
 	private static ConfigObject scriptEngineConfig(ConfigObject config, String lang, script, Closure f_bindings = null) {
-				ScriptEngine engine = factory.getEngineByName(lang);
-		
-				if(engine == null)
-					engine = factory.getEngineByExtension(lang);
-		
-				if(engine == null){
-					throw new RuntimeException("No libraries was found for the language " + lang + " specified in " + config)
-				}
-		
-		
-				log.info("overwriting tasks with closure for language " + lang)
-		
-		
-				config.tasks = { GlueContext ctx ->
-					
-					GlueContext ctx1 = DefaultGlueContextBuilder.buildStaticGlueContext(ctx)
-					log.info("setting memory to: context|ctx => GlueContext : ")
+		ScriptEngine engine = factory.getEngineByName(lang);
 
-					def bindings = engine.createBindings()
-                    if(f_bindings){
-						f_bindings(engine, bindings, ctx1)
-					}else{
-				    	bindings.put("context", ctx1)
-				 	    bindings.put("ctx", ctx1)
-					}
-					
-					log.info("binding.context: " + ctx + " class: " + ctx1.getClass())
-					engine.eval(
-						new String(script.value.decodeBase64())
-						, bindings)
-				}
-				
-				return config
+		if(engine == null)
+			engine = factory.getEngineByExtension(lang);
+
+		if(engine == null){
+			throw new RuntimeException("No libraries was found for the language " + lang + " specified in " + config)
+		}
+
+
+		log.info("overwriting tasks with closure for language " + lang)
+
+
+		config.tasks = { GlueContext ctx ->
+
+			GlueContext ctx1 = DefaultGlueContextBuilder.buildStaticGlueContext(ctx)
+			log.info("setting memory to: context|ctx => GlueContext : ")
+
+			def bindings = engine.createBindings()
+			if(f_bindings){
+				f_bindings(engine, bindings, ctx1)
+			}else{
+				bindings.put("context", ctx1)
+				bindings.put("ctx", ctx1)
+			}
+
+			log.info("binding.context: " + ctx + " class: " + ctx1.getClass())
+			engine.eval(
+					new String(script.value.decodeBase64())
+					, bindings)
+		}
+
+		return config
 	}
 
 	@Override

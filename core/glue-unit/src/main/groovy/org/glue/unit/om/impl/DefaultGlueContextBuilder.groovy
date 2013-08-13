@@ -101,7 +101,7 @@ class DefaultGlueContextBuilder implements GlueContextBuilder{
 	static Map buildStaticGlueContextMap(GlueContext ctx){
 
 
-		def ctxm = [:]
+		def ctxm = ["unit":ctx.unit, "unitId":ctx.unitId]
 
 		for(Entry<String, GlueModule> entry in ctx.getModuleFactory().getAvailableModules().entrySet()){
 			String name = entry.key

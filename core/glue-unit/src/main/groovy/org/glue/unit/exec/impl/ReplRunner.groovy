@@ -108,7 +108,7 @@ class ReplRunner {
 				 cmds << '(exit)'
 			}
 				
-			di.getBean(ScriptRepl).run(repo, context, cmds as String[])
+			di.getBean(ScriptRepl).run(context, cmds as String[])
 		
 			
 		}finally{
