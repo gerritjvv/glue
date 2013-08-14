@@ -18,11 +18,13 @@ Glue is a workflow engine for bigdata supporting multiple languages such as:
 * Clojure
 * Jython
 * Ruby
+* Scala
 
 Example
 -------
 
 ```clojure
+;clojure
 
 (def lines (ctx-hdfs eachLine "/myhdfsfile"))
 
@@ -30,6 +32,8 @@ Example
 
 
 ```python
+
+#jython
 
 def lineHandler(line):
     print(str(line))
@@ -42,6 +46,8 @@ ctx.hfds().eachLine("myhdfsfile", lineHandler)
 
 ```scala
 
+//scala
+
 for(line <- ctx("hdfs").eachLine("/myhdfsfile"))
  println(line)
 
@@ -49,6 +55,7 @@ for(line <- ctx("hdfs").eachLine("/myhdfsfile"))
 ```
 
 ```groovy
+//groovy
 name = "test"
 tasks{
         process1{
