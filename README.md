@@ -40,6 +40,13 @@ ctx.hfds().eachLine("myhdfsfile", lineHandler)
 
 ```
 
+```scala
+
+for(line <- ctx("hdfs").eachLine("/myhdfsfile"))
+ println(line)
+
+
+```
 
 ```groovy
 name = "test"
