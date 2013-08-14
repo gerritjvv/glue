@@ -55,7 +55,7 @@ for(line <- ctx("hdfs").eachLine("/myhdfsfile"))
 ```
 
 ```groovy
-//groovy
+//groovy dsl
 name = "test"
 tasks{
         process1{
