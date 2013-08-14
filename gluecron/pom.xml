@@ -4,7 +4,7 @@
 
 	<groupId>org.glue</groupId>
 	<artifactId>gluecron</artifactId>
-	<version>0.5.0</version>
+	<version>0.6.0</version>
 	<packaging>jar</packaging>
 
 	<name>gluecron</name>
@@ -86,8 +86,8 @@
 					<copyright>http://www.apache.org/licenses/LICENSE-2.0</copyright>
 					<distribution>Glue Task Manager Trigger and Cron Daemon</distribution>
 					<group>utilties</group>
-					<release>5</release>
-					<packager>http://code.google.com/p/glue/</packager>
+					<release>1</release>
+					<packager>https://github.com/gerritjvv/glue</packager>
 					<provides>
 						<provide>gluecron</provide>
 					</provides>

@@ -16,7 +16,7 @@ public class TestDirectoryListIterator {
 	@Test
 	public void testList() throws Throwable {
 
-		File baseDir = new File("target/testDirectoryListIterator");
+		File baseDir = new File("target/testDirectoryListIterator/testList");
 		baseDir.mkdirs();
 		File dir1 = new File(baseDir, "dir1");
 		dir1.mkdirs();
@@ -45,15 +45,15 @@ public class TestDirectoryListIterator {
 	@Test
 	public void testListDirsOnly() throws Throwable {
 
-		File baseDir = new File("target/testDirectoryListIterator");
+		File baseDir = new File("target/testDirectoryListIterator/listDirsOnly");
 		baseDir.mkdirs();
 		File dir1 = new File(baseDir, "dir1");
 		dir1.mkdirs();
 		File dir2 = new File(baseDir, "dir2");
 		dir2.mkdirs();
-		File dira = new File(dir1, "dira");
+		File dira = new File(dir1, "filea");
 		dira.createNewFile();
-		File dirb = new File(dir2, "dirb");
+		File dirb = new File(dir2, "fileb");
 		dirb.createNewFile();
 
 		FileSystem fs = FileSystem.getLocal(new Configuration());
@@ -63,7 +63,7 @@ public class TestDirectoryListIterator {
 
 		int count = 0;
 		while (it.hasNext()) {
-			System.out.println(it.next());
+			System.out.println(it.next().getPath().getName());
 			count++;
 		}
 

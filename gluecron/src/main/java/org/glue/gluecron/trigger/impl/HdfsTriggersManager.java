@@ -4,16 +4,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.util.Arrays;
 import java.util.Iterator;
-import java.util.concurrent.CountDownLatch;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import jsr166y.forkjoin.AsyncAction;
-import jsr166y.forkjoin.ForkJoinPool;
-import jsr166y.forkjoin.ForkJoinTask;
-import jsr166y.forkjoin.RecursiveTask;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -71,8 +68,6 @@ public class HdfsTriggersManager implements TriggersManager, Runnable {
 	private static final Logger LOG = Logger
 			.getLogger(HdfsTriggersManager.class);
 
-	static final ForkJoinPool pool = new ForkJoinPool();
-
 	private final ScheduledExecutorService schedule;
 	private final DBManager dbManager;
 
@@ -126,54 +121,67 @@ public class HdfsTriggersManager implements TriggersManager, Runnable {
 
 			final String[] dirPaths = getPaths("hdfs-dir");
 			final String[] paths = getPaths("hdfs");
-			final CountDownLatch latch = new CountDownLatch(2);
+
+			final ExecutorService masterService = Executors
+					.newCachedThreadPool();
+			final ExecutorService service = Executors.newCachedThreadPool();
 			
-			if (dirPaths.length > 0) {
+			try {
+				if (dirPaths.length > 0) {
 
-				 pool.submit(new AsyncAction() {
+					masterService.submit(new Runnable() {
+						public void run() {
+							try {
+								pollHdfs(
+										service,
+										dirPaths,
+										new DirectoryListIterator.DirectoryOnlyFilter(),
+										true);
+								fillUnitFiles();
 
-					@Override
-					protected void compute() {
-						try {
-							pollHdfs(
-									dirPaths,
-									new DirectoryListIterator.DirectoryOnlyFilter(),
-									true);
-							fillUnitFiles();
+							} catch (Throwable t) {
+								LOG.error(t.toString(), t);
+							}
+						}
+					});
 
-						} catch (Throwable t) {
-							LOG.error(t.toString(), t);
-						}finally{
-							latch.countDown();
+				}
+
+				if (paths.length > 0) {
+
+					masterService.submit(new Runnable() {
+						public void run() {
+							try {
+								pollHdfs(service, paths, null, false);
+								fillUnitFiles();
+							} catch (Throwable t) {
+								LOG.error(t.toString(), t);
+							}
 						}
 
-					}
-				});
+					});
+				}
 
-			}else
-				latch.countDown();
+				// here we wait in order or master then service for the
+				// executors to complete
+				// the master runs methods that will add tasks to the services,
+				// when the master has completed
+				// we need to wait on the services.
+				masterService.shutdown();
+				masterService.awaitTermination(20, TimeUnit.MINUTES);
+				service.shutdown();
+				service.awaitTermination(30, TimeUnit.MINUTES);
+			} finally {
+				// destroy the executors
+				masterService.shutdownNow();
+				List<Runnable> threads = service.shutdownNow();
 
-			if (paths.length > 0) {
+				if (threads != null && threads.size() > 0)
+					LOG.error("Not all threads terminated while polling "
+							+ Arrays.toString(threads.toArray()));
 
-				pool.submit(new AsyncAction() {
-					protected void compute() {
-						try {
-							pollHdfs(paths, null, false);
-							fillUnitFiles();
-						} catch (Throwable t) {
-							LOG.error(t.toString(), t);
-						}finally{
-							latch.countDown();
-						}
-					}
-
-				});
-			}else
-				latch.countDown();
-
-			latch.await(10, TimeUnit.MINUTES);
-
-			LOG.info("End " + (System.currentTimeMillis() - start) + "ms");
+			}
+			LOG.info("Total HDFS Polling time: " + (System.currentTimeMillis() - start) + "ms");
 		} catch (Throwable t) {
 			LOG.error(t.toString(), t);
 		}
@@ -197,52 +205,44 @@ public class HdfsTriggersManager implements TriggersManager, Runnable {
 
 	}
 
-	private final void pollHdfs(final String[] paths, final Filter filter,
-			final boolean resetTS) {
+	private static final void _pollHdfs(String path, FileSystem fs,
+			JDBCFilesToSql jdbcFilesToSQL, Filter filter, boolean resetTS)
+			throws IOException {
+
+		LOG.info("Polling for Path " + path);
+		Path dirpath = new Path(path);
+		if (!fs.exists(dirpath)) {
+			throw new FileNotFoundException("Not found: " + path);
+		}
+		jdbcFilesToSQL.loadFiles(
+				new DirectoryListIterator(fs, dirpath, filter), resetTS);
+
+	}
+
+	private final void pollHdfs(ExecutorService service, final String[] paths,
+			final Filter filter, final boolean resetTS) {
 		// get all of the paths to poll.
-
-		final long start = System.currentTimeMillis();
-
-		final ForkJoinTask<?> tasks[] = new ForkJoinTask[paths.length];
 
 		for (int i = 0; i < paths.length; i++) {
 			final String path = paths[i];
-			final RecursiveTask<Boolean> task = new RecursiveTask<Boolean>() {
+			service.submit(new Runnable() {
 
-				@Override
-				protected Boolean compute() {
+				public void run() {
+					final long start = System.currentTimeMillis();
+
 					try {
-
-						LOG.info("Polling for Path " + path);
-						Path dirpath = new Path(path);
-						if (!fs.exists(dirpath)) {
-							throw new FileNotFoundException("Not found: "
-									+ path);
-						}
-						jdbcFilesToSQL.loadFiles(new DirectoryListIterator(fs,
-								dirpath, filter), resetTS);
-
-					} catch (Exception e) {
-						// Don't allow one trigger's error to stop the rest,
-						// such as
-						// IllegalArgumentException.
-						LOG.warn(e.toString());
+						_pollHdfs(path, fs, jdbcFilesToSQL, filter, resetTS);
+					} catch (Throwable t) {
+						LOG.error(t.toString(), t);
 					}
-					return true;
-
+					LOG.info("\tpollHdfs : "
+							+ (System.currentTimeMillis() - start) + "ms");
 				}
 
-			};
-
-			tasks[i] = task;
-			task.fork();
+			});
 
 		}
 
-		for (int i = 0; i < tasks.length; i++)
-			tasks[i].join();
-
-		LOG.info("\tpollHdfs : " + (System.currentTimeMillis() - start) + "ms");
 	}
 
 	/**
@@ -251,7 +251,7 @@ public class HdfsTriggersManager implements TriggersManager, Runnable {
 	private final void fillUnitFiles() {
 
 		long start = System.currentTimeMillis();
-				
+
 		// insert entries into unitfiles
 		dbManager
 				.exec("insert ignore into "
@@ -276,8 +276,6 @@ public class HdfsTriggersManager implements TriggersManager, Runnable {
 								+ unitfilesTbl
 								+ " uf SET hf.seen = 1 WHERE uf.fileid = hf.id AND uf.status='ready'");
 
-		
-		
 		// if a listener is registered
 		// and there are ready files for units,
 		// call launch on listener.
