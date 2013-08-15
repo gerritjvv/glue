@@ -117,7 +117,8 @@ class SettingsModule implements GlueModule {
         try
         {
             URL url = f.toURI().toURL();
-            def cs = new ConfigSlurper(envname);
+            //def cs = new ConfigSlurper(envname);
+            def cs = new MyConfigSlurper(envname);
             cs.setBinding(binding);
             return cs.parse(url);
         }
@@ -260,6 +261,191 @@ class SettingsModule implements GlueModule {
 
     @Override
     public void onProcessStart(GlueProcess process, GlueContext context) {
+    }
+    
+    
+    // Fix issue where foo=0; bar="a$foo" makes foo an empty map and bar "a[:]"
+    private static class MyConfigSlurper
+    {
+        private static final ENV_METHOD = "environments"
+        static final ENV_SETTINGS = '__env_settings__'
+        GroovyClassLoader classLoader = new GroovyClassLoader()
+        String environment
+        private envMode = false
+        private Map bindingVars
+        
+        MyConfigSlurper() { }
+        
+        MyConfigSlurper(String env) {
+            this.environment = env
+        }
+        
+        void setBinding(Map vars) {
+            this.bindingVars = vars
+        }
+        
+        ConfigObject parse(Properties properties) {   
+            ConfigObject config = new ConfigObject()
+            for(key in properties.keySet()) {
+                def tokens = key.split(/\./)
+                
+                def current = config
+                def last
+                def lastToken
+                def foundBase = false
+                for(token in tokens) {
+                    if (foundBase) {
+                        // handle not properly nested tokens by ignoring
+                        // hierarchy below this point
+                        lastToken += "." + token
+                        current = last
+                    } else {
+                        last = current
+                        lastToken = token
+                        current = current."${token}"
+                        if(!(current instanceof ConfigObject)) foundBase = true
+                    }
+                }
+    
+                if(current instanceof ConfigObject) {
+                    if(last[lastToken]) {
+                        def flattened = last.flatten()
+                        last.clear()
+                        flattened.each { k2, v2 -> last[k2] = v2 }
+                        last[lastToken] = properties.get(key)
+                    }
+                    else {                    
+                        last[lastToken] = properties.get(key)
+                    }
+                }
+                current = config
+            }
+            return config
+        }
+        
+        ConfigObject parse(String script) {
+            return parse(classLoader.parseClass(script))
+        }
+        
+        ConfigObject parse(Class scriptClass) {
+            return parse(scriptClass.newInstance())
+        }
+        
+        ConfigObject parse(Script script) {
+            return parse(script, null)
+        }
+        
+        ConfigObject parse(URL scriptLocation) {
+            return parse(classLoader.parseClass(scriptLocation.text).newInstance(), scriptLocation)
+        }
+        
+        ConfigObject parse(Script script, URL location) {
+            def config = location ? new ConfigObject(location) : new ConfigObject()
+            GroovySystem.metaClassRegistry.removeMetaClass(script.class)
+            def mc = script.class.metaClass
+            def prefix = ""
+            LinkedList stack = new LinkedList()
+            stack << [config:config,scope:[:]]
+            def pushStack = { co ->
+                stack << [config:co,scope:stack.last.scope.clone()]
+            }
+            def assignName = { name, co ->
+                def current = stack.last
+                current.config[name] = co
+                current.scope[name] = co
+            }
+            def getPropertyClosure = { String name ->
+                def current = stack.last
+                def result
+                if(current.config.get(name) != null) {
+                    result = current.config.get(name)
+                } else if(current.scope[name] != null) {
+                    result = current.scope[name]
+                } else {
+                    try {
+                        result = InvokerHelper.getProperty(this, name);
+                    } catch (GroovyRuntimeException e) {
+                        result = new ConfigObject()
+                        assignName.call(name,result)
+                    }
+                }
+                result
+            }
+            mc.getProperty = getPropertyClosure
+            mc.invokeMethod = { String name, args ->
+                def result
+                if(args.length == 1 && args[0] instanceof Closure) {
+                    if(name == ENV_METHOD) {
+                        try {
+                            envMode = true
+                            args[0].call()
+                        } finally {
+                            envMode = false
+                        }
+                    } else if (envMode) {
+                        if(name == environment) {
+                            def co = new ConfigObject()
+                            config[ENV_SETTINGS] = co
+    
+                            pushStack.call(co)
+                            try {
+                                envMode = false
+                                args[0].call()
+                            } finally {
+                                envMode = true
+                            }
+                            stack.pop()
+                        }
+                    } else {
+                        def co
+                        if (stack.last.config.get(name) instanceof ConfigObject) {
+                            co = stack.last.config.get(name)
+                        } else {
+                            co = new ConfigObject()
+                        }
+    
+                        assignName.call(name, co)
+                        pushStack.call(co)
+                        args[0].call()
+                        stack.pop()
+                    }
+                } else if (args.length == 2 && args[1] instanceof Closure) {
+                    try {
+                    prefix = name +'.'
+                    assignName.call(name, args[0])
+                    args[1].call()
+                    }  finally { prefix = "" }
+                } else {
+                    MetaMethod mm = mc.getMetaMethod(name, args)
+                    if(mm != null) {
+                        result = mm.invoke(delegate, args)
+                    } else {
+                        throw new MissingMethodException(name, getClass(), args)
+                    }
+                }
+                result
+            }
+            script.metaClass = mc
+    
+            def setProperty = { String name, value ->
+                assignName.call(prefix+name, value)
+            }                
+            def binding = new ConfigBinding(setProperty)
+            if(this.bindingVars != null) {
+                binding.getVariables().putAll(this.bindingVars)
+            }
+            script.binding = binding
+    
+    
+            script.run()
+    
+            def envSettings = config.remove(ENV_SETTINGS)
+            if(envSettings != null) {
+                config.merge(envSettings)
+            }
+    
+            return config
+        }
     }
     
     
