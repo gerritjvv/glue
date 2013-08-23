@@ -15,3 +15,4 @@ done
 mvn install:install-file -Dfile=$BIN_HOME/groovypp-0.9.0_1.8.2.jar -DgroupId=org.mbte.groovypp -DartifactId=groovypp -Dversion=0.9.0_1.8.2 -Dpackaging=jar -DpomFile=$BIN_HOME/groovypp-0.9.0_1.8.2.pom
 
 
+mvn install:install-file -Dfile=$BIN_HOME/jmockmongo-0.0.2-SNAPSHOT.jar -DgroupId=jmockmongo -DartifactId=jmockmongo -Dversion=0.0.2-SNAPSHOT -Dpackaging=jar -DpomFile=$BIN_HOME/jmockmongo-0.0.2-SNAPSHOT.pom
