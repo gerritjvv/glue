@@ -278,9 +278,12 @@
 			<name>Clojars</name>
 			<url>http://clojars.org/repo/</url>
 		</repository>
-		<!-- <repository> <id>thiloplanz-snapshot</id> <url>http://repository-thiloplanz.forge.cloudbees.com/snapshot/</url> 
-			</repository> -->
-		<repository>
+	         <repository>
+		    <id>thiloplanz</id>
+    			<url>http://repository-thiloplanz.forge.cloudbees.com/release/</url>
+  		</repository>
+	
+                <repository>
 			<id>sonatype-oss-public</id>
 			<url>https://oss.sonatype.org/content/groups/public/</url>
 		</repository>
