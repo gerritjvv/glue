@@ -11,8 +11,8 @@ Glue Documentation Index
 
 
 * Getting started
-    * [Overview](overview.html)
-        * [Compile](compile.html)
+	* [Overview](overview.html)
+	* [Compile](compile.html)
 	* [Install and Run](installAndRun.html)
 	* [Logs](logs.html)
 	* [Temporary Files](tempfiles.html)
