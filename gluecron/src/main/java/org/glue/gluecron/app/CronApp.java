@@ -24,6 +24,8 @@ public class CronApp {
 		final Configuration conf = new PropertiesConfiguration(
 				new File(args[1]));
 
+		final int metricsPort = conf.getInt("metrics.port", 7001);
+		
 		final DBManager dbManager = getDBManager(conf);
 		final TriggersManager hfdsTriggerManager = getHdfsTriggerManager(
 				dbManager, conf);
@@ -41,6 +43,8 @@ public class CronApp {
 
 		System.out.println("Started");
 
+		Metrics.start(metricsPort);
+		
 		// wait until the current thread has bee interrupted.
 		while (!Thread.interrupted()) {
 			Thread.sleep(Long.MAX_VALUE);
