@@ -11,6 +11,7 @@ import org.glue.unit.om.GlueContext
 import org.glue.unit.om.GlueModule
 import org.glue.unit.om.GlueProcess
 import org.glue.unit.om.GlueUnit
+import org.glue.unit.om.LazySequenceUtil
 
 import com.mchange.v2.c3p0.ComboPooledDataSource
 
@@ -212,11 +213,29 @@ public class SqlModule implements GlueModule {
 		def sqlObj = getSql(db)
 		try{
 			def cls = CallHelper.makeCallable(closure)
-			
 			sqlObj.eachRow(sql.toString()){ row -> cls.call(row) }
 		}finally{
 			sqlObj.close()
 		}
+	}
+
+	/**
+	 * Returns a Lazy sequence buffered by the JDBC Driver using the SQL.rows method.<br/>
+	 * The sqlObj is only ever closed when the whole of the sequence is iterated over.<br/>	
+	 * @param db
+	 * @param sql
+	 * @return
+	 */
+	public Collection eachSqlResult(db, sql){
+		def sqlObj = getSql(db)
+		
+		LazySequenceUtil.seq({ pos -> 
+			def rows = sqlObj.rows(sql, pos as int, 100)
+			if(!rows)
+			   sqlObj.close()
+			
+			rows
+		}, 1)
 	}
 
 	/**

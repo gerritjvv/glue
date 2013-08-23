@@ -60,6 +60,17 @@ class SqlModuleTest {
 
 		assertEquals(numberOfRows, count)
 	}
+	
+	@Test
+	public void testEachSqlResultCollection(){
+
+		int count = 0
+		
+		def coll = module.eachSqlResult('db1', 'select * from SqlModuleTest')
+        coll.each { rs -> count++; println "Element $count : $rs" }
+
+		assertEquals(numberOfRows, count)
+	}
 
 	/**
 	 * Test that the load file works as expected

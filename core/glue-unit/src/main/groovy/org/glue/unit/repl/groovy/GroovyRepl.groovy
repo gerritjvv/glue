@@ -11,11 +11,11 @@ import org.glue.unit.repo.GlueUnitRepository
  */
 public class GroovyRepl implements ScriptRepl{
 
-	public void run(GlueUnitRepository repo, GlueContext ctx, String... cmds){
+	public void run(GlueContext ctx, String... cmds){
 
 		def io = new org.codehaus.groovy.tools.shell.IO()
 		def sh = new org.codehaus.groovy.tools.shell.Groovysh(
-				new Binding([ctx:ctx, context:ctx, repo:repo]
+				new Binding([ctx:ctx, context:ctx]
 				), io)
 
 		try{

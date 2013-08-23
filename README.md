@@ -7,25 +7,55 @@ BigData Workflow Engine for Hadoop, Hbase, Netezza, Pig, Hive ...
 Introduction
 ------------
 
-* Glue is a job execution engine.
-* Glue task unit is similar to ant except
-    * Written as groovy configuration except xml 
-    * Contains closures with real groovy code that should be executed
-    * Tasks are executed simultaneously (if they do not depend on each other).
-* Glue task units also can be supplied with parameters.
-* REST interface is used to submit and monitor each unit and task.
 
 
-Web Site
---------
+For a detailed introduction see http://gerritjvv.github.com/glue
 
-See http://gerritjvv.github.com/glue
 
+Glue is a workflow engine for bigdata supporting multiple languages such as:
+
+* Groovy
+* Clojure
+* Jython
+* Ruby
+* Scala
 
 Example
 -------
 
+```clojure
+;clojure
+
+(def lines (ctx-hdfs eachLine "/myhdfsfile"))
+
+```
+
+
+```python
+
+#jython
+
+def lineHandler(line):
+    print(str(line))
+
+
+ctx.hfds().eachLine("myhdfsfile", lineHandler)
+
+
+```
+
+```scala
+
+//scala
+
+for(line <- ctx("hdfs").eachLine("/myhdfsfile"))
+ println(line)
+
+
+```
+
 ```groovy
+//groovy dsl
 name = "test"
 tasks{
         process1{

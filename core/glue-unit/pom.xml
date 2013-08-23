@@ -7,6 +7,7 @@
 		<groupId>org.glue</groupId>
 		<version>0.2.0</version>
 	</parent>
+
 	<properties>
 		<json.version>20090211</json.version>
 		<jmail.version>1.4.1</jmail.version>
@@ -27,9 +28,29 @@
 	<groupId>org.glue</groupId>
 	<artifactId>glue-unit</artifactId>
 	<name>Glue Unit</name>
-	<version>0.4.5</version>
+	<version>0.5.0</version>
 
 	<dependencies>
+		<dependency>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-library</artifactId>
+			<version>2.11.0-g</version>
+		</dependency>
+		<dependency>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-compiler</artifactId>
+			<version>2.11.0-g</version>
+		</dependency>
+		<dependency>
+			<groupId>reply</groupId>
+			<artifactId>reply</artifactId>
+			<version>0.1.0-beta9</version>
+		</dependency>
+		<dependency>
+			<groupId>clj-time</groupId>
+			<artifactId>clj-time</artifactId>
+			<version>0.5.1</version>
+		</dependency>
 		<dependency>
 			<groupId>org.clojure</groupId>
 			<artifactId>clojure</artifactId>
@@ -253,8 +274,15 @@
 
 	<repositories>
 		<repository>
-			<id>thiloplanz-snapshot</id>
-			<url>http://repository-thiloplanz.forge.cloudbees.com/snapshot/</url>
+			<id>clojars</id>
+			<name>Clojars</name>
+			<url>http://clojars.org/repo/</url>
+		</repository>
+		<!-- <repository> <id>thiloplanz-snapshot</id> <url>http://repository-thiloplanz.forge.cloudbees.com/snapshot/</url> 
+			</repository> -->
+		<repository>
+			<id>sonatype-oss-public</id>
+			<url>https://oss.sonatype.org/content/groups/public/</url>
 		</repository>
 	</repositories>
 

@@ -442,6 +442,12 @@ class HDFSModuleImplTest{
 	public void testSeqEachLine(){
 		
 		String localFile = "src/test/resources/testlog.txt"
+		def lineCount = 0
+		
+		new File(localFile).eachLine { lineCount++ }
+		
+		lineCount *= 2
+		
 		String remoteDir = "target/test/HDFSModuleImplTest/hdfs/testListFilesDir1"
 		def remoteFiles = [
 			"${remoteDir}/testlist.txt",
@@ -454,13 +460,9 @@ class HDFSModuleImplTest{
 		}
 		
 		
-		def files = hdfsModule.seq_eachLine(remoteDir)
-		
-		println("Files: " + files)
-		
-		files.each { line ->
-				println("Line: " + line)
-		}
+		def lines = hdfsModule.seq_eachLine(remoteDir)
+		assertEquals(lineCount, lines.size())
+	
 
 	}
 	

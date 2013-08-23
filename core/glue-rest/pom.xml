@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>org.glue</groupId>
 	<artifactId>glue-rest</artifactId>
-	<version>0.4.5</version>
+	<version>0.5.0</version>
 	<name>glue-rest</name>
 	<url>http://maven.apache.org</url>
 	<properties>
@@ -34,8 +34,8 @@
 						<copyright>http://www.apache.org/licenses/LICENSE-2.0</copyright>
 						<distribution>Glue task manager</distribution>
 						<group>utilties</group>
-						<release>1</release>
-						<packager>http://code.google.com/p/glue/</packager>
+						<release>2</release>
+						<packager>https://github.com/glue</packager>
 						<provides>
 							<provide>glue-server</provide>
 						</provides>
@@ -173,7 +173,7 @@ type getent || exit 0
 						 
 getent group glue >/dev/null || groupadd -r glue
        getent passwd glue >/dev/null || \
-       useradd -r -g glue -d HOMEDIR -s /sbin/nologin \
+       useradd -r -g glue -m -s /sbin/nologin \
        -c "Glue Rest runs under the glue user and group" glue
 exit 
 							</script>

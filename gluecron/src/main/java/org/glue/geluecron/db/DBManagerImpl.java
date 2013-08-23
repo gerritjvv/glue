@@ -24,6 +24,7 @@ public class DBManagerImpl implements DBManager {
 	@Override
 	public Connection getConnection() {
 		try {
+			//stack overflow exception here
 			return DriverManager.getConnection(url, uid, pwd);
 		} catch (SQLException e) {
 			RuntimeException rte = new RuntimeException(e.toString(), e);

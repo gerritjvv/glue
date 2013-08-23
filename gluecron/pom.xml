@@ -4,7 +4,7 @@
 
 	<groupId>org.glue</groupId>
 	<artifactId>gluecron</artifactId>
-	<version>0.4.1</version>
+	<version>0.6.0</version>
 	<packaging>jar</packaging>
 
 	<name>gluecron</name>
@@ -21,6 +21,31 @@
 			<artifactId>junit</artifactId>
 			<version>4.8.1</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.codahale.metrics</groupId>
+			<artifactId>metrics-core</artifactId>
+			<version>3.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.codahale.metrics</groupId>
+			<artifactId>metrics-core</artifactId>
+			<version>3.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.codahale.metrics</groupId>
+			<artifactId>metrics-healthchecks</artifactId>
+			<version>3.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.codahale.metrics</groupId>
+			<artifactId>metrics-servlets</artifactId>
+			<version>3.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-server</artifactId>
+			<version>9.0.3.v20130506</version>
 		</dependency>
 		<dependency>
 			<groupId>org.coconut.forkjoin</groupId>
@@ -86,8 +111,8 @@
 					<copyright>http://www.apache.org/licenses/LICENSE-2.0</copyright>
 					<distribution>Glue Task Manager Trigger and Cron Daemon</distribution>
 					<group>utilties</group>
-					<release>5</release>
-					<packager>http://code.google.com/p/glue/</packager>
+					<release>1</release>
+					<packager>https://github.com/gerritjvv/glue</packager>
 					<provides>
 						<provide>gluecron</provide>
 					</provides>
@@ -165,19 +190,19 @@
 					<scripts>
 						<preinstallScriptlet>
 							<script>
-#!/usr/bin/env bash
-#Creates the hadoop user and group
-#see http://fedoraproject.org/wiki/Packaging%3aUsersAndGroups
-#safety for when the commands to not exist
-type getent || exit 0
-						 
-getent group hadoop >/dev/null || groupadd -r hadoop
-       getent passwd hadoop >/dev/null || \
-       useradd -r -g hadoop -d HOMEDIR -s /sbin/nologin \
-       -c "Glue Cron runs under the hadoop user and group" hadoop
-exit 
+								#!/usr/bin/env bash
+								#Creates the hadoop user and group
+								#see http://fedoraproject.org/wiki/Packaging%3aUsersAndGroups
+								#safety for when the commands to not exist
+								type getent || exit 0
+
+								getent group hadoop >/dev/null || groupadd -r hadoop
+								getent passwd hadoop >/dev/null || \
+								useradd -r -g hadoop -d /home/hadoop -s /sbin/nologin \
+								-c "Glue Cron runs under the hadoop user and group" hadoop
+								exit
 							</script>
-							
+
 						</preinstallScriptlet>
 					</scripts>
 				</configuration>

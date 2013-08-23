@@ -130,6 +130,17 @@ class TriggerStore2Module implements GlueModule{
 	}
 
 	/**
+	 * List all files that where updated as READY by the trigger<br/>
+	 * The closure is called with (fileid:int, filePath:String)<br/>
+	 * @param unitName
+	 * @param closure
+	 * @return Collection of Object array with [id:int, name:String]
+	 */
+	 Collection listReadyFiles(GlueContext context, boolean lock=true){
+		 triggerStore.listReadyFiles context.unit.name, lock
+	 }
+	 
+	/**
 	* Marks a file as processed
 	* @param unitName
 	* @param ids list of file ids

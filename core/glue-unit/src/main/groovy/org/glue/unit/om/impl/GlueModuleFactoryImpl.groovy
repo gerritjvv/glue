@@ -43,6 +43,7 @@ class GlueModuleFactoryImpl implements GlueModuleFactory {
 			try{
 				module.destroy()
 			}catch(Throwable t){
+			    t.printStackTrace()
 				log.error(t)
 			}
 		}
@@ -57,6 +58,7 @@ class GlueModuleFactoryImpl implements GlueModuleFactory {
 			try{
 				module.onProcessFinish(process, context)
 			}catch(Throwable t){
+			    t.printStackTrace()
 				log.error t
 			}
 		}
@@ -67,6 +69,7 @@ class GlueModuleFactoryImpl implements GlueModuleFactory {
 			try{
 				module.onProcessStart(process, context)
 			}catch(Throwable t){
+			    t.printStackTrace()
 				log.error t
 			}
 		}
@@ -77,6 +80,7 @@ class GlueModuleFactoryImpl implements GlueModuleFactory {
 			try{
 				module.onProcessFail(process, context, t)
 			}catch(Throwable exp){
+			    exp.printStackTrace()
 				log.error exp
 			}
 		}
@@ -94,6 +98,7 @@ class GlueModuleFactoryImpl implements GlueModuleFactory {
 			try{
 				module.onUnitFinish unit, context
 			}catch(Throwable t){
+			    t.printStackTrace()
 				log.error t
 			}
 		}
@@ -111,6 +116,7 @@ class GlueModuleFactoryImpl implements GlueModuleFactory {
 			try{
 				module.onUnitFail unit, context
 			}catch(Throwable t){
+		    	t.printStackTrace()
 				log.error t
 			}
 		}
@@ -128,6 +134,7 @@ class GlueModuleFactoryImpl implements GlueModuleFactory {
 			try{
 				module.onUnitStart unit, context
 			}catch(Throwable t){
+			    t.printStackTrace()
 				log.error t
 			}
 		}

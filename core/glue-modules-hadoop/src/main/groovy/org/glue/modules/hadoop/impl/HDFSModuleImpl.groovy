@@ -78,30 +78,29 @@ public class HDFSModuleImpl implements HDFSModule {
 	String cat(String hadoopPath, String fileName){
 		cat(null, hadoopPath, fileName)
 	}
-	
-	
+
+
 	void downloadChunked(Collection<String> hdfsDir, String localDir, Object callback){
 		downloadChunked(hdfsDir, localDir, 1073741824, "gz", callback)
 	}
-	
+
 	void downloadChunked(Collection<String> hdfsDir, String localDir, int chunkSize, String compression, Object callback){
 		downloadChunked(null, hdfsDir, localDir, chunkSize, compression, callback)
 	}
-	
+
 	void downloadChunked(String clusterName, Collection<String> hdfsDir, String localDir, int chunkSize, String compression, Object callback){
 		def cls = CallHelper.makeCallable(callback)
-		
+
 		def chunkedOutput = new ChunkedOutput(new File(localDir), "parts", chunkSize, compression, cls)
 		try{
 			hdfsDir.each { dir ->
-			   eachLine(clusterName, dir, { String line ->
-				chunkedOutput.write(line + '\n');
-			})}
+				eachLine(clusterName, dir, { String line ->
+					chunkedOutput.write(line + '\n');
+				})
+			}
 		}finally{
-		   chunkedOutput.close()
+			chunkedOutput.close()
 		}
-		
-		
 	}
 
 	String cat(String clusterName, String hadoopPath, String fileName) {
@@ -136,7 +135,7 @@ public class HDFSModuleImpl implements HDFSModule {
 	boolean timeSeries(String n, String tableHDFSDir, Date nowdate, String modifyTime, Object partitionFormatter, Object dateIncrement, Object collector = null){
 		timeSeries(null, n, tableHDFSDir, nowdate, modifyTime, partitionFormatter, dateIncrement, collector)
 	}
-	
+
 	/**
 	 *
 	 * @param clusterName
@@ -149,21 +148,21 @@ public class HDFSModuleImpl implements HDFSModule {
 	 * @param collector for every file that meet the condition the closure is called with date, file
 	 */
 	boolean timeSeries(String clusterName, String n, String tableHDFSDir, Date nowdate, String modifyTime, Object partitionFormatter, Object dateIncrement, Object collector = null){
-		
-		
+
+
 		def cls_partitionFormatter = CallHelper.makeCallable(partitionFormatter)
 		def cls_dateIncrement = CallHelper.makeCallable(dateIncrement)
 		def cls_collector = CallHelper.makeCallable(collector)
-		
+
 		final String[] modTimeParsed = modifyTime.toLowerCase().split('\\.')
 		final String[] nParsed = n.toLowerCase().split('\\.')
-		
+
 		use(TimeCategory){
 			final long lastUpdateTime = (nowdate - (modTimeParsed[0] as int)."${modTimeParsed[1]}" ).getTime()
 			Date prevdate = (nowdate - (nParsed[0] as int)."${nParsed[1]}")
 			try{
 				while(prevdate <  nowdate){
-					
+
 					final String partitionPath = "$tableHDFSDir/${cls_partitionFormatter(prevdate)}"
 					int countA = 0, countB = 0
 					list(clusterName, partitionPath, { file ->
@@ -173,20 +172,20 @@ public class HDFSModuleImpl implements HDFSModule {
 							if(collector) cls_collector(prevdate, file)
 						}
 					})
-					
+
 					if (countA < 1 || countA != countB )
 						throw new ClosureStopException("Empty partition or the partition is still edited $prevDate")
-					
+
 					//the closure must return a Date object
 					prevdate = cls_dateIncrement(prevdate)
-						
+
 				}//eof while
 			}catch(ClosureStopException exc){
 				println exc
 				return false
 			}
 		}//eof use
-		
+
 		return true
 	}
 
@@ -452,35 +451,34 @@ public class HDFSModuleImpl implements HDFSModule {
 	}
 
 	void withDecompressedInputStream(String clusterName, String file, Object closure) throws IOException{
-	
-			def cls = CallHelper.makeCallable(closure)
-			
-			def key = new DecompressorKey(clusterName:clusterName, file:file)
-			DecompressorValue decVal = decompressorPool.borrowObject(key)
 
-			if(decVal == null){
-				FSDataInputStream input = open(clusterName, file)
+		def cls = CallHelper.makeCallable(closure)
+
+		def key = new DecompressorKey(clusterName:clusterName, file:file)
+		DecompressorValue decVal = decompressorPool.borrowObject(key)
+
+		if(decVal == null){
+			FSDataInputStream input = open(clusterName, file)
+			try{
+				cls(input)
+			}finally{
+				input.close()
+			}
+		}else{
+			try{
+
+				CompressionInputStream input = decVal.createInputStream(open(clusterName, file))
 				try{
 					cls(input)
 				}finally{
 					input.close()
 				}
-			}else{
-				try{
-					
-					CompressionInputStream input = decVal.createInputStream(open(clusterName, file))
-					try{
-						cls(input)
-					}finally{
-						input.close()
-					}
-				}finally{
-					decompressorPool.returnObject(key, decVal)
-				}
+			}finally{
+				decompressorPool.returnObject(key, decVal)
 			}
-	
+		}
 	}
-	
+
 
 	FSDataInputStream open(String file) throws IOException{
 		open(null, file)
@@ -574,76 +572,91 @@ public class HDFSModuleImpl implements HDFSModule {
 		eachLine(null, file, closure)
 	}
 
-	
+
 	clojure.lang.LazySeq seq_eachLine(String file) throws IOException{
 		seq_eachLine(null, file)
 	}
 
 	def _seqReader (String clusterName, Object key, DecompressorKey decVal, BufferedReader reader, Stack files2){
-			def ret;
-			
-			def line = null
-			if(reader && (line = reader.readLine()) != null ) {
-				println("Have a reader")
-				ret = new ASeq(){
-					def first() { println("ReturnLine: " + line ) ; return line }
-					def ISeq next() { _seqReader(clusterName, key, decVal, reader, files2)  }
-					def Obj withMeta(IPersistentMap m){ null }
-					
+		def ret;
+
+		def line = (reader) ? reader.readLine() : null
+
+		if(reader && line == null){
+			//close the reader early
+			reader.close()
+			reader = null
+		}
+
+
+		if(line != null) {
+			def seq =  new ASeq(){
+						def first() {
+							return line
+						}
+						def ISeq next() {
+							_seqReader(clusterName, key, decVal, reader, files2)
+						}
+						def Obj withMeta(IPersistentMap m){
+							null
+						}
+					}
+			def f = new AFn() {
+						public Object invoke(){
+							return seq
+						}
+					}
+			ret = new LazySeq(f)
+		}else{
+
+			if(decVal)
+				decompressorPool.returnObject(key, decVal)
+
+
+			if(files2){
+
+
+				DecompressorValue decVal2
+				def file2 = files2.pop()
+
+				def key2 = new DecompressorKey(clusterName:clusterName, file:file2)
+				try{
+					decVal2 = decompressorPool.borrowObject(key2)
+				}catch(Throwable t){
+					throw new RuntimeException("Error creating decompressor: " + file2, t)
 				}
+
+
+				def rdr
+				if(decVal2 == null)
+					rdr = new BufferedReader(new InputStreamReader(open(clusterName, file2 as String)))
+				else{
+					CompressionInputStream input = decVal2.createInputStream(open(clusterName, file2 as String))
+					rdr = new BufferedReader(new InputStreamReader(input))
+				}
+				ret = _seqReader(clusterName, key2, decVal2, rdr, files2)
 			}else{
-				if(reader)
-					reader.close()
-				
-				if(decVal)
-					decompressorPool.returnObject(key, decVal)
-					
-				if(files2){
-					
-					
-					DecompressorValue decVal2
-					def file2 = files2.pop()
-					
-					def key2 = new DecompressorKey(clusterName:clusterName, file:file2)
-					try{
-						decVal2 = decompressorPool.borrowObject(key2)
-					}catch(Throwable t){
-					  throw new RuntimeException("Error creating decompressor: " + file2, t)
-					}
-					
-					
-					def rdr
-					if(decVal2 == null)
-					  rdr = new BufferedReader(new InputStreamReader(open(clusterName, file2 as String)))
-					else{
-					  CompressionInputStream input = decVal2.createInputStream(open(clusterName, file2 as String))
-					  rdr = new BufferedReader(new InputStreamReader(input))
-					}
-					  
-					_seqReader(clusterName, key2, decVal2, rdr, files2)
-				}else{
-					ret = null
-				}
+				ret = null
 			}
-			
-			println("Returning: " + ret)
-			return ret
-			
-  }
-		
+		}
+
+
+		return ret
+	}
+
 	clojure.lang.LazySeq seq_eachLine(String clusterName, String file) throws IOException{
-		 
+
 		//we return a clojure lazy sequence
 		return new LazySeq(new AFn(){
-				def invoke() {
-					//get only files
-					def files = seq_list(clusterName, file, true, true) as java.util.Stack
-					return _seqReader(clusterName, null, null, null, files)
-				}
-				
-			})
+			def invoke() {
+				//get only files
+				def files = seq_list(clusterName, file, true, true) as java.util.Stack
+				return _seqReader(clusterName, null, null, null, files)
+			}
+
+		})
 	}
-	
+
 	/**
 	 * Opens the file and sends each line to the closure<br/>
 	 * This is recursive by default.
@@ -668,20 +681,20 @@ public class HDFSModuleImpl implements HDFSModule {
 	 * @throws IOException
 	 */
 	void eachLine(String clusterName, String file, boolean recursive, Object closure) throws IOException{
-		
+
 		def cls = CallHelper.makeCallable(closure)
-		
+
 		def eachLineFile = { file2 ->
 
 			DecompressorValue decVal
-			
+
 			def key = new DecompressorKey(clusterName:clusterName, file:file2)
 			try{
-			decVal = decompressorPool.borrowObject(key)
+				decVal = decompressorPool.borrowObject(key)
 			}catch(Throwable t){
-			  throw new RuntimeException("Error creating decompressor: " + file2, t)
+				throw new RuntimeException("Error creating decompressor: " + file2, t)
 			}
-			
+
 			if(decVal == null){
 				LOG.debug("Reading $file as plain text")
 				def reader = new BufferedReader(new InputStreamReader( open(clusterName, file2 as String)))
@@ -729,7 +742,7 @@ public class HDFSModuleImpl implements HDFSModule {
 	void list(String file, Object closure){
 		list(null, file, closure)
 	}
-	
+
 	Set<String> seq_list(String file){
 		return seq_list(null, file, true)
 	}
@@ -745,24 +758,24 @@ public class HDFSModuleImpl implements HDFSModule {
 	void list(String clusterName, String file, Object closure){
 		list(clusterName, file, true, closure)
 	}
-	
+
 	Set<String> seq_list(String clusterName, String file){
 		return seq_list(clusterName, file, true)
 	}
-	
+
 	void list(String file, boolean recursive, Object closure){
 		list(null, file, recursive, closure)
 	}
-	
+
 	Set<String> seq_list(String file, boolean recursive){
 		seq_list(file, recursive, false)
 	}
-	
+
 	Set<String> seq_list(String file, boolean recursive, boolean fileOnly){
 		return seq_list(null, file, recursive, fileOnly)
 	}
-	
-	
+
+
 	Set<String> seq_findNewFiles(String clusterName = null, String file, Object dirHasBeenModified){
 		def files = [] as HashSet
 		findNewFiles(clusterName, file, dirHasBeenModified, { files << it} )
@@ -779,28 +792,28 @@ public class HDFSModuleImpl implements HDFSModule {
 	 * @param closure
 	 */
 	void findNewFiles(String clusterName = null, String file, Object  dirHasBeenModified, Object closure){
-		
+
 		def cls_dirHasBeenModified = CallHelper.makeCallable(dirHasBeenModified)
 		def cls = CallHelper.makeCallable(closure)
-		
+
 		def findClosure = null
 		findClosure = { path, FileStatus status ->
-			   //if it is a directory, and the directory hasBeenModified returns true
-			   //then call the list method recursively
-					
-			   if(status.isDir() && cls_dirHasBeenModified(status)){
-				 list(clusterName, path, false, findClosure)
-			   }else{
-				  //closure should decide if the file is new or not
-					 cls(status)
-			   }
-			
+			//if it is a directory, and the directory hasBeenModified returns true
+			//then call the list method recursively
+
+			if(status.isDir() && cls_dirHasBeenModified(status)){
+				list(clusterName, path, false, findClosure)
+			}else{
+				//closure should decide if the file is new or not
+				cls(status)
+			}
+
 		}
-		
+
 		list(clusterName, file, false, findClosure)
-		
+
 	}
-	
+
 	Set<String> seq_list(String clusterName, String file, boolean recursive, boolean fileOnly){
 		def files = [] as HashSet
 		list(clusterName, file, recursive, fileOnly, { files << it })
@@ -817,10 +830,10 @@ public class HDFSModuleImpl implements HDFSModule {
 	void list(String clusterName, String file, boolean recursive, Object closure){
 		list(clusterName, file, recursive, false, closure)
 	}
-	
+
 	void list(String clusterName, String file, boolean recursive, boolean fileOnly, Object closure){
 		def cls = CallHelper.makeCallable(closure)
-		
+
 		PathFilter pathFilter =  { Path path ->
 			!path.name.startsWith("_")
 		} as PathFilter
@@ -860,8 +873,8 @@ public class HDFSModuleImpl implements HDFSModule {
 							}
 						}
 					}
-					
-					
+
+
 				}else{
 					if(cls.getMaximumNumberOfParameters() > 1){
 						cls.call(status.path.toUri().toString(), status)
@@ -906,9 +919,9 @@ public class HDFSModuleImpl implements HDFSModule {
 	void list(String clusterName, String file, boolean recursive, long lastUpdated, Object closure){
 
 		def cls = CallHelper.makeCallable(closure)
-		
+
 		Object clsToCall = cls
-		
+
 		if(cls.getMaximumNumberOfParameters() == 1){
 			clsToCall = { f, m ->
 				cls(f)
@@ -1077,7 +1090,7 @@ public class HDFSModuleImpl implements HDFSModule {
 
 	@Override
 	public void onProcessFail(GlueProcess process, GlueContext context,
-	Throwable t) {
+			Throwable t) {
 	}
 
 	@Override

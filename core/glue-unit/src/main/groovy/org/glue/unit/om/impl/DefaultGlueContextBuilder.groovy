@@ -21,35 +21,35 @@ class DefaultGlueContextBuilder implements GlueContextBuilder{
 	GlueModuleFactoryProvider moduleFactoryProvider
 	GlueUnitStatusManager statusManager
 	GlueExecLoggerProvider loggerProvider
-	
+
 	public DefaultGlueContextBuilder(){
 	}
-	
+
 	public DefaultGlueContextBuilder(GlueModuleFactoryProvider moduleFactoryProvider){
 		this(moduleFactoryProvider, null)
 	}
-	
-	
+
+
 	public DefaultGlueContextBuilder(GlueModuleFactoryProvider moduleFactoryProvider, GlueUnitStatusManager statusManager){
 		this.moduleFactoryProvider = moduleFactoryProvider
 		this.statusManager = statusManager
 	}
-	
+
 	public DefaultGlueContextBuilder(GlueModuleFactoryProvider moduleFactoryProvider, GlueUnitStatusManager statusManager,
-		GlueExecLoggerProvider loggerProvider){
+	GlueExecLoggerProvider loggerProvider){
 		this.moduleFactoryProvider = moduleFactoryProvider
 		this.statusManager = statusManager
 		this.loggerProvider = loggerProvider
 	}
-	
+
 	/**
-	* Normally the GlueContext modules are dynamically searched during call time.<br/>
-	* This method creates a String template class with all the defined modules identified and their module names added as methods to the glue
-    */
+	 * Normally the GlueContext modules are dynamically searched during call time.<br/>
+	 * This method creates a String template class with all the defined modules identified and their module names added as methods to the glue
+	 */
 	@Typed(TypePolicy.MIXED)
 	static GlueContext buildStaticGlueContext(GlueContext ctx){
-		
-		 String s = """
+
+		String s = """
 		   package org.glue.unit.om.impl;
 
 		   class GlueContextStatic extends org.glue.unit.om.impl.GlueContextWrapper{
@@ -57,17 +57,17 @@ class DefaultGlueContextBuilder implements GlueContextBuilder{
 		 	GlueContextStatic(org.glue.unit.om.GlueContext parent){super(parent); this.parent = parent}
 		 	
          """
-		 
-		 
-		 for(Entry<String, GlueModule> entry in ctx.getModuleFactory().getAvailableModules().entrySet()){
-		 	String name = entry.key
+
+
+		for(Entry<String, GlueModule> entry in ctx.getModuleFactory().getAvailableModules().entrySet()){
+			String name = entry.key
 			GlueModule module = entry.value
 			String clsName
 			if(module.getClass().name.endsWith("GlueModuleProxy_delegateProxy"))
-				clsName = module.module.getClass().name	
+				clsName = module.module.getClass().name
 			else
-			    clsName = module.getClass().name
-				
+				clsName = module.getClass().name
+
 			s += """
 
 				
@@ -82,19 +82,41 @@ class DefaultGlueContextBuilder implements GlueContextBuilder{
                 } 
 
 			"""
-		 } 
-		    
-		 s += """
+		}
+
+		s += """
                
            }
 
 		 """
-		 new GroovyClassLoader(ctx.getClass().getClassLoader()).parseClass(s).newInstance(ctx)
-		 
+		new GroovyClassLoader(ctx.getClass().getClassLoader()).parseClass(s).newInstance(ctx)
 	}
-		
+
+
+	/**
+	 * Normally the GlueContext modules are dynamically searched during call time.<br/>
+	 * This method creates a String template class with all the defined modules identified and their module names added as methods to the glue
+	 */
+	@Typed(TypePolicy.MIXED)
+	static Map buildStaticGlueContextMap(GlueContext ctx){
+
+
+		def ctxm = ["unit":ctx.unit, "unitId":ctx.unitId]
+
+		for(Entry<String, GlueModule> entry in ctx.getModuleFactory().getAvailableModules().entrySet()){
+			String name = entry.key
+			GlueModule module = entry.value
+
+			if(module?.getClass()?.name?.endsWith("GlueModuleProxy_delegateProxy"))
+				module = module?.module
+			ctxm[name] = module
+		}
+
+		return ctxm
+	}
+
 	GlueContext build(String unitId, GlueUnit unit, Map<String,String> params){
-		
+
 		//with each GlueContext we create a unique instance of the moduleFactory
 		//unique here means that all non singleton modules will be instantiated and
 		//configured a new for this GlueContextInstance
@@ -102,11 +124,10 @@ class DefaultGlueContextBuilder implements GlueContextBuilder{
 		context.unitId = unitId
 		context.unit = unit
 		context.args = params
-		context.statusManager = statusManager 
+		context.statusManager = statusManager
 		context.moduleFactory = moduleFactoryProvider?.get(context)
 		context.logger = loggerProvider?.get(unitId)
-		
+
 		return context
 	}
-	
 }
