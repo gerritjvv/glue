@@ -11,3 +11,7 @@ mvn install:install-file -Dfile=$BIN_HOME/${f}-2.11.0-g.jar -DgroupId=org.scala-
 
 done
 
+
+mvn install:install-file -Dfile=$BIN_HOME/groovypp-0.9.0_1.8.2.jar -DgroupId=org.mbte.groovypp -DartifactId=groovypp -Dversion=0.9.0_1.8.2 -Dpackaging=jar -DpomFile=$BIN_HOME/groovypp-0.9.0_1.8.2.pom
+
+
