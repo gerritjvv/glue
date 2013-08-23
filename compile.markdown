@@ -24,6 +24,8 @@ Some dependencies might not always be in the mave repositories, for these use ca
 For glue-unit please run "glue-unit/deps/install.sh"
 
 
+Important: Please go into each project and run mvn clean install, do not run it from the parent dir.
+
 # Directory strucure
 
 
