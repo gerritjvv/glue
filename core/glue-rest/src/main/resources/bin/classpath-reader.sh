@@ -29,7 +29,7 @@ JAVA=$JAVA_HOME/bin/java
 
 
 if [ -z $JAVA_HEAP ]; then
- export JAVA_HEAP="-Xmx2048m"
+ export JAVA_HEAP="-Xmx512m"
 fi
 
 
@@ -43,20 +43,8 @@ for f in $GLUE_HOME/lib/*.jar; do
   CLASSPATH=${CLASSPATH}:$f;
 done
 
-for var in "$@"
-do
+CLIENT_CLASS="org.glue.rest.ClassPathReader"
 
- if [ "$var" == "-repl" ]; then 
-  cp=$($GLUE_HOME/bin/classpath-reader.sh -classpath)
-  opts=$($GLUE_HOME/bin/classpath-reader.sh -javaopts)
- fi
-done
+CLASSPATH=$GLUE_CONF_DIR:$GLUE_CONF_DIR/META-INF:$CLASSPATH
 
-
-CLIENT_CLASS="org.glue.rest.Client"
-
-CLASSPATH=$GLUE_CONF_DIR:$GLUE_CONF_DIR/META-INF:$CLASSPATH:$cp
-
-JAVA_OPTS="$JAVA_OPTS $opts"
-
-$JAVA -XX:MaxDirectMemorySize=2048M -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:SurvivorRatio=6 -XX:NewRatio=3 -XX:+DisableExplicitGC $JAVA_HEAP $JAVA_OPTS -classpath "$CLASSPATH" $CLIENT_CLASS $@
+$JAVA $JAVA_HEAP $JAVA_OPTS  -classpath "$CLASSPATH" $CLIENT_CLASS $@
