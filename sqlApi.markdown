@@ -147,42 +147,47 @@ withSql( db:String, closure )
 </thead>
 <tbody>
 <tr>
-<td> {% highlight clojure %} ctx.sql.withSql( db, callbackf ) {% endhighlight %} </td>
+<td> {% highlight python %} ctx.sql().withSql( db, callbackf ) {% endhighlight %} </td>
 <td> creates a <a href="http://groovy.codehaus.org/api/groovy/sql/Sql.html">Groovy SQL object</a> and passes it to the closure as an argument, the sql object is automatically closed after the closure returns  </td>
-<td>  {% highlight clojure %} ctx.sql.withSql 'mydb', { sql -> sql.execute ('create table mytable (test varchar(10) )' } {% endhighlight %}</td>
+<td>  {% highlight python %} ctx.sql().withSql('mydb', lambda sql : sql.execute("create table mytable (test varchar(10) )") )  {% endhighlight %}</td>
 </tr>
 <tr>
-<td> {% highlight clojure %} ctx.sql.getSql(db) {% endhighlight %}</td>
+<td> {% highlight python %} ctx.sql().getSql(db) {% endhighlight %}</td>
 <td> returns a <a href="http://groovy.codehaus.org/api/groovy/sql/Sql.html">Groovy SQL object</a> </td>
-<td>  {% highlight clojure %} def sql = ctx.sql.getSql('mydb') {% endhighlight %}</td>
+<td>  {% highlight python %} def sql = ctx.sql().getSql('mydb') {% endhighlight %}</td>
 </tr>
 <tr>
-<td>  {% highlight clojure %} sql = ctx.sql.eachSqlResult(db, sql, callbacf) {% endhighlight %}</td>
+<td>  {% highlight python %} sql = ctx.sql().eachSqlResult(db, sql, callbacf) {% endhighlight %}</td>
 <td> Run a query on db and pass each Groovy Result Instance to the closure </td>
-<td>  {% highlight clojure %} ctx.sql.eachSqlResult 'mydb2', 'select name, age from people', { res -> println "name: ${res.name}, age: ${res.age}" } {% endhighlight %}</td>
+<td>  {% highlight python %} ctx.sql().eachSqlResult("mydb2", "select name, age from people", lambda res : "name: ${res.name}, age: ${res.age}" ) {% endhighlight %}</td>
 </tr>
 <tr>
-<td> {% highlight clojure %} rslist = ctx.sql.eachSqlResult(db, sql) {% endhighlight %}</td>
+<td> {% highlight python %} 
+
+for rs in ctx.sql().eachSqlResult(db, sql):
+    print(str(rs))
+
+{% endhighlight %}</td>
 <td> Same as above but returns a lazy sequence of result sets </td>
 <td></td>
 </tr>
 <tr>
-<td>  {% highlight clojure %} ctx.sql.mysqlImport(db, file) {% endhighlight %}</td>
+<td>  {% highlight python %} ctx.sql().mysqlImport(db, file) {% endhighlight %}</td>
 <td> Only works for MySQL databases and is used to load large files rapidly via the mysql command line. The file must be TSV </td>
 <td></td>
 </tr>
 <tr>
-<td> {% highlight clojure %}  ctx.sql.loadSql(db, sql, delimiter) {% endhighlight %}</td>
+<td> {% highlight python %}  ctx.sql().loadSql(db, sql, delimiter) {% endhighlight %}</td>
 <td> writes the results from the sql query into a temporary file</td>
 <td></td>
 </tr>
 <tr>
-<td> {% highlight clojure %} ctx.sql.updateSql(db, sql) {% endhighlight %}</td>
+<td> {% highlight python %} ctx.sql().updateSql(db, sql) {% endhighlight %}</td>
 <td> runs a sql update command </td>
 <td></td>
 </tr>
 <tr>
-<td>  {% highlight clojure %} ctx.sql.execSql(db, sql) {% endhighlight %}</td>
+<td>  {% highlight python %} ctx.sql().execSql(db, sql) {% endhighlight %}</td>
 <td> executes an arbritary sql command and returns a String response if any </td>
 <td></td>
 </tr>
