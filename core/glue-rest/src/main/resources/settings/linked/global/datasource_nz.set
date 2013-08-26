@@ -1,0 +1,83 @@
+
+
+// Adding a specialized nz datasource based on the sql one,
+// but optimized for inserting into nz.
+// Extra settings:
+    // batchRecords = how many records to insert at once, default is 1 million.
+datasource_nz_glue
+{
+    eachLine = { set, callback ->
+        current.datasource_sql_glue.eachLine(set, callback);
+    }
+    
+    transfer = { from, to ->
+        def batchRecords = to.batchRecords ?: 1000 * 1000;
+        def delim = to.delimiter ?: "\t";
+        if(!to.table)
+        {
+            throw new RuntimeException("Table not specified for ${to.name} (${to.name}.table)");
+        }
+        def tempTableName = "z_ds_temp_" + to.table;
+        try
+        {
+            // This can silently fail.
+            glueContext.sql.updateSql(to.db, "drop table $tempTableName;");
+        }
+        catch(Exception edrop)
+        {
+        }
+        glueContext.sql.updateSql(to.db, "create table $tempTableName as select * from ${to.table} where 1=0 distribute on random;");
+        def f = File.createTempFile(tempTableName, ".nz");
+        def fpath = f.getAbsolutePath();
+        def fout = null;
+        int nrecords = 0;
+        def doBatch = { ->
+            fout.close();
+            fout = null;
+            nrecords = 0;
+            glueContext.sql.updateSql(to.db, """
+                insert into $tempTableName
+                    SELECT * FROM EXTERNAL '$fpath'
+                    SAMEAS $tempTableName
+                    USING
+                        (DELIM '$delim' RemoteSource 'JDBC')
+                ;""");
+        }
+        from.ds.eachLine from, { line ->
+            if(nrecords >= batchRecords)
+            {
+                doBatch();
+            }
+            if(!fout)
+            {
+                fout = f.newWriter(false);
+            }
+            fout << line << "\n";
+            nrecords++;
+        }
+        if(nrecords > 0)
+        {
+            doBatch();
+        }
+        glueContext.sql.updateSql(to.db, "insert into ${to.name} select * from $tempTableName;");
+        glueContext.sql.updateSql(to.db, "drop table $tempTableName;");
+    }
+    
+    clean = { set ->
+        current.datasource_sql_glue.clean(set);
+    }
+    
+}
+
+
+/*
+// See datasource_sql_conf for more info.
+datasource_nz_conf
+{
+}
+*/
+
+
+if(capabilities.contains('glue')) datasource_nz = datasource_nz_glue
+//else if(capabilities.contains('sql_conf')) datasource_nz = datasource_nz_conf
+

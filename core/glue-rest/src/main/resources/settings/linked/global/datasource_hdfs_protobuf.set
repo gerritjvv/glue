@@ -1,0 +1,31 @@
+
+datasource_hdfs_protobuf
+{
+    eachLine = { set, callback ->
+        throw new IOException("Directly reading from hdfs_protobuf data sources not implemented (${set.name}), use pig");
+    }
+    
+    transfer = { from, to ->
+        throw new IOException("Directly writing to hdfs_protobuf data sources not supported (${to.name})");
+    }
+    
+    clean = { set ->
+        throw new IOException("Permission denied");
+    }
+    
+    getPigLoadSuffix = { set ->
+        if(!set.schema)
+        {
+            throw new RuntimeException("Expected schema for hdfs_protobuf (${set.name}.schema)");
+        }
+        if(!set.kind)
+        {
+            throw new RuntimeException("Expected kind (protobuf class) for hdfs_protobuf (${set.name}.kind)");
+        }
+        return "using ProtobufLoadFields('${set.schema.replaceAll(/[\r\n\t]+/, " ")}', '${set.kind}')";
+    }
+    
+    getPigStoreSuffix = { set ->
+        throw new IOException("Directly writing to hdfs_protobuf data sources not supported (${set.name})");
+    }
+}

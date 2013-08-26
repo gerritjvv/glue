@@ -1,0 +1,34 @@
+datasource_list
+{
+    eachLine = { set, callback ->
+        def sch = current.getSchemaColumns(set.schema);
+        StringBuilder buffer = new StringBuilder();
+        set.data.each { record ->
+            callback(current.toLineUsingSchema(record, sch, set.delimiter, buffer));
+        }
+    }
+    
+    transfer = { from, to ->
+        def result = new ArrayList<List>();
+        def sch = current.obtainTransferSchema(from, to)
+        from.ds.eachLine from, { line ->
+            result << current.parseLineUsingSchema(line, sch, from.delimiter);
+        }
+        to.data = result;
+    }
+    
+    /*
+    transfer_old = { from, to ->
+        def result = new ArrayList<List>();
+        def delimx = java.util.regex.Pattern.quote(from.delimiter ?: "\t");
+        from.ds.eachLine from, { line ->
+            result << line.split(delimx);
+        }
+        to.data = result;
+    }
+    */
+    
+    clean = { set ->
+        set.data = []
+    }
+}
