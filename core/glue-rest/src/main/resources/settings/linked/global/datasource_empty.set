@@ -1,0 +1,17 @@
+datasource_empty
+{
+    eachLine = { set, callback ->
+    }
+    
+    transfer = { from, to ->
+    }
+    
+    clean = { set ->
+    }
+}
+
+
+empty = {
+    type = "empty"
+}
+

@@ -1,0 +1,35 @@
+
+
+run = { args, throwOnStderr=true, throwOnErrorCode=true ->
+    def proc = args.execute();
+    return current.finishProcess(proc, throwOnStderr, throwOnErrorCode);
+}
+
+
+finishProcess = { proc, throwOnStderr=true, throwOnErrorCode=true, showStderr=true ->
+    def sbout = new StringBuffer();
+    def sberr = new StringBuffer();
+    proc.waitForProcessOutput(sbout, sberr);
+    proc.waitFor();
+    boolean showerrorcode = throwOnErrorCode && proc.exitValue() != 0;
+    if(showerrorcode)
+    {
+        String extra = "";
+        if(showStderr && sberr.length() > 0)
+        {
+            extra = ": " + sberr.toString();
+        }
+        throw new RuntimeException("Command `" + args + "` returned error exit value " + proc.exitValue() + extra);
+    }
+    if(throwOnStderr && sberr.length() > 0)
+    {
+        String extra = "(stderr)";
+        if(showStderr)
+        {
+            extra = sberr.toString();
+        }
+        throw new RuntimeException("Command `" + args + "` failed: " + extra);
+    }
+    return sbout.toString();
+}
+

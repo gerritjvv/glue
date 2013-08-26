@@ -1,0 +1,110 @@
+
+runPigDirect = { script, name ->
+    glueContext.pig.run(name, script, [:]);
+}
+
+autoPig = { piginfo, name = null ->
+    def script
+    if(piginfo =~ /^\w+$/)
+    {
+        def pi = evaluate("return current." + piginfo);
+        if(!pi || !(pi instanceof Map))
+        {
+            throw new RuntimeException("Pig info not found '" + piginfo + "'");
+        }
+        if(!pi.script)
+        {
+            throw new RuntimeException("Pig script for '$piginfo' not found ($piginfo.script)");
+        }
+        script = pi.script;
+        if(!name)
+        {
+            name = piginfo;
+        }
+    }
+    else
+    {
+        script = piginfo;
+    }
+    def pat = java.util.regex.Pattern.compile(/@(\w+)\(([^\)]*)\)/);
+    def m = pat.matcher(script.toString());
+    def newscript = new StringBuffer();
+    while(m.find())
+    {
+        def func = m.group(1);
+        def params = m.group(2).split("\\s*,\\s*");
+        switch(func)
+        {
+            case "load":
+                if(params.size() == 0 || !params[0])
+                {
+                    throw new RuntimeException("Expected parameter to pig settings function '$func'");
+                }
+                else
+                {
+                    def setname = params[0].replace("'", "").replace("\"", ""); // q&d
+                    def set = current.datasourceInfoObject(setname);
+                    def loadcmd = " load '${set.path}' ";
+                    if(set.ds.getPigLoadSuffix)
+                    {
+                        loadcmd += set.ds.getPigLoadSuffix(set) ?: "";
+                    }
+                    else if(set.type.startsWith("hdfs"))
+                    {
+                        if(set.schema)
+                        {
+                            loadcmd += "as (${set.schema})";
+                        }
+                    }
+                    else
+                    {
+                        throw new IOException("Pig cannot directly read from ${set.type}, please save it to hdfs first (${set.name})");
+                    }
+                    m.appendReplacement(newscript, loadcmd.toString());
+                }
+                break;
+            
+            case "store":
+                if(params.size() != 2)
+                {
+                    throw new RuntimeException("Expected 2 parameters to pig settings function '$func'");
+                }
+                else
+                {
+                    def relation = params[0].replace("'", "").replace("\"", ""); // q&d
+                    def setname = params[1].replace("'", "").replace("\"", ""); // q&d
+                    def set = current.datasourceInfoObject(setname);
+                    current.datasourceDemandWrite(set);
+                    if(set.clean)
+                    {
+                        current.autoClean(setname);
+                    }
+                    def storecmd = " store $relation into '${set.path}' ";
+                    if(set.ds.getPigStoreSuffix)
+                    {
+                        storecmd += set.ds.getPigStoreSuffix(set) ?: "";
+                    }
+                    else if(set.type.startsWith("hdfs"))
+                    {
+                        if(set.delimiter instanceof CharSequence && set.delimiter != "\t")
+                        {
+                            storecmd += "using PigStorage('${set.delimiter}')";
+                        }
+                    }
+                    else
+                    {
+                        throw new IOException("Pig cannot directly write to ${set.type}, please save it to hdfs first (${set.name})");
+                    }
+                    m.appendReplacement(newscript, storecmd.toString());
+                }
+                break;
+            
+            default:
+                throw new RuntimeException("Unknown pig settings function '$func'");
+        }
+    }
+    m.appendTail(newscript);
+    //if(!capabilities.contains('quiet')) println "runPigDirect \"$newscript\""
+    current.runPigDirect(newscript.toString(), name.toString());
+}
+

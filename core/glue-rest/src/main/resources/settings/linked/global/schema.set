@@ -1,0 +1,239 @@
+
+// Returns a list of [name, type]
+// Extra attributes can also be returned via [name, type, attribs...]
+// If name is empty via ":type" a name will be created and attribute "unnamed" will be included.
+getSchemaColumns = { schemaText ->
+    def result = [];
+    if(schemaText instanceof CharSequence)
+    {
+        def cols = schemaText.split("\\s*,\\s*");
+        for(int i = 0; i < cols.size(); i++)
+        {
+            def x = cols[i].split("\\s*:\\s*");
+            def n, t;
+            if(x.size() == 1)
+            {
+                n = x[0]
+                t = "string"
+            }
+            else if(x.size() == 2)
+            {
+                n = x[0]
+                t = x[1] ?: "string"
+            }
+            else
+            {
+                throw new RuntimeException("Invalid schema: $schemaText");
+            }
+            def f
+            if(n.endsWith("?"))
+            {
+                n = n.substring(0, n.length() - 1).trim();
+                f = [ n, t, "nullable" ];
+            }
+            else
+            {
+                f = [ n, t ];
+            }
+            if(!n)
+            {
+                n = "column" + (i + 1) + (n ?: "");
+                f[0] = n
+                f << "unnamed";
+            }
+            result << f;
+        }
+    }
+    return result;
+}
+
+
+obtainTransferSchema = { from, to ->
+    def sch
+    if(to.schema instanceof CharSequence)
+    {
+        sch = current.getSchemaColumns(to.schema);
+    }
+    else
+    {
+        // If the destination schema isn't specified, grab it from the source.
+        // To prevent this from happening, set the schema even if to an empty string.
+        sch = current.getSchemaColumns(from.schema);
+        to.schema = from.schema;
+    }
+    return sch
+}
+
+
+// Parse value according to the specified type.
+parseSchemaValue = { value, type = "string" ->
+    if(value == null)
+    {
+        return null;
+    }
+    type = type.toLowerCase();
+    if(true)
+    {
+        int i = type.indexOf('(');
+        if(i != -1)
+        {
+            type = type.substring(0, i);
+        }
+    }
+    switch(type)
+    {
+        case null:
+        case "string":
+        case "chararray":
+        case "varchar":
+        case "nvarchar":
+        case "char":
+        case "nchar":
+        case "text":
+            return value;
+    }
+    if(value == "")
+    {
+        return null;
+    }
+    switch(type)
+    {
+        case "year":
+            return Short.parseShort(value);
+        case "int":
+        case "integer":
+        case "smallint":
+        case "mediumint":
+        case "byte": // byte/short
+        case "tinyint": // byte/short
+            return Integer.parseInt(value);
+        case "long":
+        case "bigint":
+            return Long.parseLong(value);
+        case "float":
+            return Float.parseFloat(value);
+        case "double":
+        case "real":
+            return Double.parseDouble(value);
+        case "decimal":
+        case "numeric":
+            return new java.math.BigDecimal(value);
+        case "date":
+            return java.util.Date.parse("yyyy-MM-dd", value);
+        case "datetime":
+        case "timestamp":
+            return java.util.Date.parse("yyyy-MM-dd HH:mm:ss", value);
+        default:
+            throw new RuntimeException("Unhandled type '" + type + "'");
+    }
+}
+
+
+// Missing fields become null, extra fields are kept as string.
+parseLineUsingSchema = { line, schema, delimiter = "\t" ->
+    def delimx = java.util.regex.Pattern.quote(delimiter ?: "\t");
+    def result = [];
+    int schemasize = 0;
+    if(schema)
+    {
+        schemasize = schema.size();
+    }
+    def input = line.split(delimx);
+    int inputsize = input.size();
+    int i;
+    try
+    {
+        for(i = 0; i < schemasize; i++)
+        {
+            if(i < inputsize)
+            {
+                //println "norm  (${input[i]}): " + current.parseSchemaValue(input[i], schema[i][1]);
+                result << current.parseSchemaValue(input[i], schema[i][1]);
+            }
+            else
+            {
+                result << null;
+            }
+        }
+        if(inputsize > schemasize)
+        {
+            // Add the extras as string.
+            for(i = schemasize; i < inputsize; i++)
+            {
+                //println "after (${input[i]}): " + current.parseSchemaValue(input[i], "string");
+                result << current.parseSchemaValue(input[i], "string");
+            }
+        }
+    }
+    catch(Exception e)
+    {
+        String fieldname = "";
+        String fieldnameinfo = "";
+        String fieldtype = "string";
+        if(i < schemasize)
+        {
+            if(schema[i][0])
+            {
+                fieldname = schema[i][0];
+                fieldnameinfo = " '$fieldname'";
+            }
+            if(schema[i][1])
+            {
+                fieldtype = schema[i][1];
+            }
+        }
+        throw new RuntimeException("Unable to parse field$fieldnameinfo of type $fieldtype at position ${i+1}: $e", e);
+    }
+    return result;
+}
+
+
+// null is intentionally converted to empty string.
+toSchemaValueString = { value, type = "string" ->
+    if(value == null)
+    {
+        return "";
+    }
+    if(value instanceof Date)
+    {
+        if(type == "date")
+        {
+            return value.format("yyyy-MM-dd");
+        }
+        return value.format("yyyy-MM-dd HH:mm:ss");
+    }
+    else
+    {
+        return value.toString();
+    }
+}
+
+
+toLineUsingSchema = { row, schema, delimiter = "\t", buffer = new StringBuilder() ->
+    def delim = delimiter ?: "\t";
+    buffer.setLength(0);
+    int schemalen = schema.size();
+    int rowlen = row.size();
+    for(int i = 0; i < rowlen; i++)
+    {
+        if(i != 0)
+        {
+            buffer << delim;
+        }
+        def obj = row.get(i);
+        if(obj != null)
+        {
+            if(i < schemalen)
+            {
+                buffer << current.toSchemaValueString(row[i], schema[i][1]);
+            }
+            else
+            {
+                buffer << current.toSchemaValueString(row[i], "string");
+            }
+        }
+    }
+    //println "toLineUsingSchema: $buffer"
+    return buffer.toString();
+}
+

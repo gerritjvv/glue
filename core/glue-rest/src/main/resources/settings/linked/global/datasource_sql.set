@@ -1,0 +1,225 @@
+
+
+datasource_sql_glue
+{
+    eachLine = { set, callback ->
+        def delim = set.delimiter ?: "\t";
+        def query = current.buildQuerySQL(set);
+        StringBuilder sb = new StringBuilder();
+        glueContext.sql.eachSqlResult set.db, query, { row ->
+            int cols = row.getMetaData().getColumnCount();
+            sb.setLength(0);
+            for(int i = 0; i < cols; i++)
+            {
+                if(i != 0)
+                {
+                    sb << delim;
+                }
+                sb << current.toSchemaValueString(row[i]);
+            }
+            callback(sb.toString());
+        }
+    }
+    
+    transfer = { from, to ->
+        if(!to.table)
+        {
+            throw new RuntimeException("Table not specified for ${to.name} (${to.name}.table)");
+        }
+        def sch = current.obtainTransferSchema(from, to);
+        def maxInsertsPerCall = 300;
+        int nrecords = 0;
+        def buf = new StringBuilder();
+        from.ds.eachLine from, { line ->
+            if(nrecords >= maxInsertsPerCall || buf.length() > 1024 * 30)
+            {
+                glueContext.sql.updateSql(to.db, buf.toString());
+                buf.setLength(0);
+                nrecords = 0;
+            }
+            if(nrecords == 0)
+            {
+                buf << "INSERT INTO ${to.table} VALUES ";
+            }
+            else
+            {
+                buf << ","
+            }
+            def row = current.parseLineUsingSchema(line, sch, from.delimiter);
+            buf << "(";
+            for(int i = 0; i < row.size(); i++)
+            {
+                if(i != 0)
+                {
+                    buf << ","
+                }
+                def x = row.get(i);
+                if(x instanceof Number)
+                {
+                    buf << x;
+                }
+                else if(x)
+                {
+                    buf << '"' << x.toString().replace("'", "''") << '"';
+                }
+                else
+                {
+                    buf << "null";
+                }
+            }
+            buf << ")";
+            nrecords++;
+        }
+        if(nrecords > 0)
+        {
+            glueContext.sql.updateSql(to.db, buf.toString());
+        }
+    }
+    
+    clean = { set ->
+        def where = set.where
+        if(!where)
+        {
+            throw new IOException("Cannot clean on SQL data source without WHERE clause: ${set.name}.where");
+        }
+        if(where instanceof List)
+        {
+            def sbexpr = new StringBuilder();
+            boolean first = true;
+            where.each { col ->
+                if(!first)
+                {
+                    sbexpr << " AND ";
+                }
+                first = false;
+                sbexpr << "(" << col << ")";
+            }
+            where = sbexpr.toString();
+        }
+        if(set.having)
+        {
+            throw new RuntimeException("Cannot clean on SQL data source with HAVING clause: ${set.name}.having")
+        }
+        def q = "delete from ${set.table} where ${set.where};";
+        //if(!capabilities.contains('quiet')) println "Clean: $q";
+        glueContext.sql.updateSql(set.db, q);
+    }
+    
+}
+
+
+/*
+// This uses the same conf format as glue, but is not running in glue.
+// Directly uses JDBC using the configuration in sqlConf.
+datasource_sql_conf
+{
+}
+*/
+
+
+// Directly uses query if present, OR:
+// Required properties: table
+// Optional properties: columns, where, group, having, order, limit
+// Also optional: distinct = true
+// If columns is not present, they can be derived from schema, otherwise * is used.
+buildQuerySQL = { set ->
+    if(!set.table)
+    {
+        throw new RuntimeException("Table name not specified in ${set.name?:"?"} (${set.name?:"?"}.table)");
+    }
+    if(set.query instanceof CharSequence)
+    {
+        // query is used directly if specified.
+        return set.query;
+    }
+    def sbexpr = new StringBuilder();
+    def getexprlist = { name, exprdelim = "," ->
+        sbexpr.setLength(0);
+        def list = set[name];
+        if(list instanceof CharSequence)
+        {
+            sbexpr << list;
+        }
+        else if(list instanceof List)
+        {
+            boolean first = true;
+            list.each { col ->
+                if(!first)
+                {
+                    sbexpr << exprdelim;
+                }
+                first = false;
+                sbexpr << "(" << col << ")";
+            }
+        }
+        else
+        {
+            throw new RuntimeException("Unknown $name in ${set.name?:"?"} (${set.name?:"?"}.$name = class ${list.class})");
+        }
+        return sbexpr;
+    }
+    def sb = new StringBuffer();
+    sb << "SELECT ";
+    if(set.distinct)
+    {
+        sb << "DISTINCT ";
+    }
+    //sb << (set.columns ? getexprlist("columns") : "*");
+    if(set.columns)
+    {
+        sb << getexprlist("columns");
+    }
+    else if(set.schema)
+    {
+        def cols = current.getSchemaColumns(set.schema);
+        sbexpr.setLength(0);
+        boolean first = true;
+        cols.each { col ->
+            if(!first)
+            {
+                sbexpr << ",";
+            }
+            first = false;
+            if(!col[0])
+            {
+                throw new RuntimeException("Name not specified in ${set.name}.schema, " +
+                    "please add the name or specify ${set.name}.columns");
+            }
+            sbexpr << "(" << col[0] << ")";
+        }
+        sb << sbexpr;
+    }
+    else
+    {
+        sb << "*";
+    }
+    sb << " FROM ${set.table}";
+    if(set.where)
+    {
+        sb << " WHERE " << getexprlist("where", " AND ");
+    }
+    if(set.group)
+    {
+        sb << " GROUP BY " << getexprlist("group");
+    }
+    if(set.having)
+    {
+        sb << " HAVING " << getexprlist("having", " AND ");
+    }
+    if(set.order)
+    {
+        sb << " ORDER BY " << getexprlist("order");
+    }
+    if(set.limit && (int)set.limit > 0)
+    {
+        sb << " LIMIT " << set.limit;
+    }
+    String query = sb.toString();
+    if(!capabilities.contains('quiet')) println("Query: $query");
+    return query;
+}
+
+
+if(capabilities.contains('glue')) datasource_sql = datasource_sql_glue
+//else if(capabilities.contains('sql_conf')) datasource_sql = datasource_sql_conf
+
