@@ -1,0 +1,84 @@
+
+
+datasourceByType = { type ->
+    if(!(type =~ /\w+/))
+    {
+        throw new RuntimeException("Invalid data source '" + type + "'");
+    }
+    def ds = evaluate("return current.datasource_" + type);
+    if(!ds || !(ds instanceof Map))
+    {
+        throw new RuntimeException("Data source not found '" + type + "'");
+    }
+    if(capabilities.contains('trace')) println "TRACE: found data source '$type'";
+    return ds;
+}
+
+
+datasourceInfoObject = { name, wantDS = true ->
+    if(!(name =~ /^\w+$/))
+    {
+        throw new RuntimeException("Invalid data info object name '" + name + "'");
+    }
+    def dio = evaluate("return current." + name);
+    if(!dio || !(dio instanceof Map) || !dio.type)
+    {
+        throw new RuntimeException("Data info object not found '" + name + "'");
+    }
+    dio.name = name
+    if(wantDS)
+    {
+        dio.ds = current.datasourceByType(dio.type);
+    }
+    //if(capabilities.contains('trace')) println "TRACE: found data info object '$name'";
+    return dio
+}
+
+
+datasourceDemandWrite = { set ->
+    boolean readonly = set.readonly;
+    if(set.readonly != true && set.readonly != false)
+    {
+        //readonly = false;
+        readonly = set.ds.defaultIsReadonly && set.ds.defaultIsReadonly(set);
+    }
+    set.readonly = readonly;
+    if(readonly)
+    {
+        throw new IOException("Permission denied: cannot copy to '$set.name' because it is readonly");
+    }
+}
+
+
+autoClean = { to ->
+    def toInfo = current.datasourceInfoObject(to);
+    if(!toInfo.ds.clean)
+    {
+        throw new RuntimeException("Data source '" + toInfo.type + "' does not support clean");
+    }
+    current.datasourceDemandWrite(toInfo);
+    if(!capabilities.contains('quiet')) println "autoClean '${to}'";
+    toInfo.ds.clean(toInfo);
+}
+
+
+autoCopy = { from, to ->
+    def fromInfo = current.datasourceInfoObject(from);
+    def toInfo = current.datasourceInfoObject(to);
+    if(!toInfo.ds.transfer)
+    {
+        throw new RuntimeException("Data source '" + toInfo.type + "' does not support transfer");
+    }
+    if(toInfo.clean)
+    {
+        current.autoClean(to);
+    }
+    current.datasourceDemandWrite(toInfo);
+    // transfer always called on the destination data source.
+    if(!capabilities.contains('quiet')) println "autoCopy from '${from}' to '${to}'";
+    toInfo.ds.transfer(fromInfo, toInfo);
+    // On successful transfer, grab schema if none yet.
+    // Don't do this first so that the transfer has first chance.
+    current.obtainTransferSchema(fromInfo, toInfo);
+}
+

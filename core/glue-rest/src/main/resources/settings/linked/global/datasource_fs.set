@@ -1,0 +1,45 @@
+datasource_fs
+{
+    eachLine = { set, callback ->
+        def f = new File(set.path);
+        f.eachLine(callback);
+    }
+    
+    transfer = { from, to ->
+        def fto
+        if(to.path)
+        {
+            fto = new File(to.path);
+        }
+        else
+        {
+            fto = File.createTempFile(to.name ?: "ds", ".fs");
+            to.path = fto.getAbsolutePath();
+            if(!(to.deleteOnExit instanceof Boolean))
+            {
+                to.deleteOnExit = true;
+            }
+        }
+        if(to.deleteOnExit)
+        {
+            fto.deleteOnExit();
+        }
+        else
+        {
+            to.deleteOnExit = false;
+        }
+        fto.withWriter { w ->
+            from.ds.eachLine from, { line ->
+                w << line << "\n";
+            }
+        }
+    }
+    
+    clean = { set ->
+        if(set.path)
+        {
+            def fto = new File(set.path);
+            fto.delete();
+        }
+    }
+}

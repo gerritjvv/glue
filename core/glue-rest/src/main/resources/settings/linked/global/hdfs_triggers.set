@@ -1,0 +1,59 @@
+
+
+// Similar to Collection.findAll(Closure) called on the ready file paths.
+// Returns a map with: list containing a list of [path, id] and markAsProcessed which is a function.
+hdfsReadyFilesFindAll = { closure, maxFiles = 1000000, randomizeCount = 100 ->
+    def prelist = []
+    glueContext.hdfsTriggerStore2.listReadyFiles { fileid, file ->
+        if(prelist.size() < maxFiles)
+        {
+            prelist << [ path: file.toString(), id: fileid ];
+        }
+    }
+    if(prelist.size() > randomizeCount)
+    {
+        prelist.sort { a, b ->
+            return a.compareTo(b)
+        }
+        def r = new java.util.Random()
+        int i = r.nextInt(randomizeCount);
+        def x = prelist[i]
+        prelist[i] = prelist[0]
+        prelist[0] = x
+    }
+    def list = prelist.findAll { info ->
+        return closure(info.path);
+    }
+    return [
+        list: list,
+        markAsProcessed: { ->
+            list.each { info ->
+                glueContext.hdfsTriggerStore2.markFilesAsProcessed(info.id);
+            }
+        }
+    ]
+}
+
+
+/* The settings can contain:
+    pathGroup = wildcard pattern to group paths, should only be a subset otherwise groups will contain only one file.
+    pathGroupReprocessAll = true to re-process the whole path group, not just those files which are ready.
+*/
+setHdfsReadyFiles = { to ->
+    def set = current.datasourceInfoObject(to);
+    if(!set.type.startsWith("hdfs_"))
+    {
+        throw new RuntimeException("setHdfsReadyFiles can only be used with HDFS data sources, not ${set.type} ($to)");
+    }
+    def includeHidden = set.includeHidden = (set.includeHidden ?: false);
+    def pathGroup = set.pathGroup ?: "";
+    def rf = current.hdfsReadyFilesFindAll({ path ->
+        // Find subset pathGroup... only use the same group for subsequent files.
+        // exclude hidden,.. if not includeHidden
+        // exclude directories!!! ***
+        // exclude non-existing (deleted)...
+        // pathGroupReprocessAll means the path property doesn't become all the ready files, but literally becomes the matching group.
+    }, maxFiles, randomizeCount);
+    return rf;
+}
+

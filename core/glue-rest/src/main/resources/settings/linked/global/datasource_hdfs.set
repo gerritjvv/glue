@@ -1,0 +1,101 @@
+
+
+datasource_hdfs_glue
+{
+    eachLine = { set, callback ->
+        if(set.cluster)
+        {
+            glueContext.hdfs.eachLine(set.cluster, set.path, callback);
+        }
+        else
+        {
+            glueContext.hdfs.eachLine(set.path, callback);
+        }
+    }
+    
+    transfer = { from, to ->
+        if(!to.path)
+        {
+            throw new IOException("Path must be specified when writing into HDFS (${to.name}.path)")
+        }
+        def callback = { w ->
+            from.ds.eachLine from, { line ->
+                w.writeLine(line);
+            }
+        }
+        if(set.cluster)
+        {
+            glueContext.hdfs.createWithWriter(to.cluster, to.path, callback);
+        }
+        else
+        {
+            glueContext.hdfs.createWithWriter(to.path, callback);
+        }
+    }
+    
+    clean = { set ->
+        try
+        {
+            if(set.cluster)
+            {
+                glueContext.hdfs.delete(set.cluster, set.path, true);
+            }
+            else
+            {
+                glueContext.hdfs.delete(set.path, true);
+            }
+        }
+        catch(Exception e)
+        {
+        }
+    }
+}
+
+
+datasource_hdfs_hadoop_bin
+{
+    _checkCluster = { set ->
+        if(set.cluster)
+        {
+            println "Cluster name '${set.cluster}' specified in the hdfs info, assuming it is the current configured cluster for hadoop bin"
+        }
+    }
+    
+    eachLine = { set, callback ->
+        current.datasource_hdfs_hadoop_bin._checkCluster(set);
+        
+        def proc = ["hadoop", "fs", "-cat", set.path].execute();
+        proc.in.eachLine { line ->
+            callback(line);
+        }
+        current.finishProcess(proc);
+    }
+    
+    transfer = { from, to ->
+        current.datasource_hdfs_hadoop_bin._checkCluster(to);
+        
+        if(!to.path)
+        {
+            throw new IOException("Path must be specified when writing into HDFS (${to.name}.path)")
+        }
+        
+        def proc = ["hadoop", "fs", "-put", "-", to.path].execute();
+        proc.withWriter { w ->
+            from.ds.eachLine from, { line ->
+                w << line << "\n";
+            }
+        }
+        current.finishProcess(proc);
+    }
+    
+    clean = { set ->
+        current.datasource_hdfs_hadoop_bin._checkCluster(set);
+        
+        current.run(["hadoop", "fs", "-rmr", set.path]);
+    }
+}
+
+
+if(capabilities.contains('glue')) datasource_hdfs = datasource_hdfs_glue
+else if(capabilities.contains('hadoop_bin')) datasource_hdfs = datasource_hdfs_hadoop_bin
+
