@@ -71,13 +71,17 @@ class DefaultGlueContextBuilder implements GlueContextBuilder{
 			s += """
 
 				
-				def $clsName ${name}(){
+				//def $clsName ${name}(){
+                def org.glue.unit.om.GlueModule ${name}(){
                   	def module = parent.getModuleFactory().getModule(\'${name}\')
 
-					if(module?.getClass()?.name?.endsWith("GlueModuleProxy_delegateProxy"))
-						return module?.module
-					else
+					if(module?.getClass()?.name?.endsWith("GlueModuleProxy_delegateProxy")){
+					    println('mymodule:1: ' + module?.module.class + " module " + module + " instanceof " + (module?.module instanceof org.glue.unit.om.GlueModule))
+					  	return module?.module
+					}else{
+					    println('mymodule:2: ' + module.class   + " instanceof " + (module instanceof $clsName))
                         return module
+                    }
 
                 } 
 
@@ -89,6 +93,7 @@ class DefaultGlueContextBuilder implements GlueContextBuilder{
            }
 
 		 """
+		println("static context: " + s)
 		new GroovyClassLoader(ctx.getClass().getClassLoader()).parseClass(s).newInstance(ctx)
 	}
 

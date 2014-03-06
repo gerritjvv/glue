@@ -13,7 +13,7 @@ import org.glue.unit.script.ScriptClassCache
  *
  */
 @Typed(TypePolicy.DYNAMIC)
-class GlueModuleProxy {
+class GlueModuleProxy{
 
 	static {
 		ExpandoMetaClass.enableGlobally()
@@ -39,6 +39,7 @@ class GlueModuleProxy {
 	public static GlueModule createProxy(GlueModule module, GlueContext context){
 
 		GlueModuleProxy proxy = new GlueModuleProxy(module, context)
+		 
 		GlueModule proxyModule = ProxyGenerator.INSTANCE.instantiateDelegate([GlueModule], proxy)
 		
 		return proxyModule

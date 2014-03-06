@@ -16,3 +16,5 @@ mvn install:install-file -Dfile=$BIN_HOME/groovypp-0.9.0_1.8.2.jar -DgroupId=org
 
 
 mvn install:install-file -Dfile=$BIN_HOME/jmockmongo-0.0.2-SNAPSHOT.jar -DgroupId=jmockmongo -DartifactId=jmockmongo -Dversion=0.0.2-SNAPSHOT -Dpackaging=jar -DpomFile=$BIN_HOME/jmockmongo-0.0.2-SNAPSHOT.pom
+
+mvn install:install-file -Dfile=$BIN_HOME/pig_withouthadoop-0.12.1.jar -DgroupId=org.apache.pig -DartifactId=pig-withouthadoop -Dversion=0.12.1 -Dpackaging=jar
