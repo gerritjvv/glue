@@ -37,6 +37,24 @@ All modules are configured in the /opt/glue/conf/workflow_modules.groovy file
 
   Its important to have the mr1 jar first in the classpath
 
+# Note hadoop 2.2.0 Users
+
+ Glue comes with hadoop 2.2.0 jars in the /opt/glue/pig/lib-hadoop-2.2.0 directory, and a hadoopless version of pig in /opt/glue/lib-pig
+
+ By default use the hadoop installed locally on the client, but if non is available use the glue provided hadoop.
+
+    classpath = ['/opt/glue/lib', '/opt/glue/conf', '/opt/hadoop', '/opt/hadoop/conf', '/opt/glue/lib-pig']  
+ 
+ Configuration for pig is different with yarn because there is no job tracker.
+ A pig configuration should look like:
+    
+    fs.defaultFS=hdfs://localhost:8020
+    yarn.resourcemanager.address=localhost
+    yarn.resourcemanager.scheduler.address=localhost
+    yarn.resoucemanager.resource-tracker.address=localhost
+
+ 
+
 # Configuration Example
 
 	pig{
