@@ -140,7 +140,9 @@ Properties are:
  	//do something
 
 	}
-	
+  
+       def ready_files = context.triggerStore2.listReadyFiles()
+       //do something with th ready files each item is a vector of [id path] e.g [[1 "a/b"] [2 "c/d"]]	
 	
 ## Get Updated Hive Style Date Partitions
 
