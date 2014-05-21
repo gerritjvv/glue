@@ -496,7 +496,7 @@ class RedisModule implements GlueModule{
 	public Boolean canProcessRun(GlueProcess process, GlueContext context){
 		
 	}
-    
+
 	public void onProcessStart(GlueProcess process,GlueContext context){}
 	public void onProcessFinish(GlueProcess process, GlueContext context){}
 	public void onProcessFail(GlueProcess process, GlueContext context, Throwable t){}
