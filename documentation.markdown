@@ -44,6 +44,7 @@ Glue Documentation Index
 			* [Hive Configuration](hive.html)
 			* [HDFS Configuration](hdfsconfiguration.html)
 			* [FTP Configuration](ftpconfiguration.html)
+			* [REDIS Configuration](redisconfiguration.html)
 * [Library Setup](librarysetup.html)
 * SQL
 	* [API](sqlApi.html)
@@ -66,6 +67,9 @@ Glue Documentation Index
         * [s3](s3Api.html)
 * FTP
 	* [API](ftpApi.html)
+
+* REDIS 
+        * [API](redisApi.html)
 
 * [Bash/Python CMDs](bashPythonScripts.html)
 * [Monitoring and Nagios](nagios.html)
