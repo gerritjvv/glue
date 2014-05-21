@@ -20,6 +20,7 @@ All modules are configured in the /opt/glue/conf/workflow_modules.groovy file
 
 # Configuration Example
 
+```groovy
 redis{
 
   className="org.glue.modules.RedisModule"
@@ -29,6 +30,7 @@ redis{
   }
 
 }
+```
 
 
 
