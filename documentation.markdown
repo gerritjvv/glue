@@ -63,13 +63,13 @@ Glue Documentation Index
 * Pig
 	* [API](pigApi.html)
 	* [Run Script](pigRunScriptExample.html)
-* S3    
-        * [s3](s3Api.html)
+* S3
+	* [s3](s3Api.html)
 * FTP
 	* [API](ftpApi.html)
 
-* REDIS 
-        * [API](redisApi.html)
+* REDIS
+	* [API](redisApi.html)
 
 * [Bash/Python CMDs](bashPythonScripts.html)
 * [Monitoring and Nagios](nagios.html)
