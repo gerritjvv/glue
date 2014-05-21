@@ -95,7 +95,7 @@ class RedisModule implements GlueModule{
         return jedis.rename(oldkey, newkey)
     }
     public Long renamenx(final String oldkey, final String newkey){
-        return jedis.rename(oldkey, newkey)
+        return jedis.renamenx(oldkey, newkey)
     }
     public Long expire(final String key, final int seconds){
         return jedis.expire(key, seconds)

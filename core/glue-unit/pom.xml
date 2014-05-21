@@ -28,7 +28,7 @@
 	<groupId>org.glue</groupId>
 	<artifactId>glue-unit</artifactId>
 	<name>Glue Unit</name>
-	<version>0.5.0</version>
+	<version>0.5.1</version>
 
 	<dependencies>
 		<dependency>
