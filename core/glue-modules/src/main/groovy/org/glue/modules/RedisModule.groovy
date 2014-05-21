@@ -38,13 +38,18 @@ class RedisModule implements GlueModule{
 	}
 
     public boolean lock(String key){
+        return lock(key, 10000)
+    }
+    
+    public boolean lock(String key, int acquiretimeout){
         synchronized (locks) {
 
             JedisLock lock = locks.get(key)
             if(lock)
                 return true;
             else{
-                lock = new JedisLock(jedis, 10000, 30000);
+                //public JedisLock(Jedis jedis, String lockKey, int timeoutMsecs, int expireMsecs) {
+                lock = new JedisLock(jedis, key, acquiretimeout, 60000);
                 if(lock.acquire()){
                     locks.put(key, lock)
                     return true
