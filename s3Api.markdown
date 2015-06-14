@@ -12,6 +12,28 @@ S3 Module allows easy access (internally via the AWS SDK) to the S3 services.
 This module can be configured to access multiple servers and buckets.
 
 
+# Configuration file
+
+All modules are configured in the /opt/glue/conf/workflow_modules.groovy file
+
+# Configuration Example
+
+        s3{
+                className='org.glue.modules.S3Module'
+                //must never be a singleton
+                isSingleton=false
+                config{
+		  servers{
+			defaults3{
+				secretKey="[secretkey]"
+				accessKey="[accesskey]"
+				isDefault=true
+			}
+		  }
+                }
+        }
+
+
 Class: [S3Module](https://github.com/gerritjvv/glue/blob/master/core/glue-modules/src/main/groovy/org/glue/modules/S3Module.groovy)
 
  Method | Description | Example |
