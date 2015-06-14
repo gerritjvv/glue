@@ -23,14 +23,14 @@ All modules are configured in the /opt/glue/conf/workflow_modules.groovy file
                 //must never be a singleton
                 isSingleton=false
                 config{
-		  servers{
-			defaults3{
-				secretKey="[secretkey]"
-				accessKey="[accesskey]"
-				isDefault=true
-			}
-		  }
-                }
+                  servers{
+                     defaults3{
+                                secretKey="[secretkey]"
+                                accessKey="[accesskey]"
+                                isDefault=true
+                     }
+                 }
+               }
         }
 
 
