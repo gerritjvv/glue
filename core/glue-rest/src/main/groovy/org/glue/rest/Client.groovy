@@ -80,6 +80,9 @@ public class Client {
 
 			String unitName = line.getOptionValue('submit')
 
+			if(unitName.contains("-"))
+				throw new RuntimeException("Unit names cannot contain '-'  characters, please rename the workflow file")
+
 			//calculate options
 			Map<String, String> params = [:]
 

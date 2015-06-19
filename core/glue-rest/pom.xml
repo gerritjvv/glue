@@ -17,8 +17,11 @@
 		<restlet.version>2.1.2</restlet.version>
 		<spring.version>3.0.5.RELEASE</spring.version>
 		<commons-cli.version>1.2</commons-cli.version>
+		<faster.xml.jackson.version>2.5.4</faster.xml.jackson.version>
 		<jackson-asl.version>1.9.1</jackson-asl.version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<httpcomponents.version>4.3.6</httpcomponents.version>
+		<httpcomponents-core.version>4.3.3</httpcomponents-core.version>
+		<project.build.sourceEncodinproject.build.sourcild.sourceEncoding/>
 	</properties>
 	<build>
 		<pluginManagement>
@@ -34,7 +37,7 @@
 						<copyright>http://www.apache.org/licenses/LICENSE-2.0</copyright>
 						<distribution>Glue task manager</distribution>
 						<group>utilties</group>
-						<release>6</release>
+						<release>20</release>
 						<packager>https://github.com/glue</packager>
 						<provides>
 							<provide>glue-server</provide>
@@ -218,6 +221,21 @@
 			</exclusions>
 		</dependency>
 		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>${faster.xml.jackson.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>${faster.xml.jackson.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>${faster.xml.jackson.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-mapper-asl</artifactId>
 			<version>${jackson-asl.version}</version>
@@ -228,9 +246,38 @@
 			<version>${jackson-asl.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>${httpcomponents.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpcore</artifactId>
+			<version>${httpcomponents-core.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpmime</artifactId>
+			<version>${httpcomponents.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.restlet.jse</groupId>
 			<artifactId>org.restlet.ext.httpclient</artifactId>
 			<version>${restlet.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.httpcomponents</groupId>
+					<artifactId>httpclient</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.httpcomponents</groupId>
+					<artifactId>httpcore</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.httpcomponents</groupId>
+					<artifactId>httpmime</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.restlet.jse</groupId>
@@ -247,6 +294,16 @@
 			<artifactId>glue-unit</artifactId>
 			<version>${project.version}</version>
 			<type>jar</type>
+			<exclusions>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.dataformat</groupId>
+					<artifactId>jackson-dataformat-smile</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.glue</groupId>
