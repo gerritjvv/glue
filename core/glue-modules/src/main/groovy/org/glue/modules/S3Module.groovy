@@ -204,7 +204,8 @@ class S3Module implements GlueModule {
         def md5Local = localMD5(file)
         try {
 
-            if (!dest.startsWith('/')) dest = "/" + dest
+            //remove any duplicate path variables
+            def path = new File(getBucket(server, bucket) + "/" + dest).path
 
             if (s3configFile) {
                 println("s3cmd -c " + s3configFile + " sync " + file)
@@ -214,7 +215,7 @@ class S3Module implements GlueModule {
                         s3configFile,
                         "sync",
                         file,
-                        "s3://" + getBucket(server, bucket) + dest
+                        "s3://" + path
                 ].execute()
                 p.waitForProcessOutput(System.out, System.err)
 
@@ -226,7 +227,10 @@ class S3Module implements GlueModule {
                     def bytesTransfered = 0
                     def i = 0
 
-                    def putReq = new PutObjectRequest(getBucket(server, bucket), dest, localFile)
+                    if(dest.startsWith('/'))
+                        dest = dest.substring(1, dest.length())
+
+                    def putReq = new PutObjectRequest(getBucket(server, bucket), new File(dest).path, localFile)
                             .withMetadata(new ObjectMetadata())
 
                     putReq.withGeneralProgressListener(new com.amazonaws.event.ProgressListener() {

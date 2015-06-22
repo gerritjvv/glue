@@ -276,6 +276,18 @@ public class SqlModule implements GlueModule {
 	 * @return String the temporary file name created
 	 */
 	public String loadSql(String db, String sql, String delimiter ='\t') {
+		loadSql(db, sql, delimiter, null)
+	}
+
+	/**
+	 * Save the results of a sql command into a temporary file.
+	 * @param db
+	 * @param sql
+	 * @param delimiter
+	 * @param quotes if null no quotes are written other wise the field is enclosed by quotes
+	 * @return String the temporary file name created
+	 */
+	public String loadSql(String db, String sql, String delimiter, String quotes) {
 		File uploadFile = File.createTempFile('glue_sqlUpload_','sql')
 
 		String fileLoc=uploadFile.getAbsolutePath();
@@ -283,7 +295,7 @@ public class SqlModule implements GlueModule {
 
 		uploadFile.withWriter { BufferedWriter writer ->
 			try{
-				writeToFile(writer, sqlObj, sql, delimiter)
+				writeToFile(writer, sqlObj, sql, delimiter, quotes)
 			}finally{
 				sqlObj.close()
 			}
@@ -293,6 +305,7 @@ public class SqlModule implements GlueModule {
 		return fileLoc
 	}
 
+
 	/**
 	 * Save the results of a sql command into a temporary file.
 	 * @param db
@@ -300,6 +313,18 @@ public class SqlModule implements GlueModule {
 	 * @return String the temporary file name created
 	 */
 	public String loadSqlGZIP(String db, String sql, String delimiter ='\t') {
+		loadSqlGZIP(db, sql, delimiter, null)
+	}
+
+	/**
+	 * Save the results of a sql command into a temporary file.
+	 * @param db
+	 * @param sql
+	 * @param delimiter
+	 * @param quotes if null no quotes are written other wise the field is enclosed by quotes
+	 * @return String the temporary file name created
+	 */
+	public String loadSqlGZIP(String db, String sql, String delimiter, String quotes) {
 		File uploadFile = File.createTempFile('glue_sqlUpload_','sql')
 
 		String fileLoc=uploadFile.getAbsolutePath();
@@ -307,7 +332,7 @@ public class SqlModule implements GlueModule {
 
 		def writer = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(fileLoc))));
 		try{
-			writeToFile(writer, sqlObj, sql, delimiter)
+			writeToFile(writer, sqlObj, sql, delimiter, quotes)
 		}finally{
 			sqlObj.close()
 			writer.close()
@@ -317,7 +342,11 @@ public class SqlModule implements GlueModule {
 		return fileLoc
 	}
 
-	private void writeToFile(writer, sqlObj, sql, delimiter){
+	private void writeToFile(BufferedWriter writer, sqlObj, String sql, String delimiter){
+		writeToFile(writer, sqlObj, sql, delimiter, null)
+	}
+
+	private void writeToFile(BufferedWriter writer, sqlObj, String sql, String delimiter, String quotes){
 		try{
 			sqlObj.eachRow(sql){  row ->
 
@@ -328,12 +357,15 @@ public class SqlModule implements GlueModule {
 						writer.append(delimiter)
 
 					if(row[i] != null){
-						writer.append(row[i].toString());
+						if(quotes != null)
+							writer.append(quotes).append(row[i].toString().replace(quotes, "\\$quotes").replace('\n', ' ')).append(quotes)
+						else
+							writer.append(row[i].toString().replace(delimiter, "\\$delimiter").replace('\n', ' '))
 					}
 				}
 				writer.newLine()
 			}
-		}catch( t){
+		}catch(Exception t){
 			t.printStackTrace()
 			throw new RuntimeException(t.toString(), t)
 		}
