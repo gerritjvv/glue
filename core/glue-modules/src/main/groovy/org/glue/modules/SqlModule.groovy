@@ -1,19 +1,11 @@
 package org.glue.modules
-
-import static groovyx.gpars.dataflow.DataFlow.start
+import com.mchange.v2.c3p0.ComboPooledDataSource
 import groovy.sql.Sql
+import org.glue.unit.exceptions.ModuleConfigurationException
+import org.glue.unit.om.*
 
 import java.util.concurrent.ConcurrentHashMap
-
-import org.glue.unit.exceptions.ModuleConfigurationException
-import org.glue.unit.om.CallHelper
-import org.glue.unit.om.GlueContext
-import org.glue.unit.om.GlueModule
-import org.glue.unit.om.GlueProcess
-import org.glue.unit.om.GlueUnit
-import org.glue.unit.om.LazySequenceUtil
-
-import com.mchange.v2.c3p0.ComboPooledDataSource
+import java.util.zip.GZIPOutputStream
 
 /**
  * Provides groovy SQL object support.<br/>
@@ -291,25 +283,7 @@ public class SqlModule implements GlueModule {
 
 		uploadFile.withWriter { BufferedWriter writer ->
 			try{
-                              try{
-				sqlObj.eachRow(sql){  row ->
-
-					int length=row.getMetaData().getColumnCount();
-
-					for(def i=0;i<length;i++){
-						if(i != 0)
-							writer.append(delimiter)
-
-						if(row[i] != null){
-							writer.append(row[i].toString());
-						}
-					}
-					writer.newLine()
-				}
-                               }catch( t){
-                                  t.printStackTrace()
-                                  throw new RuntimeException(t.toString(), t)
-                               }
+				writeToFile(writer, sqlObj, sql, delimiter)
 			}finally{
 				sqlObj.close()
 			}
@@ -317,6 +291,52 @@ public class SqlModule implements GlueModule {
 
 
 		return fileLoc
+	}
+
+	/**
+	 * Save the results of a sql command into a temporary file.
+	 * @param db
+	 * @param sql
+	 * @return String the temporary file name created
+	 */
+	public String loadSqlGZIP(String db, String sql, String delimiter ='\t') {
+		File uploadFile = File.createTempFile('glue_sqlUpload_','sql')
+
+		String fileLoc=uploadFile.getAbsolutePath();
+		def sqlObj = getSql(db)
+
+		def writer = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(fileLoc))));
+		try{
+			writeToFile(writer, sqlObj, sql, delimiter)
+		}finally{
+			sqlObj.close()
+			writer.close()
+		}
+
+
+		return fileLoc
+	}
+
+	private void writeToFile(writer, sqlObj, sql, delimiter){
+		try{
+			sqlObj.eachRow(sql){  row ->
+
+				int length=row.getMetaData().getColumnCount();
+
+				for(def i=0;i<length;i++){
+					if(i != 0)
+						writer.append(delimiter)
+
+					if(row[i] != null){
+						writer.append(row[i].toString());
+					}
+				}
+				writer.newLine()
+			}
+		}catch( t){
+			t.printStackTrace()
+			throw new RuntimeException(t.toString(), t)
+		}
 	}
 
 	/**
