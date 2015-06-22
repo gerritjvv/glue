@@ -25,8 +25,12 @@ All modules are configured in the /opt/glue/conf/workflow_modules.groovy file
                 config{
                   servers{
                      defaults3{
+			        //use AWS v4 auth
                                 secretKey="[secretkey]"
                                 accessKey="[accesskey]"
+				region="[regionname]"
+				domain="[region domain e.g amazonaws.com]"
+				bucket="[bucket name to use if none is provided]"
                                 isDefault=true
                      }
                  }
@@ -35,6 +39,29 @@ All modules are configured in the /opt/glue/conf/workflow_modules.groovy file
 
 
 Class: [S3Module](https://github.com/gerritjvv/glue/blob/master/core/glue-modules/src/main/groovy/org/glue/modules/S3Module.groovy)
+
+## S3 Regions
+
+The region can either be the region code or name, a look table is used  
+and if the region specified in the configuration is found the entry in the  
+lookup map is used, otherwise the region is used as specified.  
+
+The lookup map is: (some shortcuts have been added)  
+
+ def regionMap = ["tokyo": "ap-northeast-1",
+                     "singapore": "ap-southeast-1",
+                     "sydney": "ap-southeast-2",
+                     "frankfurt": "eu-central-1",
+                     "ireland": "eu-west-1",
+                     "sao paulo": "sa-east-1",
+                     "saopaulo": "sa-east-1",
+                     "n. virginia": "us-east-1",
+                     "virginia": "us-east-1",
+                     "n. california": "us-west-1",
+                     "california": "us-west-1",
+                     "oregon": "us-west-2"]
+
+# API
 
  Method | Description | Example |
  ------ | ----------- | ------- |
@@ -45,5 +72,7 @@ putFile(input:InputStream,metadata:ObjectMetaData, dest:String):PugObjectResult 
 createBucket(server:String=null, bucket:String) | Create a bucket on S3 | ctx.s3.createBucket("mynewbucket")
 deleteBucket(server:String=null, bucket:String) | Delete a bucket from S3 | ctx.s3.deleteBucket("mynewbucket")
 listFiles(server:String=null, bucket:String=null, dir:String):List<String> | Returns a list of files | ctx.s3.listFiles("/mydir")
+streamFile(server:String=null, bucket:String=null, input:InputStream, dest:String, long contentSize) | Copy bytes from input to the dest file in s3, if contentSize is 0 or less its ignored, works for local files but if streaming from HDFS you need to set this content size | ctx.s3.streamFile(new FileInputStream("myfile.txt"), "test.txt", -1)
+
 
   

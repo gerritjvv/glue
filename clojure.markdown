@@ -27,6 +27,9 @@ Lets say we have a sql module in /opt/glue/conf/wofkflow_modules.groovy
 
 {% endhighlight %}
 
+# Workflow naming
+
+All workflow names must be free of '-' or '_' i.e only use "uploadfiles.clj" and not "upload-files.clj"
 #Repl
 
 For testing, adhocs and quick debugging the Clojure Repl can be used.

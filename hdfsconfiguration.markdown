@@ -15,7 +15,11 @@ category: tutorial
 HDFS is configured using a properties file, the properties file contains the location to the NameNode and JobTracker.
 Note that this properties file is exactly the same file as pig uses.
 
-This file can be found at /etc/pig/conf/pig.properties (depending on the pig install)
+
+An example is: /opt/glue/conf/hdfs.properties
+
+fs.defaultFs=hdfs://namesrv1
+
 
 As a requirement from the HDFS Api the core-site.xml file must be on the classpath, but the file can be empty with only
     <?xml version="1.0"?>
@@ -27,6 +31,11 @@ As a requirement from the HDFS Api the core-site.xml file must be on the classpa
 	
 The HDFS Module allows you to setup and configure HDFS for multiple clusters by pointing a logical name to a different 
 properties file, i.e. you can run pig on two different clusters if you wanted to.
+
+Note: These configuration files must be on the class path 
+make sure the /opt/glue/conf/exec.groovy file contains 
+
+processClassPath = ['/opt/glue/conf' other dependencies here]
 
 # Configuration file
 

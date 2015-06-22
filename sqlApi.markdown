@@ -65,6 +65,21 @@ withSql( db:String, closure )
 <td> {% highlight groovy %} ctx.sql.loadSql('mydb', 'select * from mytable', ',') {% endhighlight %}</td>
 </tr>
 <tr>
+<td> {% highlight groovy %} loadSql(db:String, sql:String, delimiter:String, quotes:String): String {% endhighlight %}</td>
+<td> writes the results from the sql query into a temporary file</td>
+<td> {% highlight groovy %} ctx.sql.loadSql('mydb', 'select * from mytable', ',') {% endhighlight %}</td>
+</tr>
+<tr>
+<td> {% highlight groovy %} loadSqlGZIP(db:String, sql:String, delimiter:String = '\t'): String {% endhighlight %}</td>
+<td> writes the results from the sql query into a temporary gzip file</td>
+<td> {% highlight groovy %} ctx.sql.loadSql('mydb', 'select * from mytable', ',') {% endhighlight %}</td>
+</tr>
+<tr>
+<td> {% highlight groovy %} loadSqlGZIP(db:String, sql:String, delimiter:String, quotes:String): String {% endhighlight %}</td>
+<td> writes the results from the sql query into a temporary gzip file</td>
+<td> {% highlight groovy %} ctx.sql.loadSql('mydb', 'select * from mytable', ',') {% endhighlight %}</td>
+</tr>
+<tr>
 <td> {% highlight groovy %} updateSql(db:String, sql:String):int {% endhighlight %}</td>
 <td> runs a sql update command </td>
 <td> </td>

@@ -65,7 +65,7 @@ ctx.sql.eachSqlResult('mydb', 'select name, age from people',{ println "Name: ${
 
 {% highlight groovy %}
 
-(def results (map #{get % "name"} (ctx-sql eachSqlResult "mydb" "select name, age from people")))
+(def results (map #(get % "name") (ctx-sql eachSqlResult "mydb" "select name, age from people")))
 
 {% endhighlight %}
 
