@@ -37,7 +37,7 @@ Triggers require three tables in mysql to exist:
 	+-------+---------------+------+-----+---------+----------------+
 	| id    | int(11)       | NO   | PRI | NULL    | auto_increment | 
 	| path  | varchar(1000) | NO   | UNI | NULL    |                |
-	| ts    | bitint(20)    | NO   | MUL | 0       | 
+	| ts    | bigint(20)    | NO   | MUL | 0       | 
 	| seen  | tinyint(4)    | YES  | MUL | 0       |                | 
 	+-------+---------------+------+-----+---------+----------------+
  
