@@ -1,12 +1,12 @@
 package org.glue.modules
 import com.mchange.v2.c3p0.ComboPooledDataSource
 import groovy.sql.Sql
+import org.apache.commons.lang.StringUtils
 import org.glue.unit.exceptions.ModuleConfigurationException
 import org.glue.unit.om.*
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.zip.GZIPOutputStream
-
 /**
  * Provides groovy SQL object support.<br/>
  * Uses the c3p0 for pooling.
@@ -346,9 +346,10 @@ public class SqlModule implements GlueModule {
 		writeToFile(writer, sqlObj, sql, delimiter, null)
 	}
 
-	private void writeToFile(BufferedWriter writer, sqlObj, String sql, String delimiter, String quotes){
+	@Typed(TypePolicy.STATIC)
+	private void writeToFile(BufferedWriter writer, groovy.sql.Sql sqlObj, String sql, String delimiter, String quotes){
 		try{
-			sqlObj.eachRow(sql){  row ->
+			sqlObj.eachRow(sql){  groovy.sql.GroovyResultSet row ->
 
 				int length=row.getMetaData().getColumnCount();
 
@@ -357,10 +358,14 @@ public class SqlModule implements GlueModule {
 						writer.append(delimiter)
 
 					if(row[i] != null){
+						Object val = row[i]
+						if(val instanceof String)
+							val = StringUtils.replace(StringUtils.replace((String)val, quotes, "\\$quotes"), '\n', ' ')
+
 						if(quotes != null)
-							writer.append(quotes).append(row[i].toString().replace(quotes, "\\$quotes").replace('\n', ' ')).append(quotes)
+							writer.append(quotes).append(val.toString()).append(quotes)
 						else
-							writer.append(row[i].toString().replace(delimiter, "\\$delimiter").replace('\n', ' '))
+							writer.append(val.toString())
 					}
 				}
 				writer.newLine()
