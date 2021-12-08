@@ -9,7 +9,7 @@ Introduction
 
 
 
-For a detailed introduction see http://gerritjvv.github.com/glue
+For a detailed introduction see https://gerritjvv.github.io/glue
 
 
 Glue is a workflow engine for bigdata supporting multiple languages such as:
